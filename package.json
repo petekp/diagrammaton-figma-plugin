@@ -1,12 +1,13 @@
 {
   "dependencies": {
-    "@create-figma-plugin/ui": "^2.3.0",
-    "@create-figma-plugin/utilities": "^2.3.0",
+    "@create-figma-plugin/ui": "^2.4.0",
+    "@create-figma-plugin/utilities": "^2.4.0",
+    "peggy": "^3.0.2",
     "preact": ">=10"
   },
   "devDependencies": {
-    "@create-figma-plugin/build": "^2.3.0",
-    "@create-figma-plugin/tsconfig": "^2.3.0",
+    "@create-figma-plugin/build": "^2.4.0",
+    "@create-figma-plugin/tsconfig": "^2.4.0",
     "@figma/plugin-typings": "1.57.1",
     "typescript": ">=4"
   },
@@ -20,7 +21,7 @@
       "figjam"
     ],
     "id": "",
-    "name": "Boilerplate",
+    "name": "Mermaid",
     "main": "src/main.ts",
     "ui": "src/ui.tsx"
   }

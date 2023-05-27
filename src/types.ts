@@ -11,7 +11,7 @@ export interface GetSettings extends EventHandler {
 
 export interface ExecutePlugin extends EventHandler {
   name: "EXECUTE_PLUGIN";
-  handler: ({ input }: { input: string }) => void;
+  handler: ({ input }: { input: string[] }) => void;
 }
 
 export interface HandleError extends EventHandler {

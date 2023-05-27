@@ -5,7 +5,7 @@
     "figjam"
   ],
   "id": "",
-  "name": "Boilerplate",
+  "name": "Mermaid",
   "main": "build/main.js",
   "ui": "build/ui.js"
 }

@@ -8,12 +8,12 @@ import {
   Text,
   Textbox,
   VerticalSpace,
-  SegmentedControl,
-  SegmentedControlOption,
 } from "@create-figma-plugin/ui";
 import { emit, once, on } from "@create-figma-plugin/utilities";
 import { h, JSX } from "preact";
 import { useCallback, useEffect, useState } from "preact/hooks";
+
+import parser from "./grammar.js";
 
 import {
   ExecutePlugin,
@@ -57,12 +57,16 @@ function Plugin({ defaultSettings }: { defaultSettings: Settings }) {
     emit<SetUILoaded>("SET_UI_LOADED");
   }, []);
 
+
   const handleExecutePlugin = useCallback(
     function () {
       setError("");
       setShowRequired(false);
+      let result = parser.parse(input);
+      console.log('parsed result:', result);
+      
       emit<ExecutePlugin>("EXECUTE_PLUGIN", {
-        input,
+        input: result,
       });
     },
     [input]
@@ -90,14 +94,14 @@ function Plugin({ defaultSettings }: { defaultSettings: Settings }) {
         space="medium"
         style={{ pointerEvents: isLoading ? "none" : "all" }}
       >
-        <Text>
+        {/* <Text>
           OpenAI API Key{" "}
           {showRequired && (
             <span style={{ marginLeft: 4, fontWeight: 600, color: "#E95324" }}>
               ← Required
             </span>
           )}
-        </Text>
+        </Text> */}
 
         <VerticalSpace space="small" />
         <Columns space="extraSmall">
@@ -129,7 +133,7 @@ function Plugin({ defaultSettings }: { defaultSettings: Settings }) {
         )}
         <VerticalSpace space="small" />
         <Button loading={isLoading} fullWidth onClick={handleExecutePlugin}>
-          Execute Plugin
+          Create Diagram
         </Button>
         <VerticalSpace space="large" />
       </Container>
