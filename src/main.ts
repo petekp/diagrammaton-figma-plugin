@@ -16,54 +16,13 @@ import {
   SetUILoaded,
 } from "./types";
 
+import { createDiagram } from "./createDiagram";
+
 const SETTINGS_KEY = "mermaid-plugin";
 
 const defaultSettings = {
   isFigJam: figma.editorType === "figjam",
 };
-
-function createNodeWithText(text: string, x: number, y: number): ShapeWithTextNode {
-  const shape: ShapeWithTextNode = figma.createShapeWithText();
-  shape.shapeType = 'SQUARE'; // You can choose other shape types based on your requirement
-  shape.text.characters = text;
-  shape.x = x;
-  shape.y = y;
-  return shape;
-}
-
-
-
-function createDiagram(parsedData: string[]) {
-  const padding = 100;
-  let currentX = padding;
-  let currentY = padding;
-  let lastNode: ShapeWithTextNode | null = null;
-  
-  parsedData.forEach((item, index) => {
-    if (item !== "=>") {
-      const node = figma.createShapeWithText();
-      node.shapeType = "SQUARE";
-      node.text.characters = item;
-      node.resize(100, 50);
-      node.x = currentX;
-      node.y = currentY;
-
-      if (lastNode) {
-        const connector = figma.createConnector();
-        connector.connectorStart = { endpointNodeId: lastNode.id, magnet: 'RIGHT' };
-        connector.connectorEnd = { endpointNodeId: node.id, magnet: 'LEFT' };
-        figma.currentPage.appendChild(connector);
-      }
-
-      figma.currentPage.appendChild(node);
-      lastNode = node;
-      currentX += node.width + padding;
-    }
-  });
-}
-
-
-
 
 export default function () {
   figma.on("selectionchange", () => {
@@ -74,15 +33,13 @@ export default function () {
   });
 
   once<SetUILoaded>("SET_UI_LOADED", async function () {
+    await figma.loadFontAsync({ family: "Inter", style: "Medium" })
     const settings = await loadSettingsAsync(defaultSettings, SETTINGS_KEY);
     emit<GetSettings>("GET_SETTINGS", settings);
   });
 
   on<ExecutePlugin>("EXECUTE_PLUGIN", async function ({ input }) {
-    let currentPage = figma.currentPage;
-
-    await figma.loadFontAsync({ family: "Inter", style: "Medium" })
-
+    console.log({input})
     createDiagram(input);
 
     try {

@@ -6,13 +6,14 @@ import {
   IconWarning32,
   render,
   Text,
-  Textbox,
+  TextboxMultiline,
   VerticalSpace,
 } from "@create-figma-plugin/ui";
 import { emit, once, on } from "@create-figma-plugin/utilities";
 import { h, JSX } from "preact";
 import { useCallback, useEffect, useState } from "preact/hooks";
 
+// @ts-ignore
 import parser from "./grammar.js";
 
 import {
@@ -46,7 +47,13 @@ const parseTextWithUrl = (text: string) => {
 function Plugin({ defaultSettings }: { defaultSettings: Settings }) {
   const [settings, setSettings] = useState<Settings>(defaultSettings);
   const { isFigJam } = settings;
-  const [input, setInput] = useState<string>("");
+  const [input, setInput] = useState<string>(`A -- Launch App --> B
+  B -- Enter Credentials --> C
+  C -- Validate --> D
+  D -- Yes --> E
+  D -- No --> F
+  F -- Retry --> B
+  E -- Logout --> B`)
   const [numNodesSelected, setNumNodesSelected] = useState<number>(0);
 
   const [error, setError] = useState<string>("");
@@ -62,6 +69,7 @@ function Plugin({ defaultSettings }: { defaultSettings: Settings }) {
     function () {
       setError("");
       setShowRequired(false);
+      console.log(input)
       let result = parser.parse(input);
       console.log('parsed result:', result);
       
@@ -105,7 +113,10 @@ function Plugin({ defaultSettings }: { defaultSettings: Settings }) {
 
         <VerticalSpace space="small" />
         <Columns space="extraSmall">
-          <Textbox
+          <TextboxMultiline
+            grow={true}
+            rows={10}
+            spellCheck={false}
             variant="border"
             value={input}
             onValueInput={(val: string) => {

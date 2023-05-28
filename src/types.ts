@@ -1,5 +1,7 @@
 import { EventHandler } from "@create-figma-plugin/utilities";
 
+export * from './diagramming-types'
+
 export type Settings = {
   isFigJam: boolean;
 };

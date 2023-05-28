@@ -1,12 +1,20 @@
-graph
-  = nodes:nodeList { return nodes; }
-  
-nodeList
-  = first:word _ "=>" _ second:nodeList { return [first, '=>'].concat(second); }
-  / word
+Diagram
+  = _ statements:Statement+ { return statements; }
 
-word
-  = chars:[a-z0-9]+ { return chars.join(''); }
+Statement
+  = nodeLink:NodeLinkNode _ { return nodeLink; }
+
+NodeLinkNode
+  = from:Node link:Link to:Node { return { from, link, to }; }
+
+Node
+  = id:Text { return { id }; }
+
+Link
+  = "--" description:Text "-->" { return { description }; }
+
+Text
+  = chars:[a-zA-Z0-9 ]+ { return chars.join(''); }
 
 _ "whitespace"
   = [ \t\n\r]*
