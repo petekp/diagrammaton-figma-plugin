@@ -1,20 +1,29 @@
-Start
-  = nodes:Node* { return nodes; }
+Diagram
+  = head:NodeLink tail:(Whitespace NodeLink)* { return [head, ...tail.map(([_, element]) => element)]; }
+
+Flowchart
+  = Diagram
+
+NodeLink
+  = from:Node Whitespace Arrow Whitespace? link:LinkLabel? Whitespace? to:Node { return { from, link: { label: link || '' }, to }; }
 
 Node
-  = id:Label ws1:Whitespace "--" ws2:Whitespace label:Label ws3:Whitespace "-->" ws4:Whitespace target:Label "\n" { return { id: id.id, label: label.label, target: target.id }; }
-  / id:Label ws1:Whitespace "-->" ws2:Whitespace target:Label "\n" { return { id: id.id, label: id.label, target: target.id }; }
+  = id:NodeID label:NodeLabel? { return { id: id.join(''), label: label || id.join('') }; }
 
-Connection
-  = "--" label:Label "-->" { return { label: label }; }
-  / "-->"
+NodeID
+  = [a-zA-Z0-9]+
 
-Label
-  = id:LabelName "[" label:LabelName "]" { return { id: id, label: label }; }
-  / id:LabelName { return { id: id, label: id }; }
+NodeLabel
+  = "[" label:[^\]]+ "]" { return label.join(""); }
 
-LabelName
-  = chars:[a-zA-Z0-9: ]+ { return chars.join(''); }
+Arrow
+  = "--" ArrowEnd?
+
+ArrowEnd
+  = ">" { return "->"; }
+
+LinkLabel
+  = "[" label:[a-zA-Z0-9 ]+ "]" { return label.join(""); }
 
 Whitespace
-  = [ \t\n]*
+  = [ \t\n\r]+

@@ -1,97 +1,115 @@
-import { Diagram, Edge } from "./diagramming-types";
+type NodeId = string;
 
-export type Layer = Node[];
-
-export type LayeredDiagram = {
+interface Node {
   id: string;
-  layers: Array<Layer>;
-  edges: Array<Edge>;
-};
+  label: string;
+}
 
-export type LayerMap = { [id: string]: number };
+interface NodeLink {
+  label: string;
+}
+interface DiagramElement {
+  from: Node;
+  link: NodeLink;
+  to: Node;
+}
 
+interface Position {
+  x: number;
+  y: number;
+}
 
+function createNode(node: Node, position: Position): FrameNode {
+  const figmaNode = figma.createShapeWithText();
+  figmaNode.shapeType = "SQUARE";
+  figmaNode.text.characters = node.label;
+  figmaNode.resize(100, 50);
 
+  const frame = figma.createFrame();
+  frame.appendChild(figmaNode);
+  frame.x = position.x;
+  frame.y = position.y;
+  frame.resize(100, 50);
 
-function assignLayers(diagram: Diagram): LayeredDiagram {
-  let layerMap: LayerMap = {};
-  let layers: Layer[] = [];
+  return frame;
+}
 
-  for (let node of diagram.nodes) {
-    let maxLayer = 0;
-    for (let edge of diagram.edges) {
-      if (edge.endNodeId === node.id) {
-        maxLayer = Math.max(maxLayer, layerMap[edge.startNodeId] + 1);
+function createLink(from: SceneNode, to: SceneNode, link: NodeLink): ConnectorNode {
+  const connector = figma.createConnector();
+  connector.connectorStart = { endpointNodeId: from.id, magnet: 'BOTTOM' };
+  connector.connectorEnd = { endpointNodeId: to.id, magnet: 'TOP' };
+
+  return connector;
+}
+
+export async function createDiagram(parsedOutput: DiagramElement[]): Promise<void> {
+  const positions = layoutDiagram(parsedOutput);
+  await drawDiagram(parsedOutput, positions);
+  figma.notify('Diagram drawn successfully');
+}
+
+function layoutDiagram(
+  diagram: DiagramElement[]
+): Map<string, { x: number; y: number }> {
+  const positions = new Map<string, { x: number; y: number }>();
+  const levels: { [key: string]: Node[] } = {};
+
+  diagram.forEach((element) => {
+    const { from, to } = element;
+
+    if (!levels[from.id]) {
+      levels[from.id] = [];
+    }
+    levels[from.id].push(to);
+
+    if (!positions.has(from.id)) {
+      positions.set(from.id, { x: 0, y: 0 });
+    }
+  });
+
+  let currentX = 0;
+  let currentY = 0;
+  const nodeWidth = 100;
+  const nodeHeight = 50;
+  const horizontalSpacing = 150;
+  const verticalSpacing = 100;
+
+  Object.values(levels).forEach((nodes) => {
+    currentX += nodeWidth + horizontalSpacing;
+
+    nodes.forEach((node, index) => {
+      if (!positions.has(node.id)) {
+        currentY = index * (nodeHeight + verticalSpacing);
+        positions.set(node.id, { x: currentX, y: currentY });
       }
-    }
-    layerMap[node.id] = maxLayer;
-    if (!layers[maxLayer]) {
-      layers[maxLayer] = [];
-    }
-    layers[maxLayer].push(node);
-  }
+    });
 
-  return {
-    id: diagram.id,
-    layers: layers,
-    edges: diagram.edges,
-  };
+    currentY = 0;
+  });
+
+  return positions;
 }
 
+async function drawDiagram(diagram: DiagramElement[], positions: Map<string, { x: number; y: number }>): Promise<void> {
+  const nodeShapes: { [id: string]: FrameNode } = {};
 
-function orderNodes(layeredDiagram: LayeredDiagram): LayeredDiagram {
-  let layers = [...layeredDiagram.layers];
+  // Create nodes
+  diagram.forEach((element) => {
+    const { from, to } = element;
 
-  // Implement your preferred node ordering algorithm here.
-  // This could be as simple as sorting nodes based on the number of incoming and outgoing edges,
-  // or a more complex algorithm like the barycenter method.
-
-  return {
-    id: layeredDiagram.id,
-    layers: layers,
-    edges: layeredDiagram.edges,
-  };
-}
-
-
-function layoutDiagram(diagram: Diagram): LayeredDiagram {
-  let layeredDiagram = assignLayers(diagram);
-  return orderNodes(layeredDiagram);
-}
-
-
-
-export function createDiagram(parsedData: any[]) {
-  const padding = 100;
-  let currentX = padding;
-  let currentY = padding;
-  let nodes: {[key: string]: ShapeWithTextNode} = {};
-
-  parsedData.forEach((item) => {
-    if (typeof item === "string") {
-      const node = figma.createShapeWithText();
-      node.shapeType = "SQUARE";
-      node.text.characters = item;
-      node.resize(100, 50);
-      node.x = currentX;
-      node.y = currentY;
-      figma.currentPage.appendChild(node);
-
-      nodes[item] = node;  // store node in dictionary for future reference
-
-      currentX += node.width + padding;
-    } else if (Array.isArray(item)) {
-      // item is an edge represented as a tuple
-      const [startNodeId, endNodeId] = item;
-      const startNode = nodes[startNodeId];
-      const endNode = nodes[endNodeId];
-
-      if (startNode && endNode) {
-        const connector = figma.createConnector();
-        connector.connectorStart = { endpointNodeId: startNode.id, magnet: 'RIGHT' };
-        connector.connectorEnd = { endpointNodeId: endNode.id, magnet: 'LEFT' };
-        figma.currentPage.appendChild(connector);
+    [from, to].forEach((node) => {
+      if (!nodeShapes[node.id]) {
+        const position = positions.get(node.id);
+        if (position) {
+          const frame = createNode(node, position); // Assuming you have the createNode function from the previous response
+          nodeShapes[node.id] = frame;
+          figma.currentPage.appendChild(frame);
+        }
       }
-    }
+    });
+
+    // Create edges
+    const link = createLink(nodeShapes[from.id], nodeShapes[to.id], element.link); // Assuming you have the createLink function from the previous response
+    figma.currentPage.appendChild(link);
   });
 }

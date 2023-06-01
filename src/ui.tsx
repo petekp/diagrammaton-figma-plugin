@@ -47,13 +47,8 @@ const parseTextWithUrl = (text: string) => {
 function Plugin({ defaultSettings }: { defaultSettings: Settings }) {
   const [settings, setSettings] = useState<Settings>(defaultSettings);
   const { isFigJam } = settings;
-  const [input, setInput] = useState<string>(`A -- Launch App --> B
-  B -- Enter Credentials --> C
-  C -- Validate --> D
-  D -- Yes --> E
-  D -- No --> F
-  F -- Retry --> B
-  E -- Logout --> B`)
+  const [input, setInput] = useState<string>(`Start[Start] --> EnterDetails[Enter User Details]
+  EnterDetails --> ValidateDetails[Validate Details]`)
   const [numNodesSelected, setNumNodesSelected] = useState<number>(0);
 
   const [error, setError] = useState<string>("");

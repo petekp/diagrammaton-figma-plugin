@@ -40,7 +40,7 @@ export default function () {
 
   on<ExecutePlugin>("EXECUTE_PLUGIN", async function ({ input }) {
     console.log({input})
-    createDiagram(input);
+    await createDiagram(input);
 
     try {
       emit<SetLoading>("SET_LOADING", true);
