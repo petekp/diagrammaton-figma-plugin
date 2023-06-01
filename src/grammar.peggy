@@ -1,20 +1,20 @@
-Diagram
-  = _ statements:Statement+ { return statements; }
-
-Statement
-  = nodeLink:NodeLinkNode _ { return nodeLink; }
-
-NodeLinkNode
-  = from:Node link:Link to:Node { return { from, link, to }; }
+Start
+  = nodes:Node* { return nodes; }
 
 Node
-  = id:Text { return { id }; }
+  = id:Label ws1:Whitespace "--" ws2:Whitespace label:Label ws3:Whitespace "-->" ws4:Whitespace target:Label "\n" { return { id: id.id, label: label.label, target: target.id }; }
+  / id:Label ws1:Whitespace "-->" ws2:Whitespace target:Label "\n" { return { id: id.id, label: id.label, target: target.id }; }
 
-Link
-  = "--" description:Text "-->" { return { description }; }
+Connection
+  = "--" label:Label "-->" { return { label: label }; }
+  / "-->"
 
-Text
-  = chars:[a-zA-Z0-9 ]+ { return chars.join(''); }
+Label
+  = id:LabelName "[" label:LabelName "]" { return { id: id, label: label }; }
+  / id:LabelName { return { id: id, label: id }; }
 
-_ "whitespace"
-  = [ \t\n\r]*
+LabelName
+  = chars:[a-zA-Z0-9: ]+ { return chars.join(''); }
+
+Whitespace
+  = [ \t\n]*
