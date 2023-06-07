@@ -47,8 +47,20 @@ const parseTextWithUrl = (text: string) => {
 function Plugin({ defaultSettings }: { defaultSettings: Settings }) {
   const [settings, setSettings] = useState<Settings>(defaultSettings);
   const { isFigJam } = settings;
-  const [input, setInput] = useState<string>(`Start[Start] --> EnterDetails[Enter User Details]
-  EnterDetails --> ValidateDetails[Validate Details]`)
+  const [input, setInput] =
+    useState<string>(`Start[Start] --> EnterDetails[Enter User Details]
+EnterDetails --> ValidateDetails[Validate Details]
+ValidateDetails -- Details Valid --> SendVerificationEmail[Send Verification Email]
+ValidateDetails -- Details Invalid --> ErrorDetails[Show Error Message]
+ErrorDetails --> EnterDetails
+SendVerificationEmail --> VerifyEmail[Verify Email]
+VerifyEmail -- Email Not Verified --> SendVerificationEmail
+VerifyEmail -- Email Verified --> AcceptTOS[Accept Terms of Service]
+AcceptTOS -- TOS Not Accepted --> End[End: User Exits]
+AcceptTOS -- TOS Accepted --> ConfirmAccount[Confirm Account]
+ConfirmAccount -- Account Not Confirmed --> SendConfirmationEmail[Send Confirmation Email]
+SendConfirmationEmail --> ConfirmAccount
+ConfirmAccount -- Account Confirmed --> End[End: Signup Complete]`);
   const [numNodesSelected, setNumNodesSelected] = useState<number>(0);
 
   const [error, setError] = useState<string>("");
@@ -59,15 +71,14 @@ function Plugin({ defaultSettings }: { defaultSettings: Settings }) {
     emit<SetUILoaded>("SET_UI_LOADED");
   }, []);
 
-
   const handleExecutePlugin = useCallback(
     function () {
       setError("");
       setShowRequired(false);
-      console.log(input)
+      console.log(input);
       let result = parser.parse(input);
-      console.log('parsed result:', result);
-      
+      console.log("parsed result:", result);
+
       emit<ExecutePlugin>("EXECUTE_PLUGIN", {
         input: result,
       });

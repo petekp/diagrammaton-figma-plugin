@@ -5,7 +5,7 @@ Flowchart
   = Diagram
 
 NodeLink
-  = from:Node Whitespace Arrow Whitespace? link:LinkLabel? Whitespace? to:Node { return { from, link: { label: link || '' }, to }; }
+  = from:Node Whitespace link:Link Whitespace? to:Node { return { from, link, to }; }
 
 Node
   = id:NodeID label:NodeLabel? { return { id: id.join(''), label: label || id.join('') }; }
@@ -16,14 +16,12 @@ NodeID
 NodeLabel
   = "[" label:[^\]]+ "]" { return label.join(""); }
 
-Arrow
-  = "--" ArrowEnd?
-
-ArrowEnd
-  = ">" { return "->"; }
+Link
+  = "--" label:LinkLabel? ">" { return { label: label || '' }; }
 
 LinkLabel
-  = "[" label:[a-zA-Z0-9 ]+ "]" { return label.join(""); }
+  = label:[a-zA-Z0-9 ]* "--" { return label.join("").trim(); }
+  / ""
 
 Whitespace
   = [ \t\n\r]+
