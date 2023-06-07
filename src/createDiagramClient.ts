@@ -1,3 +1,5 @@
+import * as dagre from "dagre";
+
 type NodeId = string;
 
 interface Node {
@@ -24,50 +26,35 @@ interface Position {
 function layoutDiagram(
   diagram: DiagramElement[]
 ): Map<string, { x: number; y: number }> {
-  const positions = new Map<string, { x: number; y: number }>();
+  const g = new dagre.graphlib.Graph();
 
-  // Build adjacency list
-  const adjList: { [key: string]: Node[] } = {};
+  // Set an object for the graph label
+  g.setGraph({ rankdir: "LR", nodesep: 100, ranksep: 100 });
 
+  // Default to assigning a new object as a label for each new edge.
+  g.setDefaultEdgeLabel(() => ({}));
+
+  // Add nodes to the graph
   diagram.forEach((element) => {
     const { from, to } = element;
-    if (!adjList[from.id]) {
-      adjList[from.id] = [];
-    }
-    adjList[from.id].push(to);
+    g.setNode(from.id, { label: from.label, width: 180, height: 85 });
+    g.setNode(to.id, { label: to.label, width: 180, height: 85 });
   });
 
-  // DFS to layout nodes
-  const nodeWidth = 100;
-  const nodeHeight = 50;
-  const horizontalSpacing = 200;
-  const verticalSpacing = 150;
-  let currentX = 0;
-  let currentY = 0;
-  let maxY = 0;
+  // Add edges to the graph
+  diagram.forEach((element) => {
+    g.setEdge(element.from.id, element.to.id);
+  });
 
-  const visited = new Set<string>();
+  // Compute the layout
+  dagre.layout(g);
 
-  function dfs(node: Node) {
-    if (visited.has(node.id)) {
-      return;
-    }
-    visited.add(node.id);
-
-    positions.set(node.id, { x: currentX, y: currentY });
-
-    const adjacentNodes = adjList[node.id];
-    if (adjacentNodes && adjacentNodes.length > 0) {
-      currentY += nodeHeight + verticalSpacing;
-      maxY = Math.max(maxY, currentY);
-      adjacentNodes.forEach((adjNode) => dfs(adjNode));
-    } else {
-      currentY = maxY;
-      currentX += nodeWidth + horizontalSpacing;
-    }
-  }
-
-  dfs(diagram[0].from);
+  // Map node IDs to positions
+  const positions = new Map();
+  g.nodes().forEach((v) => {
+    const nodeInfo = g.node(v);
+    positions.set(v, { x: nodeInfo.x, y: nodeInfo.y });
+  });
 
   return positions;
 }
