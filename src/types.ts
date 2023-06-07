@@ -1,6 +1,27 @@
 import { EventHandler } from "@create-figma-plugin/utilities";
 
-export * from './diagramming-types'
+export interface Node {
+  id: string;
+  label: string;
+}
+
+export interface NodeLink {
+  label: string;
+  condition?: string;
+}
+
+export interface DiagramElement {
+  from: Node;
+  link: NodeLink;
+  to: Node;
+}
+
+export interface Position {
+  x: number;
+  y: number;
+}
+
+export * from "./diagramming-types";
 
 export type Settings = {
   isFigJam: boolean;
@@ -13,7 +34,13 @@ export interface GetSettings extends EventHandler {
 
 export interface ExecutePlugin extends EventHandler {
   name: "EXECUTE_PLUGIN";
-  handler: ({ input }: { input: string[] }) => void;
+  handler: ({
+    diagram,
+    positionsObject,
+  }: {
+    diagram: DiagramElement[];
+    positionsObject: { [key: string]: Position };
+  }) => void;
 }
 
 export interface HandleError extends EventHandler {

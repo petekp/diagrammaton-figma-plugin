@@ -1,3 +1,4 @@
+import * as dagre from "dagre";
 import {
   Banner,
   Button,
@@ -9,6 +10,7 @@ import {
   TextboxMultiline,
   VerticalSpace,
 } from "@create-figma-plugin/ui";
+import { createDiagram } from "./createDiagramClient";
 import { emit, once, on } from "@create-figma-plugin/utilities";
 import { h, JSX } from "preact";
 import { useCallback, useEffect, useState } from "preact/hooks";
@@ -72,15 +74,17 @@ ConfirmAccount -- Account Confirmed --> End[End: Signup Complete]`);
   }, []);
 
   const handleExecutePlugin = useCallback(
-    function () {
+    async function () {
       setError("");
       setShowRequired(false);
       console.log(input);
       let result = parser.parse(input);
       console.log("parsed result:", result);
+      const positionsObject = await createDiagram(result);
 
       emit<ExecutePlugin>("EXECUTE_PLUGIN", {
-        input: result,
+        diagram: result,
+        positionsObject,
       });
     },
     [input]

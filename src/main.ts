@@ -16,7 +16,7 @@ import {
   SetUILoaded,
 } from "./types";
 
-import { createDiagram } from "./createDiagram";
+import { drawDiagram } from "./createDiagram";
 
 const SETTINGS_KEY = "mermaid-plugin";
 
@@ -33,23 +33,26 @@ export default function () {
   });
 
   once<SetUILoaded>("SET_UI_LOADED", async function () {
-    await figma.loadFontAsync({ family: "Inter", style: "Medium" })
+    await figma.loadFontAsync({ family: "Inter", style: "Medium" });
     const settings = await loadSettingsAsync(defaultSettings, SETTINGS_KEY);
     emit<GetSettings>("GET_SETTINGS", settings);
   });
 
-  on<ExecutePlugin>("EXECUTE_PLUGIN", async function ({ input }) {
-    console.log({input})
-    await createDiagram(input);
+  on<ExecutePlugin>(
+    "EXECUTE_PLUGIN",
+    async function ({ diagram, positionsObject }) {
+      console.log({ diagram, positionsObject });
+      await drawDiagram({ diagram, positionsObject });
 
-    try {
-      emit<SetLoading>("SET_LOADING", true);
-    } catch (error: any) {
-      emit<HandleError>("HANDLE_ERROR", error.message);
-    } finally {
-      emit<SetLoading>("SET_LOADING", false);
+      try {
+        emit<SetLoading>("SET_LOADING", true);
+      } catch (error: any) {
+        emit<HandleError>("HANDLE_ERROR", error.message);
+      } finally {
+        emit<SetLoading>("SET_LOADING", false);
+      }
     }
-  });
+  );
 
   showUI(
     {
