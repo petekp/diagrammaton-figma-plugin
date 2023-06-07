@@ -1,3 +1,5 @@
+import dagre from "dagre";
+
 type NodeId = string;
 
 interface Node {
