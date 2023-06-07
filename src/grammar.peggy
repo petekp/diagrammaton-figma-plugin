@@ -17,10 +17,14 @@ NodeLabel
   = "[" label:[^\]]+ "]" { return label.join(""); }
 
 Link
-  = "--" label:LinkLabel? ">" { return { label: label || '' }; }
+  = "--" condition:LinkCondition? label:LinkLabel? ">" { return { label: label || '', condition: condition || '' }; }
 
 LinkLabel
   = label:[a-zA-Z0-9 ]* "--" { return label.join("").trim(); }
+  / ""
+
+LinkCondition
+  = condition:[a-zA-Z0-9 ]* "--" { return condition.join("").trim(); }
   / ""
 
 Whitespace
