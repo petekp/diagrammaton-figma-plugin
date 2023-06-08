@@ -3,6 +3,7 @@ import { EventHandler } from "@create-figma-plugin/utilities";
 export interface Node {
   id: string;
   label: string;
+  shape: ShapeWithTextNode["shapeType"];
 }
 
 export interface NodeLink {

@@ -8,13 +8,18 @@ NodeLink
   = from:Node Whitespace link:Link Whitespace? to:Node { return { from, link, to }; }
 
 Node
-  = id:NodeID label:NodeLabel? { return { id: id.join(''), label: label || id.join('') }; }
+  = id:NodeID label:NodeLabel? { return { id: id.join(''), label: label || id.join(''), shape: label?.shape || 'ROUNDED_RECTANGLE' }; }
 
 NodeID
   = [a-zA-Z0-9]+
 
 NodeLabel
-  = "[" label:[^\]]+ "]" { return label.join(""); }
+  = "(" label:[^)]+ ")" { return { text: label.join(""), shape: 'ELLIPSE' }; }
+  / "{" label:[^}]+ "}" { return { text: label.join(""), shape: 'DIAMOND' }; }
+  / "[" label:[^\]]+ "]" { return { text: label.join(""), shape: 'ROUNDED_RECTANGLE' }; }
+  / "[/" label:[^/]+ "/]" { return { text: label.join(""), shape: 'PARALLELOGRAM_RIGHT' }; }
+  / "[\\" label:[^\\]+ "\\]" { return { text: label.join(""), shape: 'PARALLELOGRAM_LEFT' }; }
+  / "[(Database)]" { return { text: 'Database', shape: 'CYLINDER' }; }
 
 Link
   = "--" condition:LinkCondition? label:LinkLabel? ">" { return { label: label || '', condition: condition || '' }; }

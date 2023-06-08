@@ -23,6 +23,17 @@ interface Position {
   y: number;
 }
 
+function getMaxLengthOfLabel(diagram: DiagramElement[]): number {
+  let maxLength = 0;
+  diagram.forEach((element) => {
+    const labelLength = element.link.label.length;
+    if (labelLength > maxLength) {
+      maxLength = labelLength;
+    }
+  });
+  return maxLength;
+}
+
 function layoutDiagram(
   diagram: DiagramElement[]
 ): Map<string, { x: number; y: number }> {
