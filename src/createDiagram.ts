@@ -45,13 +45,13 @@ function createLink(
   connector.connectorStart = { endpointNodeId: from.id, magnet: fromMagnet };
   connector.connectorEnd = { endpointNodeId: to.id, magnet: toMagnet };
 
-  if (link.label) {
+  if (link.label || link.condition) {
     const text = connector.text;
     const textBackground = connector.textBackground;
 
-    let label = link.label;
+    let label = link.label || "";
     if (link.condition) {
-      label = `${link.condition} --> ${link.label}`;
+      label = `${link.condition}`;
     }
 
     text.characters = label;
