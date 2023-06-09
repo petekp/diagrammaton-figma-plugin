@@ -3,18 +3,8 @@ import { DiagramElement, Position, Node, NodeLink } from "./types";
 function createNode(node: Node, position: Position): FrameNode {
   const figmaNode = figma.createShapeWithText();
 
-  // Check if a specific shape was provided for the node, default to "SQUARE" if not
-  let shape = "SQUARE";
-  let text = "";
-  if (typeof node.label === "string") {
-    text = node.label;
-  } else {
-    text = node.label.text;
-    shape = node.label.shape || shape;
-  }
-
-  figmaNode.shapeType = shape;
-  figmaNode.text.characters = text;
+  figmaNode.shapeType = node.shape;
+  figmaNode.text.characters = node.label || "";
   figmaNode.resize(180, 85);
 
   const frame = figma.createFrame();

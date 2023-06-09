@@ -5,6 +5,7 @@ type NodeId = string;
 interface Node {
   id: string;
   label: string;
+  shape: string;
 }
 
 interface NodeLink {
@@ -23,20 +24,9 @@ interface Position {
   y: number;
 }
 
-function getMaxLengthOfLabel(diagram: DiagramElement[]): number {
-  let maxLength = 0;
-  diagram.forEach((element) => {
-    const labelLength = element.link.label.length;
-    if (labelLength > maxLength) {
-      maxLength = labelLength;
-    }
-  });
-  return maxLength;
-}
-
 function layoutDiagram(
   diagram: DiagramElement[]
-): Map<string, { x: number; y: number }> {
+): Map<string, { x: number; y: number; shape: string }> {
   const g = new dagre.graphlib.Graph();
 
   // Set an object for the graph label
@@ -48,8 +38,18 @@ function layoutDiagram(
   // Add nodes to the graph
   diagram.forEach((element) => {
     const { from, to } = element;
-    g.setNode(from.id, { label: from.label, width: 180, height: 85 });
-    g.setNode(to.id, { label: to.label, width: 180, height: 85 });
+    g.setNode(from.id, {
+      label: from.label,
+      width: 180,
+      height: 85,
+      shape: from.shape,
+    });
+    g.setNode(to.id, {
+      label: to.label,
+      width: 180,
+      height: 85,
+      shape: to.shape,
+    });
   });
 
   // Add edges to the graph
@@ -64,7 +64,7 @@ function layoutDiagram(
   const positions = new Map();
   g.nodes().forEach((v) => {
     const nodeInfo = g.node(v);
-    positions.set(v, { x: nodeInfo.x, y: nodeInfo.y });
+    positions.set(v, { x: nodeInfo.x, y: nodeInfo.y, shape: nodeInfo.shape });
   });
 
   return positions;

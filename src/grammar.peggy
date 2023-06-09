@@ -8,7 +8,10 @@ NodeLink
   = from:Node Whitespace link:Link Whitespace? to:Node { return { from, link, to }; }
 
 Node
-  = id:NodeID label:NodeLabel? { return { id: id.join(''), label: label || id.join(''), shape: label?.shape || 'ROUNDED_RECTANGLE' }; }
+  = id:NodeID label:NodeLabel shape:NodeShape? { return { id: id.join(''), label: label || id.join(''), shape: shape || 'SQUARE' }; }
+
+NodeShape
+  = "(" shape:[a-zA-Z0-9]+ ")" { return shape.join(""); }
 
 NodeID
   = [a-zA-Z0-9]+
