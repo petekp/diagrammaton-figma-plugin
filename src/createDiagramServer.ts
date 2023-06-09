@@ -4,6 +4,15 @@ function createNode(node: Node, position: Position): FrameNode {
   const figmaNode = figma.createShapeWithText();
 
   figmaNode.shapeType = node.shape;
+
+  let newFills = JSON.parse(JSON.stringify(figmaNode.fills));
+
+  newFills = [
+    { type: "SOLID", color: { r: 0.59, g: 0.278, b: 1 }, opacity: 1 },
+  ];
+
+  // Set the node's fills to your modified version
+  figmaNode.fills = newFills;
   figmaNode.text.characters = node.label || "";
   figmaNode.resize(180, 85);
 

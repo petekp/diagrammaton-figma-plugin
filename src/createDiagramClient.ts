@@ -1,32 +1,10 @@
 import * as dagre from "dagre";
 
-type NodeId = string;
-
-interface Node {
-  id: string;
-  label: string;
-  shape: string;
-}
-
-interface NodeLink {
-  label: string;
-  condition?: string;
-}
-
-interface DiagramElement {
-  from: Node;
-  link: NodeLink;
-  to: Node;
-}
-
-interface Position {
-  x: number;
-  y: number;
-}
+import { DiagramElement, Position } from "./types";
 
 function layoutDiagram(
   diagram: DiagramElement[]
-): Map<string, { x: number; y: number; shape: string }> {
+): Map<string, { x: number; y: number }> {
   const g = new dagre.graphlib.Graph();
 
   // Set an object for the graph label
@@ -38,18 +16,8 @@ function layoutDiagram(
   // Add nodes to the graph
   diagram.forEach((element) => {
     const { from, to } = element;
-    g.setNode(from.id, {
-      label: from.label,
-      width: 180,
-      height: 85,
-      shape: from.shape,
-    });
-    g.setNode(to.id, {
-      label: to.label,
-      width: 180,
-      height: 85,
-      shape: to.shape,
-    });
+    g.setNode(from.id, { label: from.label, width: 180, height: 85 });
+    g.setNode(to.id, { label: to.label, width: 180, height: 85 });
   });
 
   // Add edges to the graph
@@ -64,7 +32,7 @@ function layoutDiagram(
   const positions = new Map();
   g.nodes().forEach((v) => {
     const nodeInfo = g.node(v);
-    positions.set(v, { x: nodeInfo.x, y: nodeInfo.y, shape: nodeInfo.shape });
+    positions.set(v, { x: nodeInfo.x, y: nodeInfo.y });
   });
 
   return positions;

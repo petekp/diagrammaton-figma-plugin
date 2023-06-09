@@ -49,12 +49,12 @@ function Plugin({ defaultSettings }: { defaultSettings: Settings }) {
   const [settings, setSettings] = useState<Settings>(defaultSettings);
   const { isFigJam } = settings;
   const [input, setInput] =
-    useState<string>(`Start[Start] --> EnterDetails[Enter User Details]
+    useState<string>(`Start((Start)) --> EnterDetails(Enter User Details)
 EnterDetails --> ValidateDetails[Validate Details]
-ValidateDetails -- Details Valid --> SendVerificationEmail[Send Verification Email]
-ValidateDetails -- Details Invalid --> ErrorDetails[Show Error Message]
+ValidateDetails -- Details Valid --> SendVerificationEmail[\\Send Verification Email/]
+ValidateDetails -- Details Invalid --> ErrorDetails[/Show Error Message\\]
 ErrorDetails --> EnterDetails
-SendVerificationEmail --> VerifyEmail[Verify Email]
+SendVerificationEmail --> VerifyEmail[(Verify Email)]
 VerifyEmail -- Email Not Verified --> SendVerificationEmail
 VerifyEmail -- Email Verified --> AcceptTOS[Accept Terms of Service]
 AcceptTOS -- TOS Not Accepted --> End[End: User Exits]

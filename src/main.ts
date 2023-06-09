@@ -16,7 +16,7 @@ import {
   SetUILoaded,
 } from "./types";
 
-import { drawDiagram } from "./createDiagram";
+import { drawDiagram } from "./createDiagramServer";
 
 const SETTINGS_KEY = "mermaid-plugin";
 
