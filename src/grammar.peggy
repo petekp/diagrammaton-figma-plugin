@@ -4,14 +4,14 @@ Diagram
 Flowchart
   = Diagram
 
-NodeLink
-  = from:Node Whitespace link:Link Whitespace? to:Node { return { from, link, to }; }
+NodeID
+  = [a-zA-Z0-9]+
 
 Node
   = id:NodeID shape:NodeShape? { return { id: id.join(''), ...shape, shape: shape?.shape || 'SQUARE' }; }
 
-NodeID
-  = [a-zA-Z0-9]+
+NodeLabel
+  = label:[^(){}[\]/\\]+ { return label; }
 
 NodeShape
   = "(" label:NodeLabel ")" { return { label: label.join(""), shape: 'ROUNDED_RECTANGLE' }; }
@@ -24,19 +24,19 @@ NodeShape
   / "[\\" label:NodeLabel "/]" { return { label: label.join(""), shape: 'TRIANGLE_DOWN' }; }
   / "[(" label:NodeLabel ")]" { return { label: label.join(""), shape: 'ENG_DATABASE' }; }
 
-NodeLabel
-  = label:[^(){}[\]/\\]+ { return label; }
+NodeLink
+  = from:Node Whitespace? link:Link Whitespace? to:Node { return { from, link, to }; }
 
 Link
-  = "--" condition:LinkCondition? label:LinkLabel? ">" { return { label: label || '', condition: condition || '' }; }
+  = "-->|" label:LinkLabel "|" { return { label: label || '' }; }
+  / "--" Whitespace? label:LinkLabel Whitespace? "-->" { return { label: label || '' }; }
+  / "--" Whitespace? label:LinkLabel Whitespace? "--" { return { label: label || '' }; }
+  / "-->" { return { label: '' }; }
+  / "--" { return { label: '' }; }
 
 LinkLabel
-  = label:[a-zA-Z0-9 ]* "--" { return label.join("").trim(); }
-  / ""
-
-LinkCondition
-  = condition:[a-zA-Z0-9 ]* "--" { return condition.join("").trim(); }
+  = label:[a-zA-Z0-9 ]+  { return label.join("").trim(); }
   / ""
 
 Whitespace
-  = [ \t\n\r]+
+  = [ \t\n\r]*
