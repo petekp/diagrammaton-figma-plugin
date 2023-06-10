@@ -1,25 +1,21 @@
-interface Point {
-    x: number;
-    y: number;
-  }
-  
-  export type Node = {
-    id: string;
-    position: Point;
-    shape: ShapeWithTextNode;
-  }
-  
-  export type Edge = {
-    id: string;
-    startNodeId: string;
-    endNodeId: string;
-    connector: ConnectorNode;
-  }
-  
-  export type Diagram = {
-    id: string;
-    nodes: Array<Node>;
-    edges: Array<Edge>;
-  }
+export interface Node {
+  id: string;
+  label: string;
+  shape: ShapeWithTextNode["shapeType"];
+}
 
-  export type NodeMap = { [id: string]: Node };
+export interface NodeLink {
+  label: string;
+  condition?: string;
+}
+
+export interface DiagramElement {
+  from: Node;
+  link: NodeLink;
+  to: Node;
+}
+
+export interface Position {
+  x: number;
+  y: number;
+}
