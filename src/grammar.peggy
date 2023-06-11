@@ -7,7 +7,7 @@ Flowchart
   = Diagram
 
 NodeID
-  = [a-zA-Z0-9]+
+  = [a-zA-Z0-9_\-:.]+
 
 Node
   = id:NodeID shape:NodeShape? { return { id: id.join(''), ...shape, shape: shape?.shape || 'SQUARE' }; }
