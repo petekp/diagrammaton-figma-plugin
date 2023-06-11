@@ -1,3 +1,8 @@
+export interface Diagram {
+  elements: DiagramElement[];
+  orientation: "TB" | "TD" | "BT" | "LR" | "RL";
+}
+
 export interface Node {
   id: string;
   label: string;
@@ -6,7 +11,6 @@ export interface Node {
 
 export interface NodeLink {
   label: string;
-  condition?: string;
 }
 
 export interface DiagramElement {

@@ -38,8 +38,8 @@ const createLink = (
       : "RIGHT";
   connector.connectorStart = { endpointNodeId: from.id, magnet: fromMagnet };
   connector.connectorEnd = { endpointNodeId: to.id, magnet: toMagnet };
-  if (link.label || link.condition) {
-    connector.text.characters = link.condition || link.label || "";
+  if (link.label) {
+    connector.text.characters = link.label || "";
     connector.textBackground.fills = [
       { type: "SOLID", color: { r: 1, g: 1, b: 1 }, opacity: 0.2 },
     ];
