@@ -1,5 +1,7 @@
 Diagram
-  = head:NodeLink tail:(Whitespace NodeLink)* { return [head, ...tail.map(([_, element]) => element)]; }
+  = head:NodeLink tail:(Whitespace NodeLink)* {
+      return [head, ...tail.map(([_, element]) => element)].flat();
+    }
 
 Flowchart
   = Diagram
@@ -25,7 +27,10 @@ NodeShape
   / "[(" label:NodeLabel ")]" { return { label: label.join(""), shape: 'ENG_DATABASE' }; }
 
 NodeLink
-  = from:Node Whitespace? link:Link Whitespace? to:Node { return { from, link, to }; }
+  = head:Node tail:(Whitespace? Link Whitespace? Node)* {
+      const elements = tail.map(([_, link, __, node]) => ({ from: head, link, to: node }));
+      return [elements[0], ...elements.slice(1)];
+    }
 
 Link
   = "-->|" label:LinkLabel "|" { return { label: label || '' }; }
