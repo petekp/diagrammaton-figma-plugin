@@ -41,7 +41,6 @@ export default function () {
   on<ExecutePlugin>(
     "EXECUTE_PLUGIN",
     async function ({ diagram, positionsObject }) {
-      console.log({ diagram, positionsObject });
       await drawDiagram({ diagram, positionsObject });
 
       try {
