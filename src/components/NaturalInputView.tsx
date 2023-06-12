@@ -24,6 +24,18 @@ import styles from "./styles.css";
 
 // @ts-ignore
 import parser from "../lib/grammar.js";
+import { gpt } from "../gpt";
+
+const removeStringsFromArray = (
+  inputString: string,
+  stringsToRemove: string[]
+) => {
+  let result = inputString;
+  stringsToRemove.forEach((str) => {
+    result = result.split(str).join("");
+  });
+  return result;
+};
 
 const urlRegex = /(https?:\/\/[^\s]+)/g;
 
@@ -43,39 +55,25 @@ const parseTextWithUrl = (text: string) => {
 
 export function NaturalInputView() {
   const {
-    numNodesSelected,
     setNumNodesSelected,
     settings,
     setSettings,
     error,
     setError,
-    showRequired,
     setShowRequired,
+    setDiagramSyntax,
     isLoading,
     setIsLoading,
-    isFigJam,
   } = pluginContext();
 
-  const [input, setInput] =
-    useState<string>(`Start((Start)) --> EnterDetails(Enter User Details)
-EnterDetails --> ValidateDetails[Validate Details]
-ValidateDetails -- Details Valid --> SendVerificationEmail[\\Send Verification Email/]
-ValidateDetails -- Details Invalid --> ErrorDetails[/Show Error Message\\]
-ErrorDetails --> EnterDetails
-SendVerificationEmail --> VerifyEmail[(Verify Email)]
-VerifyEmail -- Email Not Verified --> SendVerificationEmail
-VerifyEmail -- Email Verified --> AcceptTOS[Accept Terms of Service]
-AcceptTOS -- TOS Not Accepted --> End[End: User Exits]
-AcceptTOS -- TOS Accepted --> ConfirmAccount[Confirm Account]
-ConfirmAccount -- Account Not Confirmed --> SendConfirmationEmail[Send Confirmation Email]
-SendConfirmationEmail --> ConfirmAccount
-ConfirmAccount -- Account Confirmed --> End[End: Signup Complete]`);
+  const [input, setInput] = useState<string>(
+    `a basic sign up flow for a patient app`
+  );
 
   const handleError = useCallback(
     function (error: string) {
       setError(error);
       setIsLoading(false);
-      setSettings({ ...settings });
     },
     [error]
   );
@@ -85,10 +83,31 @@ ConfirmAccount -- Account Confirmed --> End[End: Signup Complete]`);
   on<SetLoading>("SET_LOADING", setIsLoading);
   on<SetSelectedNodes>("SET_SELECTED_NODES", setNumNodesSelected);
 
+  const handleGetCompletions = useCallback(async () => {
+    setError("");
+    setIsLoading(true);
+    try {
+      const completion = await gpt({ input });
+      const badStrings = ["```"];
+      const sanitizedCompletion = removeStringsFromArray(
+        completion,
+        badStrings
+      );
+      console.log("sanitized completion: ", sanitizedCompletion);
+
+      setDiagramSyntax(sanitizedCompletion);
+      await handleExecutePlugin(sanitizedCompletion);
+    } catch (err) {
+      console.log({ err });
+      // @ts-ignore-next
+      setError(err.message || err || "There was an error");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [input]);
+
   const handleExecutePlugin = useCallback(
-    async function () {
-      setError("");
-      setShowRequired(false);
+    async function (input: string) {
       let result = parser.parse(input);
       const positionsObject = await createDiagram(result);
 
@@ -131,14 +150,12 @@ ConfirmAccount -- Account Confirmed --> End[End: Signup Complete]`);
           icon={<IconWarning32 />}
           variant="warning"
         >
-          <span className={styles.warningBanner}>
-            {parseTextWithUrl(error)}
-          </span>
+          <span className={styles.warningBanner}>{error}</span>
         </Banner>
       )}
       <VerticalSpace space="small" />
-      <Button loading={isLoading} fullWidth onClick={handleExecutePlugin}>
-        Create Diagram
+      <Button loading={isLoading} fullWidth onClick={handleGetCompletions}>
+        Generate Diagram
       </Button>
       <VerticalSpace space="large" />
     </Container>

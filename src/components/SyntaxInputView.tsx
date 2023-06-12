@@ -56,20 +56,7 @@ export function SyntaxInputView() {
     isFigJam,
   } = pluginContext();
 
-  const [input, setInput] =
-    useState<string>(`Start((Start)) --> EnterDetails(Enter User Details)
-EnterDetails --> ValidateDetails[Validate Details]
-ValidateDetails -- Details Valid --> SendVerificationEmail[\\Send Verification Email/]
-ValidateDetails -- Details Invalid --> ErrorDetails[/Show Error Message\\]
-ErrorDetails --> EnterDetails
-SendVerificationEmail --> VerifyEmail[(Verify Email)]
-VerifyEmail -- Email Not Verified --> SendVerificationEmail
-VerifyEmail -- Email Verified --> AcceptTOS[Accept Terms of Service]
-AcceptTOS -- TOS Not Accepted --> End[End: User Exits]
-AcceptTOS -- TOS Accepted --> ConfirmAccount[Confirm Account]
-ConfirmAccount -- Account Not Confirmed --> SendConfirmationEmail[Send Confirmation Email]
-SendConfirmationEmail --> ConfirmAccount
-ConfirmAccount -- Account Confirmed --> End[End: Signup Complete]`);
+  const [input, setInput] = useState<string>(``);
 
   const handleError = useCallback(
     function (error: string) {
@@ -131,9 +118,7 @@ ConfirmAccount -- Account Confirmed --> End[End: Signup Complete]`);
           icon={<IconWarning32 />}
           variant="warning"
         >
-          <span className={styles.warningBanner}>
-            {parseTextWithUrl(error)}
-          </span>
+          <span className={styles.warningBanner}>{error}</span>
         </Banner>
       )}
       <VerticalSpace space="small" />

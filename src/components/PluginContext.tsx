@@ -14,6 +14,10 @@ export type StateContextType = {
   isLoading: boolean;
   setIsLoading: (isLoading: boolean) => void;
   isFigJam: boolean;
+  diagramSyntax: string;
+  setDiagramSyntax: (syntax: string) => void;
+  naturalInput: string;
+  setNaturalInput: (input: string) => void;
 };
 
 const PluginContext = createContext<StateContextType | undefined>(undefined);
@@ -40,6 +44,8 @@ export const PluginContextProvider = ({
   const [showRequired, setShowRequired] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
+  const [diagramSyntax, setDiagramSyntax] = useState<string>("");
+  const [naturalInput, setNaturalInput] = useState<string>("");
 
   const { isFigJam } = settings;
 
@@ -56,6 +62,10 @@ export const PluginContextProvider = ({
         setSettings,
         isLoading,
         setIsLoading,
+        setDiagramSyntax,
+        diagramSyntax,
+        naturalInput,
+        setNaturalInput,
         isFigJam,
       }}
     >

@@ -8,7 +8,7 @@ import { pluginContext } from "./PluginContext";
 import { SettingsView } from "./SettingsView";
 
 export function PrimaryTabs() {
-  const [currentTab, setCurrentTab] = useState<null | string>(null);
+  const [currentTab, setCurrentTab] = useState<string>("Describe");
   const { showRequired } = pluginContext();
 
   function handleChange(event: JSX.TargetedEvent<HTMLInputElement>) {

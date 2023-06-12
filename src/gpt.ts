@@ -1,9 +1,11 @@
 export async function gpt({
-  apiKey,
-  maxLength,
+  input,
+  apiKey = "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",
+  maxLength = 1000,
 }: {
-  apiKey: string;
-  maxLength: number;
+  input: string;
+  apiKey?: string;
+  maxLength?: number;
 }): Promise<string> {
   const response = await fetch("https://api.openai.com/v1/completions", {
     method: "POST",
@@ -63,7 +65,7 @@ SendConfirmationEmail --> ConfirmAccount
 ConfirmAccount -- Account Confirmed --> End[End: Signup Complete]
 \`\`\`
 
-Input: “A scheduling flow where patients can submit an appointment request in the patient app, and a clinician can field these requests in a calendar interface and choose to accept or deny them”
+Input: ${input}
 
 Output: \`\`\`
 `,

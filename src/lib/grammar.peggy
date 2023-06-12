@@ -1,5 +1,5 @@
 Diagram
-  = head:NodeLink tail:(Whitespace NodeLink)* {
+  = head:NodeLink tail:(Whitespace NodeLink Whitespace?)* {
       return [head, ...tail.map(([_, element]) => element)].flat();
     }
 
@@ -9,11 +9,40 @@ Flowchart
 NodeID
   = [a-zA-Z0-9_\-:.]+
 
+AnyNodeShape
+  = "(" label:NodeLabel "))" { return { label, shape: 'ROUNDED_RECTANGLE' }; }
+  / "(" label:NodeLabel ")" { return { label, shape: 'ELLIPSE' }; }
+  / "((" label:NodeLabel "))" { return { label, shape: 'ELLIPSE' }; }
+  / "(" label:NodeLabel "})" { return { label, shape: 'ELLIPSE' }; }
+  / "{" label:NodeLabel "}" { return { label, shape: 'DIAMOND' }; }
+  / "[" label:NodeLabel "]]" { return { label, shape: 'SQUARE' }; }
+  / "[" label:NodeLabel "]" { return { label, shape: 'SQUARE' }; }
+  / "[/" label:NodeLabel "/]" { return { label, shape: 'PARALLELOGRAM_RIGHT' }; }
+  / "[\\" label:NodeLabel "\\]" { return { label, shape: 'PARALLELOGRAM_LEFT' }; }
+  / "[/" label:NodeLabel "\\]" { return { label, shape: 'TRIANGLE_UP' }; }
+  / "[\\" label:NodeLabel "/]" { return { label, shape: 'TRIANGLE_DOWN' }; }
+  / "[(" label:NodeLabel ")]" { return { label, shape: 'ENG_DATABASE' }; }
+  / "(" label:NodeLabel "]" { return { label, shape: 'SQUARE' }; }
+  / "[" label:NodeLabel ")" { return { label, shape: 'SQUARE' }; }
+  / "{" label:NodeLabel "]" { return { label, shape: 'SQUARE' }; }
+  / "[" label:NodeLabel "}" { return { label, shape: 'SQUARE' }; }
+  / "[/" label:NodeLabel "]" { return { label, shape: 'SQUARE' }; }
+  / "[" label:NodeLabel "/]" { return { label, shape: 'SQUARE' }; }
+  / "[\\" label:NodeLabel "]" { return { label, shape: 'SQUARE' }; }
+  / "[" label:NodeLabel "\\]" { return { label, shape: 'SQUARE' }; }
+  / "[/" label:NodeLabel "\\]" { return { label, shape: 'SQUARE' }; }
+  / "[\\" label:NodeLabel "/]" { return { label, shape: 'SQUARE' }; }
+  / "[(" label:NodeLabel "]" { return { label, shape: 'SQUARE' }; }
+  / "[" label:NodeLabel ")]" { return { label, shape: 'SQUARE' }; }
+
+NodeShapeChars
+  = [()[\]/\\]+
+
 Node
-  = id:NodeID shape:NodeShape? { return { id: id.join(''), ...shape, shape: shape?.shape || 'SQUARE' }; }
+  = id:NodeID shape:AnyNodeShape? { return { id: id.join(''), ...shape, shape: shape?.shape || 'SQUARE' }; }
 
 NodeLabel
-  = label:[^(){}[\]/\\]+ { return label; }
+  = label:[^(){}[\]\\-]+ { return label.join("").trim() };
 
 NodeShape
   = "(" label:NodeLabel ")" { return { label: label.join(""), shape: 'ROUNDED_RECTANGLE' }; }
