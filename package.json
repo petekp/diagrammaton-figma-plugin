@@ -12,6 +12,7 @@
     "@create-figma-plugin/tsconfig": "^2.4.0",
     "@figma/plugin-typings": "1.57.1",
     "@types/dagre": "^0.7.48",
+    "nodemon": "^2.0.22",
     "patch-package": "^7.0.0",
     "postinstall-postinstall": "^2.1.0",
     "typescript": ">=4"
@@ -19,7 +20,8 @@
   "scripts": {
     "build": "build-figma-plugin --typecheck --minify",
     "watch": "build-figma-plugin --typecheck --watch",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "watch:grammar": "nodemon --watch ./src/lib/grammar.peggy --exec 'npx peggy -o ./src/lib/grammar.js ./src/lib/grammar.peggy'"
   },
   "figma-plugin": {
     "editorType": [
