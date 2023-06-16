@@ -5,10 +5,18 @@ export * from "./diagramming-types";
 
 export type Settings = {
   isFigJam: boolean;
+  apiKey: string;
+  customPrompt: string;
+  model: string;
 };
 
 export interface GetSettings extends EventHandler {
   name: "GET_SETTINGS";
+  handler: (settings: Settings) => void;
+}
+
+export interface SaveSettings extends EventHandler {
+  name: "SAVE_SETTINGS";
   handler: (settings: Settings) => void;
 }
 
@@ -26,6 +34,11 @@ export interface ExecutePlugin extends EventHandler {
 export interface HandleError extends EventHandler {
   name: "HANDLE_ERROR";
   handler: (error: string) => void;
+}
+
+export interface HandleKeySavedReceived extends EventHandler {
+  name: "KEY_SAVED_RECEIVED";
+  handler: (keySaved: boolean) => void;
 }
 
 export interface SetSelectedNodes extends EventHandler {

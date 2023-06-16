@@ -1,23 +1,63 @@
+import { removeStringsFromArray } from "./util/index";
+const GPT3 = "gpt-3.5-turbo-0613";
+// const GPT4 = "gpt-4-0613";
+
 export async function gpt({
   input,
-  apiKey = "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",
+  apiKey,
   maxLength = 1000,
 }: {
   input: string;
   apiKey?: string;
   maxLength?: number;
 }): Promise<string> {
-  const response = await fetch("https://api.openai.com/v1/completions", {
+  console.log("gpt call apiKey: ", apiKey);
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: "text-davinci-003",
-      prompt: `You are a helpful AI assistant with deep knowledge and expertise in software UI and UX design that helps translate natural language descriptions of UI and UX flows into Mermaid diagram syntax. I will provide a high level description of a diagram as input. As output you will provide the corresponding Mermaid syntax. In the interest of being as helpful and powerful as possible, you should infer details from the high level description based on the most common solutions to the flow being described. Your goal is to surprise and exceed expectations as far as robustly handling edge cases and conditions that a human may forget, overlook, or not even consider.
+      model: GPT3,
+      functions: [
+        {
+          name: "create_diagram",
+          description: "Creates a diagram using Mermaid syntax",
+          parameters: {
+            type: "object",
+            properties: {
+              steps: {
+                type: "array",
+                items: {
+                  type: "string",
+                },
+                description: "An array of diagram steps in Mermaid syntax",
+              },
+            },
+          },
+          required: ["steps"],
+        },
+      ],
+      function_call: {
+        name: "create_diagram",
+      },
+      temperature: 1,
+      messages: [
+        {
+          role: "system",
+          content: `You are a helpful AI assistant with deep knowledge and expertise in software UI and UX design that helps translate natural language descriptions of UI and UX flows into Mermaid diagram syntax. As input, I will provide a high level description of a diagram. As output, provide the corresponding Mermaid syntax, keeping the following factors in mind:
 
-Before we begin, here are two examples of the input and output we expect:
+            - Make extra sure to check that the mermaid syntax you're providing is valid and free of erroneous characters that might not parse cleanly.
+            - If I don't provide enough detail or context to reliably provide Mermaid syntax, you should respond with a message that includes the token [MORE DETAIL NEEDED] to indicate that you need more information from me.
+            - Make sure to use concise (but grammatically correct) NodeLink labels to ensure the diagram is neat and tidy.
+            - When I provide a high level diagram description, infer additional details based on the most use cases related to the general flow being described.
+            - One of your primary goals is to surprise and exceed my expectations in robustly handling edge cases and conditions that I may forget, overlook, or not even consider!`,
+        },
+        {
+          role: "user",
+          content: `
+        Before we begin, here are two examples of the input and output we expect:
 
 [Example 1]
 
@@ -52,30 +92,38 @@ Mermaid syntax:
 \`\`\`
 Start((Start)) --> EnterDetails(Enter User Details)
 EnterDetails --> ValidateDetails[Validate Details]
-ValidateDetails -- Details Valid --> SendVerificationEmail[\Send Verification Email/]
-ValidateDetails -- Details Invalid --> ErrorDetails[/Show Error Message\]
+ValidateDetails -- Valid --> SendVerificationEmail[\Send Verification Email/]
+ValidateDetails -- Invalid --> ErrorDetails[/Show Error Message\]
 ErrorDetails --> EnterDetails
 SendVerificationEmail --> VerifyEmail[(Verify Email)]
-VerifyEmail -- Email Not Verified --> SendVerificationEmail
-VerifyEmail -- Email Verified --> AcceptTOS[Accept Terms of Service]
-AcceptTOS -- TOS Not Accepted --> End[End: User Exits]
-AcceptTOS -- TOS Accepted --> ConfirmAccount[Confirm Account]
-ConfirmAccount -- Account Not Confirmed --> SendConfirmationEmail[Send Confirmation Email]
+VerifyEmail -- Not Verified --> SendVerificationEmail
+VerifyEmail -- Verified --> AcceptTOS[Accept Terms of Service]
+AcceptTOS -- Not Accepted --> End[End: User Exits]
+AcceptTOS -- Accepted --> ConfirmAccount[Confirm Account]
+ConfirmAccount -- Not Confirmed --> SendConfirmationEmail[Send Confirmation Email]
 SendConfirmationEmail --> ConfirmAccount
-ConfirmAccount -- Account Confirmed --> End[End: Signup Complete]
+ConfirmAccount -- Confirmed --> End[End: Signup Complete]
 \`\`\`
 
 Input: ${input}
 
-Output: \`\`\`
-`,
+Output:`,
+        },
+      ],
+
       max_tokens: maxLength,
     }),
   });
 
-  const data = await response.json();
-  if (data.choices && data.choices.length > 0 && data.choices[0].text) {
-    return data.choices[0].text.trim();
+  const { choices } = await response.json();
+  if (choices && choices.length > 0) {
+    const { steps } = JSON.parse(choices[0].message.function_call.arguments);
+    const combinedSteps = steps.reduce(
+      (acc: string, curr: string[]) => acc.concat(`${curr}\n`),
+      ``
+    );
+    const parsed = removeStringsFromArray(combinedSteps, ["```"]);
+    return parsed;
   } else {
     return "Unknown";
   }

@@ -7,10 +7,11 @@ Flowchart
   = Diagram
 
 NodeID
-  = [a-zA-Z0-9_\-:.]+
+  = [a-zA-Z0-9_\-:.?]+
 
 AnyNodeShape
   = "(" label:NodeLabel "))" { return { label, shape: 'ROUNDED_RECTANGLE' }; }
+  / "([" label:NodeLabel "])" { return { label, shape: 'ROUNDED_RECTANGLE' }; }
   / "(" label:NodeLabel ")" { return { label, shape: 'ELLIPSE' }; }
   / "((" label:NodeLabel "))" { return { label, shape: 'ELLIPSE' }; }
   / "(" label:NodeLabel "})" { return { label, shape: 'ELLIPSE' }; }
@@ -31,9 +32,10 @@ AnyNodeShape
   / "[\\" label:NodeLabel "]" { return { label, shape: 'SQUARE' }; }
   / "[" label:NodeLabel "\\]" { return { label, shape: 'SQUARE' }; }
   / "[/" label:NodeLabel "\\]" { return { label, shape: 'SQUARE' }; }
+  / "[/" label:NodeLabel "]" { return { label, shape: 'SQUARE' }; }
   / "[\\" label:NodeLabel "/]" { return { label, shape: 'SQUARE' }; }
-  / "[(" label:NodeLabel "]" { return { label, shape: 'SQUARE' }; }
-  / "[" label:NodeLabel ")]" { return { label, shape: 'SQUARE' }; }
+  / "[(" label:NodeLabel "]" { return { label, shape: 'ENG_DATABASE' }; }
+  / "[" label:NodeLabel ")]" { return { label, shape: 'ENG_DATABASE' }; }
 
 NodeShapeChars
   = [()[\]/\\]+
@@ -42,18 +44,7 @@ Node
   = id:NodeID shape:AnyNodeShape? { return { id: id.join(''), ...shape, shape: shape?.shape || 'SQUARE' }; }
 
 NodeLabel
-  = label:[^(){}[\]\\-]+ { return label.join("").trim() };
-
-NodeShape
-  = "(" label:NodeLabel ")" { return { label: label.join(""), shape: 'ROUNDED_RECTANGLE' }; }
-  / "((" label:NodeLabel "))" { return { label: label.join(""), shape: 'ELLIPSE' }; }
-  / "{" label:NodeLabel "}" { return { label: label.join(""), shape: 'DIAMOND' }; }
-  / "[" label:NodeLabel "]" { return { label: label.join(""), shape: 'SQUARE' }; }
-  / "[/" label:NodeLabel "/]" { return { label: label.join(""), shape: 'PARALLELOGRAM_RIGHT' }; }
-  / "[\\" label:NodeLabel "\\]" { return { label: label.join(""), shape: 'PARALLELOGRAM_LEFT' }; }
-  / "[/" label:NodeLabel "\\]" { return { label: label.join(""), shape: 'TRIANGLE_UP' }; }
-  / "[\\" label:NodeLabel "/]" { return { label: label.join(""), shape: 'TRIANGLE_DOWN' }; }
-  / "[(" label:NodeLabel ")]" { return { label: label.join(""), shape: 'ENG_DATABASE' }; }
+  = label:[^(){}[\]]+ { return label.join("").trim() };
 
 NodeLink
   = head:Node tail:(Whitespace? Link Whitespace? Node)* {

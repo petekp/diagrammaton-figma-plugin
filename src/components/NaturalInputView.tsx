@@ -19,51 +19,24 @@ import {
   SetSelectedNodes,
 } from "../types";
 import { createDiagram } from "../createDiagramClient";
+import { removeStringsFromArray } from "../util";
 
 import styles from "./styles.css";
 
 // @ts-ignore
 import parser from "../lib/grammar.js";
 import { gpt } from "../gpt";
-
-const removeStringsFromArray = (
-  inputString: string,
-  stringsToRemove: string[]
-) => {
-  let result = inputString;
-  stringsToRemove.forEach((str) => {
-    result = result.split(str).join("");
-  });
-  return result;
-};
-
-const urlRegex = /(https?:\/\/[^\s]+)/g;
-
-const parseTextWithUrl = (text: string) => {
-  const parts = text.split(urlRegex);
-
-  return parts.map((part, index) =>
-    urlRegex.test(part) ? (
-      <a key={index} href={part} target="_blank" rel="noopener noreferrer">
-        {part}
-      </a>
-    ) : (
-      part
-    )
-  );
-};
+import { AutoSizeTextInput } from "./AutoSizeTextInput";
 
 export function NaturalInputView() {
   const {
-    setNumNodesSelected,
-    settings,
-    setSettings,
     error,
     setError,
     setShowRequired,
     setDiagramSyntax,
     isLoading,
     setIsLoading,
+    apiKey,
   } = pluginContext();
 
   const [input, setInput] = useState<string>(
@@ -78,25 +51,18 @@ export function NaturalInputView() {
     [error]
   );
 
-  once<GetSettings>("GET_SETTINGS", setSettings);
-  on<HandleError>("HANDLE_ERROR", handleError);
-  on<SetLoading>("SET_LOADING", setIsLoading);
-  on<SetSelectedNodes>("SET_SELECTED_NODES", setNumNodesSelected);
-
   const handleGetCompletions = useCallback(async () => {
     setError("");
     setIsLoading(true);
     try {
-      const completion = await gpt({ input });
-      const badStrings = ["```"];
-      const sanitizedCompletion = removeStringsFromArray(
-        completion,
-        badStrings
-      );
-      console.log("sanitized completion: ", sanitizedCompletion);
+      console.log("handleGetCompletions apiKey: ", apiKey);
+      const steps = await gpt({ apiKey, input });
 
-      setDiagramSyntax(sanitizedCompletion);
-      await handleExecutePlugin(sanitizedCompletion);
+      console.log("sanitized completion: ", steps);
+
+      setDiagramSyntax(steps);
+
+      await handleExecutePlugin(steps);
     } catch (err) {
       console.log({ err });
       // @ts-ignore-next
@@ -104,7 +70,7 @@ export function NaturalInputView() {
     } finally {
       setIsLoading(false);
     }
-  }, [input]);
+  }, [input, apiKey]);
 
   const handleExecutePlugin = useCallback(
     async function (input: string) {
@@ -126,9 +92,14 @@ export function NaturalInputView() {
     >
       <VerticalSpace space="small" />
       <Columns space="extraSmall">
-        <TextboxMultiline
-          grow={true}
-          rows={10}
+        <AutoSizeTextInput
+          style={{
+            fontSize: 20,
+            padding: "15px 10px",
+            lineHeight: 1.3,
+            height: 130,
+          }}
+          grow={false}
           spellCheck={false}
           variant="border"
           value={input}

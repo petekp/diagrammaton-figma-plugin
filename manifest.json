@@ -5,7 +5,7 @@
     "figjam"
   ],
   "id": "1245959998347196208",
-  "name": "Mermaid",
+  "name": "Circuit",
   "main": "build/main.js",
   "ui": "build/ui.js"
 }

@@ -2,6 +2,7 @@
   "dependencies": {
     "@create-figma-plugin/ui": "^2.4.0",
     "@create-figma-plugin/utilities": "^2.4.0",
+    "crypto-js": "^4.1.1",
     "dagre": "^0.8.5",
     "lodash": "^4.17.21",
     "peggy": "^3.0.2",
@@ -11,7 +12,9 @@
     "@create-figma-plugin/build": "^2.4.0",
     "@create-figma-plugin/tsconfig": "^2.4.0",
     "@figma/plugin-typings": "1.57.1",
+    "@types/crypto-js": "^4.1.1",
     "@types/dagre": "^0.7.48",
+    "@types/lodash": "^4.14.195",
     "nodemon": "^2.0.22",
     "patch-package": "^7.0.0",
     "postinstall-postinstall": "^2.1.0",
@@ -29,7 +32,7 @@
       "figjam"
     ],
     "id": "1245959998347196208",
-    "name": "Mermaid",
+    "name": "Circuit",
     "main": "src/main.ts",
     "ui": "src/ui.tsx"
   }

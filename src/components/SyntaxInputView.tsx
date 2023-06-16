@@ -43,40 +43,19 @@ const parseTextWithUrl = (text: string) => {
 
 export function SyntaxInputView() {
   const {
-    numNodesSelected,
-    setNumNodesSelected,
-    settings,
-    setSettings,
     error,
     setError,
-    showRequired,
     setShowRequired,
     isLoading,
-    setIsLoading,
-    isFigJam,
+    setDiagramSyntax,
+    diagramSyntax,
   } = pluginContext();
-
-  const [input, setInput] = useState<string>(``);
-
-  const handleError = useCallback(
-    function (error: string) {
-      setError(error);
-      setIsLoading(false);
-      setSettings({ ...settings });
-    },
-    [error]
-  );
-
-  once<GetSettings>("GET_SETTINGS", setSettings);
-  on<HandleError>("HANDLE_ERROR", handleError);
-  on<SetLoading>("SET_LOADING", setIsLoading);
-  on<SetSelectedNodes>("SET_SELECTED_NODES", setNumNodesSelected);
 
   const handleExecutePlugin = useCallback(
     async function () {
       setError("");
       setShowRequired(false);
-      let result = parser.parse(input);
+      let result = parser.parse(diagramSyntax);
       const positionsObject = await createDiagram(result);
 
       emit<ExecutePlugin>("EXECUTE_PLUGIN", {
@@ -84,7 +63,7 @@ export function SyntaxInputView() {
         positionsObject,
       });
     },
-    [input]
+    [diagramSyntax]
   );
 
   return (
@@ -96,12 +75,11 @@ export function SyntaxInputView() {
       <Columns space="extraSmall">
         <TextboxMultiline
           grow={true}
-          rows={10}
           spellCheck={false}
           variant="border"
-          value={input}
+          value={diagramSyntax}
           onValueInput={(val: string) => {
-            setInput(val);
+            setDiagramSyntax(val);
           }}
           onFocusCapture={() => {
             setError("");
