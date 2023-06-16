@@ -99,6 +99,7 @@ export function NaturalInputView() {
             lineHeight: 1.3,
             height: 130,
           }}
+          placeholder="Describe your diagram"
           grow={false}
           spellCheck={false}
           variant="border"

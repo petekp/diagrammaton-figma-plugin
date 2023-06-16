@@ -74,7 +74,9 @@ export function SyntaxInputView() {
       <VerticalSpace space="small" />
       <Columns space="extraSmall">
         <TextboxMultiline
+          style={{ height: 130, fontSize: 14, lineHeight: 1.4 }}
           grow={true}
+          placeholder="Mermaid syntax will be output here (and can also be entered)"
           spellCheck={false}
           variant="border"
           value={diagramSyntax}

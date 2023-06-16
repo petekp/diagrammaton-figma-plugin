@@ -36,6 +36,7 @@ export function SettingsView({ showRequired }: { showRequired: boolean }) {
       <Textbox
         spellCheck={false}
         variant="border"
+        password={true}
         value={apiKey}
         onValueInput={(val: string) => {
           setAPIKey(val);
@@ -70,6 +71,10 @@ export function SettingsView({ showRequired }: { showRequired: boolean }) {
       <Text>Model</Text>
       <VerticalSpace space="small" />
       <SegmentedControl
+        value={model}
+        onValueChange={(val: string) => {
+          setModel(val);
+        }}
         options={[
           {
             value: "GPT 3.5",
@@ -78,10 +83,6 @@ export function SettingsView({ showRequired }: { showRequired: boolean }) {
             value: "GPT 4",
           },
         ]}
-        value={model}
-        onValueChange={(val: string) => {
-          setModel(val);
-        }}
       />
     </div>
   );
@@ -89,8 +90,8 @@ export function SettingsView({ showRequired }: { showRequired: boolean }) {
     <Container space="medium">
       <VerticalSpace space="medium" />
       {apiKeyInput}
-      <VerticalSpace space="medium" />
-      {customPromptInput}
+      {/* <VerticalSpace space="medium" />
+      {customPromptInput} */}
       <VerticalSpace space="medium" />
       {modelSelection}
       <VerticalSpace space="medium" />
