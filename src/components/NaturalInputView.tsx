@@ -1,25 +1,18 @@
 import { h } from "preact";
 import { pluginContext } from "./PluginContext";
-import { useCallback, useState } from "preact/hooks";
+import { useCallback } from "preact/hooks";
 import {
   Banner,
   Button,
   Columns,
   Container,
   IconWarning32,
-  TextboxMultiline,
+  Stack,
   VerticalSpace,
 } from "@create-figma-plugin/ui";
-import { emit, on, once } from "@create-figma-plugin/utilities";
-import {
-  ExecutePlugin,
-  GetSettings,
-  HandleError,
-  SetLoading,
-  SetSelectedNodes,
-} from "../types";
+import { emit } from "@create-figma-plugin/utilities";
+import { ExecutePlugin } from "../types";
 import { createDiagram } from "../createDiagramClient";
-import { removeStringsFromArray } from "../util";
 
 import styles from "./styles.css";
 
@@ -27,6 +20,7 @@ import styles from "./styles.css";
 import parser from "../lib/grammar.js";
 import { gpt } from "../gpt";
 import { AutoSizeTextInput } from "./AutoSizeTextInput";
+import { TEXT_AREA_HEIGHT } from "../constants";
 
 export function NaturalInputView() {
   const {
@@ -37,28 +31,16 @@ export function NaturalInputView() {
     isLoading,
     setIsLoading,
     apiKey,
+    orientation,
+    naturalInput,
+    setNaturalInput,
   } = pluginContext();
-
-  const [input, setInput] = useState<string>(
-    `a basic sign up flow for a patient app`
-  );
-
-  const handleError = useCallback(
-    function (error: string) {
-      setError(error);
-      setIsLoading(false);
-    },
-    [error]
-  );
 
   const handleGetCompletions = useCallback(async () => {
     setError("");
     setIsLoading(true);
     try {
-      console.log("handleGetCompletions apiKey: ", apiKey);
-      const steps = await gpt({ apiKey, input });
-
-      console.log("sanitized completion: ", steps);
+      const steps = await gpt({ apiKey, input: naturalInput });
 
       setDiagramSyntax(steps);
 
@@ -70,66 +52,62 @@ export function NaturalInputView() {
     } finally {
       setIsLoading(false);
     }
-  }, [input, apiKey]);
+  }, [naturalInput, apiKey]);
 
   const handleExecutePlugin = useCallback(
     async function (input: string) {
       let result = parser.parse(input);
-      const positionsObject = await createDiagram(result);
+      const positionsObject = await createDiagram({
+        parsedOutput: result,
+        orientation,
+      });
 
       emit<ExecutePlugin>("EXECUTE_PLUGIN", {
         diagram: result,
         positionsObject,
       });
     },
-    [input]
+    [naturalInput]
   );
 
   return (
-    <Container
-      space="medium"
-      style={{ pointerEvents: isLoading ? "none" : "all" }}
-    >
+    <Container space="small">
       <VerticalSpace space="small" />
-      <Columns space="extraSmall">
+      <Stack space="small">
         <AutoSizeTextInput
+          disabled={isLoading}
           style={{
-            fontSize: 20,
-            padding: "15px 10px",
             lineHeight: 1.3,
-            height: 130,
+            height: TEXT_AREA_HEIGHT,
           }}
-          placeholder="Describe your diagram"
+          placeholder="Describe a diagram"
           grow={false}
           spellCheck={false}
           variant="border"
-          value={input}
+          value={naturalInput}
           onValueInput={(val: string) => {
-            setInput(val);
+            setNaturalInput(val);
           }}
           onFocusCapture={() => {
             setError("");
             setShowRequired(false);
           }}
         />
-      </Columns>
 
-      {error && <VerticalSpace space="small" />}
+        {error && (
+          <Banner
+            className={styles.warningBanner}
+            icon={<IconWarning32 />}
+            variant="warning"
+          >
+            <span className={styles.warningBanner}>{error}</span>
+          </Banner>
+        )}
 
-      {error && (
-        <Banner
-          className={styles.warningBanner}
-          icon={<IconWarning32 />}
-          variant="warning"
-        >
-          <span className={styles.warningBanner}>{error}</span>
-        </Banner>
-      )}
-      <VerticalSpace space="small" />
-      <Button loading={isLoading} fullWidth onClick={handleGetCompletions}>
-        Generate Diagram
-      </Button>
-      <VerticalSpace space="large" />
+        <Button loading={isLoading} fullWidth onClick={handleGetCompletions}>
+          Generate
+        </Button>
+      </Stack>
     </Container>
   );
 }

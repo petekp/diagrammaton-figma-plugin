@@ -11,7 +11,6 @@ export async function gpt({
   apiKey?: string;
   maxLength?: number;
 }): Promise<string> {
-  console.log("gpt call apiKey: ", apiKey);
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {

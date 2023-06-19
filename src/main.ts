@@ -12,13 +12,13 @@ import * as CryptoJS from "crypto-js";
 
 import {
   ExecutePlugin,
-  GetSettings,
+  GetPersistedState,
   HandleError,
   SetLoading,
   SetSelectedNodes,
   SetUILoaded,
-  Settings,
-  SaveSettings,
+  PersistedState,
+  SavePersistedState,
 } from "./types";
 
 import { drawDiagram } from "./createDiagramServer";
@@ -35,6 +35,9 @@ const defaultSettings = {
   iv: "",
   customPrompt: "",
   model: "GPT 3.5",
+  naturalInput: "",
+  syntaxInput: "",
+  orientation: "LR",
 };
 
 export default function () {
@@ -45,47 +48,54 @@ export default function () {
     );
   });
 
-  on<SaveSettings>("SAVE_SETTINGS", async function (settings: Settings) {
-    let encryptedData;
+  on<SavePersistedState>(
+    "SAVE_PERSISTED_STATE",
+    async function (settings: PersistedState) {
+      let encryptedData;
 
-    const { apiKey } = settings;
+      const { apiKey } = settings;
 
-    if (apiKey === "") {
-      encryptedData = {
-        apiKey: "",
-        iv: "",
-      };
-    } else {
-      const iv = CryptoJS.enc.Hex.parse(generateRandomHex((128 / 8) * 2));
-      const encryptedApiKey = CryptoJS.AES.encrypt(
-        apiKey,
-        encryptionKeyWordArray,
-        {
-          iv: iv,
-        }
-      );
-      encryptedData = {
-        apiKey: encryptedApiKey.ciphertext.toString(CryptoJS.enc.Hex),
-        iv: iv.toString(CryptoJS.enc.Hex),
-      };
+      if (apiKey === "") {
+        encryptedData = {
+          apiKey: "",
+          iv: "",
+        };
+      } else {
+        const iv = CryptoJS.enc.Hex.parse(generateRandomHex((128 / 8) * 2));
+        const encryptedApiKey = CryptoJS.AES.encrypt(
+          apiKey,
+          encryptionKeyWordArray,
+          {
+            iv: iv,
+          }
+        );
+        encryptedData = {
+          apiKey: encryptedApiKey.ciphertext.toString(CryptoJS.enc.Hex),
+          iv: iv.toString(CryptoJS.enc.Hex),
+        };
+      }
+
+      try {
+        await saveSettingsAsync(
+          { ...settings, ...encryptedData },
+          SETTINGS_KEY
+        );
+      } catch (error: any) {
+        emit<HandleError>("HANDLE_ERROR", error.message);
+      }
     }
-
-    try {
-      await saveSettingsAsync({ ...settings, ...encryptedData }, SETTINGS_KEY);
-
-      console.log("SAVE_SETTINGS: ", { ...settings, ...encryptedData });
-    } catch (error: any) {
-      emit<HandleError>("HANDLE_ERROR", error.message);
-    }
-  });
+  );
 
   once<SetUILoaded>("SET_UI_LOADED", async function () {
-    const settings = await loadSettingsAsync(defaultSettings, SETTINGS_KEY);
+    const persistedState = await loadSettingsAsync(
+      defaultSettings,
+      SETTINGS_KEY
+    );
 
-    if (settings.apiKey && settings.iv) {
-      const iv = CryptoJS.enc.Hex.parse(settings.iv);
+    if (persistedState.apiKey && persistedState.iv) {
+      const iv = CryptoJS.enc.Hex.parse(persistedState.iv);
       const cipherParams = CryptoJS.lib.CipherParams.create({
-        ciphertext: CryptoJS.enc.Hex.parse(settings.apiKey),
+        ciphertext: CryptoJS.enc.Hex.parse(persistedState.apiKey),
       });
       const decryptedApiKeyBytes = CryptoJS.AES.decrypt(
         cipherParams,
@@ -94,13 +104,12 @@ export default function () {
       );
       const decryptedApiKey = CryptoJS.enc.Utf8.stringify(decryptedApiKeyBytes);
 
-      emit<GetSettings>("GET_SETTINGS", {
-        ...settings,
+      emit<GetPersistedState>("GET_PERSISTED_STATE", {
+        ...persistedState,
         apiKey: decryptedApiKey,
       });
     } else {
-      console.log("SET_UI_LOADED emit get settings: ", settings);
-      emit<GetSettings>("GET_SETTINGS", settings);
+      emit<GetPersistedState>("GET_PERSISTED_STATE", persistedState);
     }
   });
 

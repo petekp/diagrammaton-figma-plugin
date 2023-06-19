@@ -3,21 +3,24 @@ import { EventHandler } from "@create-figma-plugin/utilities";
 import { DiagramElement, Position } from "./diagramming-types";
 export * from "./diagramming-types";
 
-export type Settings = {
+export type PersistedState = {
   isFigJam: boolean;
   apiKey: string;
   customPrompt: string;
   model: string;
+  naturalInput: string;
+  syntaxInput: string;
+  orientation: string;
 };
 
-export interface GetSettings extends EventHandler {
-  name: "GET_SETTINGS";
-  handler: (settings: Settings) => void;
+export interface GetPersistedState extends EventHandler {
+  name: "GET_PERSISTED_STATE";
+  handler: (state: PersistedState) => void;
 }
 
-export interface SaveSettings extends EventHandler {
-  name: "SAVE_SETTINGS";
-  handler: (settings: Settings) => void;
+export interface SavePersistedState extends EventHandler {
+  name: "SAVE_PERSISTED_STATE";
+  handler: (state: PersistedState) => void;
 }
 
 export interface ExecutePlugin extends EventHandler {

@@ -17,6 +17,7 @@ export const AutoSizeTextInput = (
       {...props}
       style={{
         ...(props.style as {}),
+        padding: "8px 12px",
         fontSize: `${fontSize}px`,
       }}
     />

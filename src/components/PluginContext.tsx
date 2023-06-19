@@ -1,14 +1,14 @@
 import { h, createContext, ComponentChildren } from "preact";
 import { useCallback, useContext, useEffect, useState } from "preact/hooks";
 import {
-  GetSettings,
+  GetPersistedState,
   HandleError,
-  SaveSettings,
+  SavePersistedState,
   SetLoading,
   SetSelectedNodes,
-  Settings,
+  PersistedState,
 } from "../types";
-import { emit, on } from "@create-figma-plugin/utilities";
+import { emit, on, once } from "@create-figma-plugin/utilities";
 
 export type StateContextType = {
   isFigJam: boolean;
@@ -30,6 +30,9 @@ export type StateContextType = {
   setCustomPrompt: (prompt: string) => void;
   model: string;
   setModel: (model: string) => void;
+  orientation: string;
+  setOrientation: (orientation: string) => void;
+
   clearErrors: () => void;
 };
 
@@ -49,21 +52,28 @@ export const PluginContextProvider = ({
   defaultSettings,
   children,
 }: {
-  defaultSettings: Settings;
+  defaultSettings: PersistedState;
   children?: ComponentChildren;
 }) => {
   const [numNodesSelected, setNumNodesSelected] = useState<number>(0);
   const [showRequired, setShowRequired] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
-  const [diagramSyntax, setDiagramSyntax] = useState<string>("");
-  const [naturalInput, setNaturalInput] = useState<string>("");
-  const [apiKey, setAPIKey] = useState<string>("");
+  const [diagramSyntax, setDiagramSyntax] = useState<string>(
+    defaultSettings.syntaxInput
+  );
+  const [naturalInput, setNaturalInput] = useState<string>(
+    defaultSettings.naturalInput
+  );
+  const [apiKey, setAPIKey] = useState<string>(defaultSettings.apiKey);
   const [customPrompt, setCustomPrompt] = useState<string>(
     defaultSettings.customPrompt
   );
   const [model, setModel] = useState<string>(defaultSettings.model);
-  const [settingsLoaded, setSettingsLoaded] = useState<boolean>(false);
+  const [orientation, setOrientation] = useState<string>(
+    defaultSettings.orientation
+  );
+  const [settingsLoaded, setPersistedStateLoaded] = useState<boolean>(false);
 
   const clearErrors = () => {
     setError("");
@@ -73,15 +83,28 @@ export const PluginContextProvider = ({
   const { isFigJam } = defaultSettings;
 
   useEffect(() => {
+    console.log("context rendered");
     if (settingsLoaded) {
-      emit<SaveSettings>("SAVE_SETTINGS", {
+      emit<SavePersistedState>("SAVE_PERSISTED_STATE", {
         ...defaultSettings,
         apiKey,
         model,
         customPrompt,
+        naturalInput,
+        syntaxInput: diagramSyntax,
+        orientation,
       });
     }
-  }, [apiKey, model, customPrompt, defaultSettings, settingsLoaded]);
+  }, [
+    apiKey,
+    model,
+    customPrompt,
+    defaultSettings,
+    settingsLoaded,
+    naturalInput,
+    diagramSyntax,
+    orientation,
+  ]);
 
   const handleError = useCallback(
     function (error: string) {
@@ -91,12 +114,14 @@ export const PluginContextProvider = ({
     [error]
   );
 
-  on<GetSettings>("GET_SETTINGS", (settings: Settings) => {
-    console.log("Context got settings: ", settings);
-    setAPIKey(settings.apiKey);
-    setModel(settings.model);
-    setCustomPrompt(settings.customPrompt);
-    setSettingsLoaded(true);
+  once<GetPersistedState>("GET_PERSISTED_STATE", (state: PersistedState) => {
+    setAPIKey(state.apiKey);
+    setModel(state.model);
+    setCustomPrompt(state.customPrompt);
+    setPersistedStateLoaded(true);
+    setNaturalInput(state.naturalInput);
+    setDiagramSyntax(state.syntaxInput);
+    setOrientation(state.orientation);
   });
 
   on<HandleError>("HANDLE_ERROR", handleError);
@@ -125,6 +150,8 @@ export const PluginContextProvider = ({
         setCustomPrompt,
         model,
         setModel,
+        orientation,
+        setOrientation,
         clearErrors,
       }}
     >

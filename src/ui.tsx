@@ -1,18 +1,23 @@
 import { render } from "@create-figma-plugin/ui";
 
 import { emit } from "@create-figma-plugin/utilities";
-import { useEffect } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import { h } from "preact";
 
 import { PluginContextProvider } from "./components/PluginContext";
 import { PrimaryTabs } from "./components/PrimaryTabs";
 
-import { Settings, SetUILoaded } from "./types";
+import { PersistedState, SetUILoaded } from "./types";
 import styles from "./components/styles.css";
 
-function Plugin({ defaultSettings }: { defaultSettings: Settings }) {
+function Plugin({ defaultSettings }: { defaultSettings: PersistedState }) {
+  const [rendered, setRendered] = useState(false);
   useEffect(() => {
-    emit<SetUILoaded>("SET_UI_LOADED");
+    if (!rendered) {
+      console.log("first render");
+      emit<SetUILoaded>("SET_UI_LOADED");
+      setRendered(true);
+    }
   }, []);
 
   return (

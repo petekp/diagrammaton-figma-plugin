@@ -1,29 +1,26 @@
 import { h } from "preact";
 import { pluginContext } from "./PluginContext";
-import { useCallback, useState } from "preact/hooks";
+import { useCallback } from "preact/hooks";
 import {
   Banner,
   Button,
   Columns,
   Container,
   IconWarning32,
+  Stack,
   TextboxMultiline,
   VerticalSpace,
 } from "@create-figma-plugin/ui";
-import { emit, on, once } from "@create-figma-plugin/utilities";
-import {
-  ExecutePlugin,
-  GetSettings,
-  HandleError,
-  SetLoading,
-  SetSelectedNodes,
-} from "../types";
+import { emit } from "@create-figma-plugin/utilities";
+import { ExecutePlugin } from "../types";
 import { createDiagram } from "../createDiagramClient";
 
 import styles from "./styles.css";
 
 // @ts-ignore
 import parser from "../lib/grammar.js";
+import { AutoSizeTextInput } from "./AutoSizeTextInput";
+import { TEXT_AREA_HEIGHT } from "../constants";
 
 const urlRegex = /(https?:\/\/[^\s]+)/g;
 
@@ -67,15 +64,13 @@ export function SyntaxInputView() {
   );
 
   return (
-    <Container
-      space="medium"
-      style={{ pointerEvents: isLoading ? "none" : "all" }}
-    >
+    <Container space="small">
       <VerticalSpace space="small" />
-      <Columns space="extraSmall">
-        <TextboxMultiline
-          style={{ height: 130, fontSize: 14, lineHeight: 1.4 }}
-          grow={true}
+      <Stack space="small">
+        <AutoSizeTextInput
+          style={{ height: TEXT_AREA_HEIGHT, lineHeight: 1.4 }}
+          disabled={isLoading}
+          grow={false}
           placeholder="Mermaid syntax will be output here (and can also be entered)"
           spellCheck={false}
           variant="border"
@@ -88,24 +83,21 @@ export function SyntaxInputView() {
             setShowRequired(false);
           }}
         />
-      </Columns>
 
-      {error && <VerticalSpace space="small" />}
+        {error && (
+          <Banner
+            className={styles.warningBanner}
+            icon={<IconWarning32 />}
+            variant="warning"
+          >
+            <span className={styles.warningBanner}>{error}</span>
+          </Banner>
+        )}
 
-      {error && (
-        <Banner
-          className={styles.warningBanner}
-          icon={<IconWarning32 />}
-          variant="warning"
-        >
-          <span className={styles.warningBanner}>{error}</span>
-        </Banner>
-      )}
-      <VerticalSpace space="small" />
-      <Button loading={isLoading} fullWidth onClick={handleExecutePlugin}>
-        Create Diagram
-      </Button>
-      <VerticalSpace space="large" />
+        <Button loading={isLoading} fullWidth onClick={handleExecutePlugin}>
+          Generate
+        </Button>
+      </Stack>
     </Container>
   );
 }
