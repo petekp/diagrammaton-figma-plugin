@@ -1,5 +1,7 @@
 import { h, createContext, ComponentChildren } from "preact";
 import { useCallback, useContext, useEffect, useState } from "preact/hooks";
+import { emit, on, once } from "@create-figma-plugin/utilities";
+
 import {
   GetPersistedState,
   HandleError,
@@ -8,7 +10,7 @@ import {
   SetSelectedNodes,
   PersistedState,
 } from "../types";
-import { emit, on, once } from "@create-figma-plugin/utilities";
+import { GPTModels } from "../gpt";
 
 export type StateContextType = {
   isFigJam: boolean;
@@ -28,8 +30,8 @@ export type StateContextType = {
   setAPIKey: (key: string) => void;
   customPrompt: string;
   setCustomPrompt: (prompt: string) => void;
-  model: string;
-  setModel: (model: string) => void;
+  model: keyof typeof GPTModels;
+  setModel: (model: keyof typeof GPTModels) => void;
   orientation: string;
   setOrientation: (orientation: string) => void;
 
@@ -69,18 +71,20 @@ export const PluginContextProvider = ({
   const [customPrompt, setCustomPrompt] = useState<string>(
     defaultSettings.customPrompt
   );
-  const [model, setModel] = useState<string>(defaultSettings.model);
+  const [model, setModel] = useState<keyof typeof GPTModels>(
+    defaultSettings.model
+  );
   const [orientation, setOrientation] = useState<string>(
     defaultSettings.orientation
   );
   const [settingsLoaded, setPersistedStateLoaded] = useState<boolean>(false);
 
+  const { isFigJam } = defaultSettings;
+
   const clearErrors = () => {
     setError("");
     setShowRequired(false);
   };
-
-  const { isFigJam } = defaultSettings;
 
   useEffect(() => {
     console.log("context rendered");

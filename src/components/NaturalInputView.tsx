@@ -34,13 +34,14 @@ export function NaturalInputView() {
     orientation,
     naturalInput,
     setNaturalInput,
+    model,
   } = pluginContext();
 
   const handleGetCompletions = useCallback(async () => {
     setError("");
     setIsLoading(true);
     try {
-      const steps = await gpt({ apiKey, input: naturalInput });
+      const steps = await gpt({ apiKey, model, input: naturalInput });
 
       setDiagramSyntax(steps);
 

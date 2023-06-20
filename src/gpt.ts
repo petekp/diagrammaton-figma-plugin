@@ -2,60 +2,45 @@ import { removeStringsFromArray } from "./util/index";
 const GPT3 = "gpt-3.5-turbo-0613";
 // const GPT4 = "gpt-4-0613";
 
-export async function gpt({
-  input,
-  apiKey,
-  maxLength = 1000,
-}: {
-  input: string;
-  apiKey?: string;
-  maxLength?: number;
-}): Promise<string> {
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: GPT3,
-      functions: [
-        {
-          name: "create_diagram",
-          description: "Creates a diagram using Mermaid syntax",
-          parameters: {
-            type: "object",
-            properties: {
-              steps: {
-                type: "array",
-                items: {
-                  type: "string",
-                },
-                description: "An array of diagram steps in Mermaid syntax",
-              },
-            },
+export const GPTModels = {
+  gpt3: "gpt-3.5-turbo-0613",
+  gpt4: "gpt-4-0613",
+} as const;
+
+const functions = [
+  {
+    name: "create_diagram",
+    description: "Creates a diagram using Mermaid syntax",
+    parameters: {
+      type: "object",
+      properties: {
+        steps: {
+          type: "array",
+          items: {
+            type: "string",
           },
-          required: ["steps"],
+          description: "An array of diagram steps in Mermaid syntax",
         },
-      ],
-      function_call: {
-        name: "create_diagram",
       },
-      temperature: 1,
-      messages: [
-        {
-          role: "system",
-          content: `You are a helpful AI assistant with deep knowledge and expertise in software UI and UX design that helps translate natural language descriptions of UI and UX flows into Mermaid diagram syntax. As input, I will provide a high level description of a diagram. As output, provide the corresponding Mermaid syntax, keeping the following factors in mind:
+    },
+    required: ["steps"],
+  },
+];
+
+const createMessages = (input: string) => [
+  {
+    role: "system",
+    content: `You are a helpful AI assistant with deep knowledge and expertise in software UI and UX design that helps translate natural language descriptions of UI and UX flows into Mermaid diagram syntax. As input, I will provide a high level description of a diagram. As output, provide the corresponding Mermaid syntax, keeping the following factors in mind:
 
             - Make extra sure to check that the mermaid syntax you're providing is valid and free of erroneous characters that might not parse cleanly.
             - If I don't provide enough detail or context to reliably provide Mermaid syntax, you should respond with a message that includes the token [MORE DETAIL NEEDED] to indicate that you need more information from me.
             - Make sure to use concise (but grammatically correct) NodeLink labels to ensure the diagram is neat and tidy.
             - When I provide a high level diagram description, infer additional details based on the most use cases related to the general flow being described.
             - One of your primary goals is to surprise and exceed my expectations in robustly handling edge cases and conditions that I may forget, overlook, or not even consider!`,
-        },
-        {
-          role: "user",
-          content: `
+  },
+  {
+    role: "user",
+    content: `
         Before we begin, here are two examples of the input and output we expect:
 
 [Example 1]
@@ -107,9 +92,35 @@ ConfirmAccount -- Confirmed --> End[End: Signup Complete]
 Input: ${input}
 
 Output:`,
-        },
-      ],
+  },
+];
 
+export async function gpt({
+  input,
+  apiKey,
+  model,
+  maxLength = 1000,
+}: {
+  input: string;
+  apiKey?: string;
+  model: keyof typeof GPTModels;
+  maxLength?: number;
+}): Promise<string> {
+  console.log("using model: ", model);
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: GPTModels[model] || GPTModels["gpt3"],
+      functions,
+      function_call: {
+        name: "create_diagram",
+      },
+      temperature: 1,
+      messages: createMessages(input),
       max_tokens: maxLength,
     }),
   });

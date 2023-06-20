@@ -29,12 +29,12 @@ const SETTINGS_KEY = "cohere-plugin";
 const ek = "daca82e5ac526e90e91ee3f5c11de204927c4cc4e6192544dc5ecbfbb514826b";
 const encryptionKeyWordArray = CryptoJS.enc.Hex.parse(ek);
 
-const defaultSettings = {
+const defaultSettings: PersistedState = {
   isFigJam: figma.editorType === "figjam",
   apiKey: "",
   iv: "",
   customPrompt: "",
-  model: "GPT 3.5",
+  model: "gpt3",
   naturalInput: "",
   syntaxInput: "",
   orientation: "LR",

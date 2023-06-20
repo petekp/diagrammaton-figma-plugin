@@ -17,6 +17,7 @@ import {
   Columns,
 } from "@create-figma-plugin/ui";
 import { pluginContext } from "./PluginContext";
+import { GPTModels } from "../gpt";
 
 export function SettingsView({ showRequired }: { showRequired: boolean }) {
   const {
@@ -43,7 +44,7 @@ export function SettingsView({ showRequired }: { showRequired: boolean }) {
           )}
         </Text>
         <Text>
-          <Muted>Encrypted and persisted on your device</Muted>
+          <Muted>Encrypted and persisted locally</Muted>
         </Text>
       </Stack>
 
@@ -72,30 +73,32 @@ export function SettingsView({ showRequired }: { showRequired: boolean }) {
           <Muted>The directional orientation from start to end</Muted>
         </Text>
       </Stack>
-      <SegmentedControl
-        value={orientation}
-        onValueChange={(val: string) => {
-          setOrientation(val);
-        }}
-        options={[
-          {
-            children: <IconArrowRight16 />,
-            value: "LR",
-          },
-          {
-            children: <IconArrowLeft16 />,
-            value: "RL",
-          },
-          {
-            children: <IconArrowDown16 />,
-            value: "TB",
-          },
-          {
-            children: <IconArrowUp16 />,
-            value: "BT",
-          },
-        ]}
-      />
+      <div style={{ float: "right" }}>
+        <SegmentedControl
+          value={orientation}
+          onValueChange={(val: string) => {
+            setOrientation(val);
+          }}
+          options={[
+            {
+              children: <IconArrowRight16 />,
+              value: "LR",
+            },
+            {
+              children: <IconArrowLeft16 />,
+              value: "RL",
+            },
+            {
+              children: <IconArrowDown16 />,
+              value: "TB",
+            },
+            {
+              children: <IconArrowUp16 />,
+              value: "BT",
+            },
+          ]}
+        />
+      </div>
     </Columns>
   );
 
@@ -123,23 +126,27 @@ export function SettingsView({ showRequired }: { showRequired: boolean }) {
           <Bold>Model</Bold>{" "}
         </Text>
         <Text>
-          <Muted>GPT 4 is usually more accurate, but slower</Muted>
+          <Muted>GPT 4 is often more accurate but slower</Muted>
         </Text>
       </Stack>
-      <SegmentedControl
-        value={model}
-        onValueChange={(val: string) => {
-          setModel(val);
-        }}
-        options={[
-          {
-            value: "GPT 3.5",
-          },
-          {
-            value: "GPT 4",
-          },
-        ]}
-      />
+      <div style={{ float: "right" }}>
+        <SegmentedControl
+          value={model}
+          onValueChange={(val: keyof typeof GPTModels) => {
+            setModel(val);
+          }}
+          options={[
+            {
+              children: "GPT 3.5",
+              value: "gpt3",
+            },
+            {
+              children: "GPT 4",
+              value: "gpt4",
+            },
+          ]}
+        />
+      </div>
     </Columns>
   );
   return (

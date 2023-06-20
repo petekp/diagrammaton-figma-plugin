@@ -1,13 +1,15 @@
 import { EventHandler } from "@create-figma-plugin/utilities";
 
 import { DiagramElement, Position } from "./diagramming-types";
+import { GPTModels } from "../gpt";
 export * from "./diagramming-types";
 
 export type PersistedState = {
   isFigJam: boolean;
   apiKey: string;
+  iv: string;
   customPrompt: string;
-  model: string;
+  model: keyof typeof GPTModels;
   naturalInput: string;
   syntaxInput: string;
   orientation: string;

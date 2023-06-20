@@ -22,26 +22,11 @@ import parser from "../lib/grammar.js";
 import { AutoSizeTextInput } from "./AutoSizeTextInput";
 import { TEXT_AREA_HEIGHT } from "../constants";
 
-const urlRegex = /(https?:\/\/[^\s]+)/g;
-
-const parseTextWithUrl = (text: string) => {
-  const parts = text.split(urlRegex);
-
-  return parts.map((part, index) =>
-    urlRegex.test(part) ? (
-      <a key={index} href={part} target="_blank" rel="noopener noreferrer">
-        {part}
-      </a>
-    ) : (
-      part
-    )
-  );
-};
-
 export function SyntaxInputView() {
   const {
     error,
     setError,
+    clearErrors,
     setShowRequired,
     isLoading,
     setDiagramSyntax,
@@ -50,8 +35,7 @@ export function SyntaxInputView() {
 
   const handleExecutePlugin = useCallback(
     async function () {
-      setError("");
-      setShowRequired(false);
+      clearErrors();
       let result = parser.parse(diagramSyntax);
       const positionsObject = await createDiagram(result);
 
