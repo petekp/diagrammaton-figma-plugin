@@ -7,5 +7,17 @@
   "id": "1245959998347196208",
   "name": "Circuit",
   "main": "build/main.js",
-  "ui": "build/ui.js"
+  "ui": "build/ui.js",
+  "relaunchButtons": [
+    {
+      "name": "Expand",
+      "command": "expand",
+      "multipleSelection": true
+    },
+    {
+      "name": "Collapse",
+      "command": "collapse",
+      "multipleSelection": true
+    }
+  ]
 }

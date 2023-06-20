@@ -34,6 +34,20 @@
     "id": "1245959998347196208",
     "name": "Circuit",
     "main": "src/main.ts",
-    "ui": "src/ui.tsx"
+    "ui": "src/ui.tsx",
+    "relaunchButtons": {
+      "expand": {
+        "main": "src/main.ts",
+        "command": "expand",
+        "name": "Expand",
+        "multipleSelection": true
+      },
+      "collapse": {
+        "main": "src/main.ts",
+        "command": "collapse",
+        "name": "Collapse",
+        "multipleSelection": true
+      }
+    }
   }
 }

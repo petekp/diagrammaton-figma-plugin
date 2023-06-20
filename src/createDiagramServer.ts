@@ -1,3 +1,4 @@
+import { setRelaunchButton } from "@create-figma-plugin/utilities";
 import { DEFAULT_NODE_HEIGHT, DEFAULT_NODE_WIDTH } from "./constants";
 import { DiagramElement, Position, Node, NodeLink } from "./types";
 
@@ -19,7 +20,7 @@ const NodeSize: { [k in Node["shape"]]: { width: number; height: number } } = {
 const createNode = async (
   node: Node,
   position: Position
-): Promise<FrameNode> => {
+): Promise<ShapeWithTextNode> => {
   const figmaNode = figma.createShapeWithText();
   figmaNode.shapeType = node.shape;
   figmaNode.fills = [
@@ -32,12 +33,18 @@ const createNode = async (
   }
 
   figmaNode.resize(DEFAULT_NODE_WIDTH, DEFAULT_NODE_HEIGHT);
-  const frame = figma.createFrame();
-  frame.appendChild(figmaNode);
-  frame.x = position.x;
-  frame.y = position.y;
-  frame.resize(DEFAULT_NODE_WIDTH, DEFAULT_NODE_HEIGHT);
-  return frame;
+
+  figmaNode.x = position.x;
+  figmaNode.y = position.y;
+
+  setRelaunchButton(figmaNode, "expand", {
+    description: "Expand into more granular steps",
+  });
+  setRelaunchButton(figmaNode, "collapse", {
+    description: "Collapse into less granular steps",
+  });
+
+  return figmaNode;
 };
 
 const createLink = async (
@@ -80,7 +87,7 @@ export const drawDiagram = async ({
   positionsObject: { [key: string]: Position };
 }): Promise<void> => {
   const positions = new Map(Object.entries(positionsObject)),
-    nodeShapes: { [id: string]: FrameNode } = {},
+    nodeShapes: { [id: string]: ShapeWithTextNode } = {},
     links: SceneNode[] = [];
 
   for (const { from, link, to } of diagram) {
@@ -94,6 +101,7 @@ export const drawDiagram = async ({
         nodeShapes[node.id] = await createNode(node, position);
       }
     }
+
     if (nodeShapes[from.id] && nodeShapes[to.id]) {
       links.push(
         await createLink(nodeShapes[from.id], nodeShapes[to.id], link)
@@ -102,8 +110,10 @@ export const drawDiagram = async ({
   }
 
   links.forEach((link) => figma.currentPage.appendChild(link));
+
   Object.values(nodeShapes).forEach((node) =>
     figma.currentPage.appendChild(node)
   );
+
   figma.notify("Diagram generated!");
 };
