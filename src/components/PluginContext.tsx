@@ -7,7 +7,7 @@ import {
   HandleError,
   SavePersistedState,
   SetLoading,
-  SetSelectedNodes,
+  SetSelectedNodesCount,
   PersistedState,
 } from "../types";
 import { GPTModels } from "../gpt";
@@ -130,7 +130,7 @@ export const PluginContextProvider = ({
 
   on<HandleError>("HANDLE_ERROR", handleError);
   on<SetLoading>("SET_LOADING", setIsLoading);
-  on<SetSelectedNodes>("SET_SELECTED_NODES", setNumNodesSelected);
+  on<SetSelectedNodesCount>("SET_SELECTED_NODES_COUNT", setNumNodesSelected);
 
   return (
     <PluginContext.Provider

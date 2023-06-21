@@ -30,9 +30,11 @@ export interface ExecutePlugin extends EventHandler {
   handler: ({
     diagram,
     positionsObject,
+    syntax,
   }: {
     diagram: DiagramElement[];
     positionsObject: { [key: string]: Position };
+    syntax: string;
   }) => void;
 }
 
@@ -46,8 +48,8 @@ export interface HandleKeySavedReceived extends EventHandler {
   handler: (keySaved: boolean) => void;
 }
 
-export interface SetSelectedNodes extends EventHandler {
-  name: "SET_SELECTED_NODES";
+export interface SetSelectedNodesCount extends EventHandler {
+  name: "SET_SELECTED_NODES_COUNT";
   handler: (numNodesSelected: number) => void;
 }
 

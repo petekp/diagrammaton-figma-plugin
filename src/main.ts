@@ -15,7 +15,7 @@ import {
   GetPersistedState,
   HandleError,
   SetLoading,
-  SetSelectedNodes,
+  SetSelectedNodesCount,
   SetUILoaded,
   PersistedState,
   SavePersistedState,
@@ -42,10 +42,31 @@ const defaultSettings: PersistedState = {
 
 export default function () {
   figma.on("selectionchange", () => {
-    emit<SetSelectedNodes>(
-      "SET_SELECTED_NODES",
+    emit<SetSelectedNodesCount>(
+      "SET_SELECTED_NODES_COUNT",
       figma.currentPage.selection.length
     );
+
+    console.log(figma.currentPage.selection);
+
+    const firstSelectedNode = figma.currentPage.selection[0];
+
+    if (firstSelectedNode) {
+      console.log(firstSelectedNode.getPluginData("syntax"));
+    }
+
+    if (firstSelectedNode) {
+      const diagramRoot = findDiagramRoot(firstSelectedNode);
+      if (diagramRoot) {
+        const diagramNodes = getDiagramNodes(diagramRoot);
+        const mermaidSyntax = generateMermaidSyntax(diagramNodes);
+        console.log(mermaidSyntax);
+      }
+    }
+
+    figma.currentPage.selection.forEach((node) => {
+      console.log(node.id);
+    });
   });
 
   on<SavePersistedState>(
@@ -115,8 +136,8 @@ export default function () {
 
   on<ExecutePlugin>(
     "EXECUTE_PLUGIN",
-    async function ({ diagram, positionsObject }) {
-      await drawDiagram({ diagram, positionsObject });
+    async function ({ diagram, positionsObject, syntax }) {
+      await drawDiagram({ diagram, positionsObject, pluginData: syntax });
 
       try {
         emit<SetLoading>("SET_LOADING", true);
@@ -135,4 +156,18 @@ export default function () {
     },
     { defaultSettings }
   );
+}
+
+
+function findDiagramRoot(node: SceneNode): FrameNode | null {
+  // Traverse up the node hierarchy to find the root of the diagram (e.g., a FrameNode with a specific plugin data)
+  // Return null if the node is not part of a diagram
+}
+
+function getDiagramNodes(root: FrameNode): SceneNode[] {
+  // Collect all nodes in the diagram starting from the root
+}
+
+function generateMermaidSyntax(nodes: SceneNode[]): string {
+  // Traverse the nodes and generate the corresponding Mermaid syntax
 }

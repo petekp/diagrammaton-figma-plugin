@@ -42,6 +42,7 @@ export function SyntaxInputView() {
       emit<ExecutePlugin>("EXECUTE_PLUGIN", {
         diagram: result,
         positionsObject,
+        syntax: diagramSyntax,
       });
     },
     [diagramSyntax]

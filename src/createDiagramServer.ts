@@ -37,13 +37,6 @@ const createNode = async (
   figmaNode.x = position.x;
   figmaNode.y = position.y;
 
-  setRelaunchButton(figmaNode, "expand", {
-    description: "Expand into more granular steps",
-  });
-  setRelaunchButton(figmaNode, "collapse", {
-    description: "Collapse into less granular steps",
-  });
-
   return figmaNode;
 };
 
@@ -82,13 +75,15 @@ const createLink = async (
 export const drawDiagram = async ({
   diagram,
   positionsObject,
+  pluginData,
 }: {
   diagram: DiagramElement[];
   positionsObject: { [key: string]: Position };
+  pluginData?: string;
 }): Promise<void> => {
-  const positions = new Map(Object.entries(positionsObject)),
-    nodeShapes: { [id: string]: ShapeWithTextNode } = {},
-    links: SceneNode[] = [];
+  const positions = new Map(Object.entries(positionsObject));
+  const nodeShapes: { [id: string]: ShapeWithTextNode } = {};
+  const links: SceneNode[] = [];
 
   for (const { from, link, to } of diagram) {
     for (const node of [from, to]) {
@@ -111,9 +106,24 @@ export const drawDiagram = async ({
 
   links.forEach((link) => figma.currentPage.appendChild(link));
 
-  Object.values(nodeShapes).forEach((node) =>
-    figma.currentPage.appendChild(node)
-  );
+  Object.values(nodeShapes).forEach((node, i) => {
+    setRelaunchButton(node, "expand", {
+      description: "Expand into more granular steps",
+    });
+    setRelaunchButton(node, "collapse", {
+      description: "Collapse into less granular steps",
+    });
+
+    if (i === 0) {
+      node.setPluginData("isRoot", "true");
+    }
+
+    if (pluginData) {
+      node.setPluginData("syntax", pluginData);
+    }
+
+    figma.currentPage.appendChild(node);
+  });
 
   figma.notify("Diagram generated!");
 };

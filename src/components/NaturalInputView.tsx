@@ -34,6 +34,7 @@ export function NaturalInputView() {
     orientation,
     naturalInput,
     setNaturalInput,
+    diagramSyntax,
     model,
   } = pluginContext();
 
@@ -66,6 +67,7 @@ export function NaturalInputView() {
       emit<ExecutePlugin>("EXECUTE_PLUGIN", {
         diagram: result,
         positionsObject,
+        syntax: diagramSyntax,
       });
     },
     [naturalInput]
