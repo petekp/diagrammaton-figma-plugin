@@ -10,7 +10,8 @@ export const GPTModels = {
 const functions = [
   {
     name: "create_diagram",
-    description: "Creates a diagram using Mermaid syntax",
+    description:
+      "Creates a diagram using valid Mermaid syntax if provided valid input",
     parameters: {
       type: "object",
       properties: {
@@ -19,24 +20,37 @@ const functions = [
           items: {
             type: "string",
           },
-          description: "An array of diagram steps in Mermaid syntax",
+          description: "An array of diagram steps in valid Mermaid syntax",
         },
       },
     },
-    required: ["steps"],
+  },
+  {
+    name: "report_error",
+    description:
+      "Reports if there are any issues creating a diagram using valid Mermaid syntax, or if the user input is invalid",
+    type: "object",
+    parameters: {
+      type: "object",
+      properties: {
+        message: {
+          type: "string",
+          description: "A concise description of the issue",
+        },
+      },
+    },
   },
 ];
 
 const createMessages = (input: string) => [
   {
     role: "system",
-    content: `You are a helpful AI assistant with deep knowledge and expertise in software UI and UX design that helps translate natural language descriptions of UI and UX flows into Mermaid diagram syntax. As input, I will provide a high level description of a diagram. As output, provide the corresponding Mermaid syntax, keeping the following factors in mind:
+    content: `You are a helpful AI assistant with deep knowledge and expertise in software UI and UX design that helps translate natural language descriptions of UI and UX flows into valid Mermaid diagram syntax. As input, I will provide a high level description of a diagram. As output, provide the corresponding Mermaid syntax, keeping the following factors in mind:
 
-            - Make extra sure to check that the mermaid syntax you're providing is valid and free of erroneous characters that might not parse cleanly.
-            - If I don't provide enough detail or context to reliably provide Mermaid syntax, you should respond with a message that includes the token [MORE DETAIL NEEDED] to indicate that you need more information from me.
+            - Make extra sure to check that the mermaid syntax you're providing is valid and free of erroneous characters that might not parse cleanly. DO NOT return an empty diagram or a diagram that doesn't precisely match the user's input. Instead, use the report_errors function to report any issues.
             - Make sure to use concise (but grammatically correct) NodeLink labels to ensure the diagram is neat and tidy.
-            - When I provide a high level diagram description, infer additional details based on the most use cases related to the general flow being described.
-            - One of your primary goals is to surprise and exceed my expectations in robustly handling edge cases and conditions that I may forget, overlook, or not even consider!`,
+            - When I provide a high level diagram description, you must infer additional details based on the most use cases related to the general flow being described.
+            - CRITICAL: One of your primary goals is to surprise and exceed my expectations in robustly handling edge cases and conditions that I may forget, overlook, or not even consider!`,
   },
   {
     role: "user",
@@ -106,7 +120,6 @@ export async function gpt({
   model: keyof typeof GPTModels;
   maxLength?: number;
 }): Promise<string> {
-  console.log("using model: ", model);
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -116,9 +129,7 @@ export async function gpt({
     body: JSON.stringify({
       model: GPTModels[model] || GPTModels["gpt3"],
       functions,
-      function_call: {
-        name: "create_diagram",
-      },
+      function_call: "auto",
       temperature: 1,
       messages: createMessages(input),
       max_tokens: maxLength,
@@ -126,15 +137,28 @@ export async function gpt({
   });
 
   const { choices } = await response.json();
+
   if (choices && choices.length > 0) {
-    const { steps } = JSON.parse(choices[0].message.function_call.arguments);
+    const { steps, message } = JSON.parse(
+      choices[0].message.function_call.arguments
+    );
+
+    if (message) {
+      throw new Error(message);
+    }
+
+    if (!steps?.length) {
+      throw new Error("Unable to parse, please try again.");
+    }
+
     const combinedSteps = steps.reduce(
       (acc: string, curr: string[]) => acc.concat(`${curr}\n`),
       ``
     );
+
     const parsed = removeStringsFromArray(combinedSteps, ["```"]);
     return parsed;
   } else {
-    return "Unknown";
+    throw new Error("Unknown error 🫠");
   }
 }
