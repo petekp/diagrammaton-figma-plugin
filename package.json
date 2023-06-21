@@ -32,7 +32,7 @@
       "figjam"
     ],
     "id": "1245959998347196208",
-    "name": "Circuit",
+    "name": "Diagrammaton",
     "main": "src/main.ts",
     "ui": "src/ui.tsx",
     "relaunchButtons": {
