@@ -15,6 +15,9 @@ export type PersistedState = {
   orientation: string;
 };
 
+export type CreateTab = "Natural" | "Syntax";
+export type PrimaryTab = "Create" | "Settings";
+
 export interface GetPersistedState extends EventHandler {
   name: "GET_PERSISTED_STATE";
   handler: (state: PersistedState) => void;

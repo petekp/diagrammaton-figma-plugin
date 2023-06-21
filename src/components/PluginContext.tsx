@@ -9,6 +9,8 @@ import {
   SetLoading,
   SetSelectedNodesCount,
   PersistedState,
+  CreateTab,
+  PrimaryTab,
 } from "../types";
 import { GPTModels } from "../gpt";
 
@@ -34,6 +36,10 @@ export type StateContextType = {
   setModel: (model: keyof typeof GPTModels) => void;
   orientation: string;
   setOrientation: (orientation: string) => void;
+  currentPrimaryTab: PrimaryTab;
+  setCurrentPrimaryTab: (tab: PrimaryTab) => void;
+  currentCreateTab: CreateTab;
+  setCurrentCreateTab: (tab: CreateTab) => void;
 
   clearErrors: () => void;
 };
@@ -78,6 +84,10 @@ export const PluginContextProvider = ({
     defaultSettings.orientation
   );
   const [settingsLoaded, setPersistedStateLoaded] = useState<boolean>(false);
+  const [currentPrimaryTab, setCurrentPrimaryTab] =
+    useState<PrimaryTab>("Create");
+  const [currentCreateTab, setCurrentCreateTab] =
+    useState<CreateTab>("Natural");
 
   const { isFigJam } = defaultSettings;
 
@@ -157,6 +167,10 @@ export const PluginContextProvider = ({
         orientation,
         setOrientation,
         clearErrors,
+        currentPrimaryTab,
+        setCurrentPrimaryTab,
+        currentCreateTab,
+        setCurrentCreateTab,
       }}
     >
       {children}

@@ -2,28 +2,24 @@ import { Tabs, TabsOption, TabsProps } from "@create-figma-plugin/ui";
 import { h, JSX } from "preact";
 import { useState } from "preact/hooks";
 
-import { NaturalInputView } from "./NaturalInputView";
-import { SyntaxInputView } from "./SyntaxInputView";
 import { pluginContext } from "./PluginContext";
 import { SettingsView } from "./SettingsView";
+import { CreateView } from "./CreateView";
+import { PrimaryTab } from "../types";
 
 export function PrimaryTabs() {
-  const [currentTab, setCurrentTab] = useState<string>("Describe");
-  const { showRequired } = pluginContext();
+  const { showRequired, currentPrimaryTab, setCurrentPrimaryTab } =
+    pluginContext();
 
   function handleChange(event: JSX.TargetedEvent<HTMLInputElement>) {
-    const newValue = event.currentTarget.value;
-    setCurrentTab(newValue);
+    const newValue = event.currentTarget.value as PrimaryTab;
+    setCurrentPrimaryTab(newValue);
   }
 
   const tabOptions: Array<TabsOption> = [
     {
-      value: "Describe",
-      children: <NaturalInputView />,
-    },
-    {
-      value: "Syntax",
-      children: <SyntaxInputView />,
+      value: "Create",
+      children: <CreateView />,
     },
     {
       value: "Settings",
@@ -32,6 +28,10 @@ export function PrimaryTabs() {
   ];
 
   return (
-    <Tabs onChange={handleChange} options={tabOptions} value={currentTab} />
+    <Tabs
+      onChange={handleChange}
+      options={tabOptions}
+      value={currentPrimaryTab}
+    />
   );
 }
