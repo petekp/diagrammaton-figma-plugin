@@ -124,24 +124,39 @@ export const drawDiagram = async ({
   links.forEach((link) => figma.currentPage.appendChild(link));
 
   Object.values(nodeShapes).forEach((node, i) => {
-    setRelaunchButton(node, "expand", {
-      description: "Expand into more granular steps",
-    });
-    setRelaunchButton(node, "collapse", {
-      description: "Collapse into less granular steps",
-    });
-
-    if (i === 0) {
-      node.setPluginData("isRoot", "true");
-    }
-
-    if (pluginData) {
-      node.setPluginData("syntax", pluginData);
-      node.setPluginData("diagramId", diagramId);
-    }
+    setNodeProperties({ node, index: i, pluginData, diagramId });
 
     figma.currentPage.appendChild(node);
   });
 
   figma.notify("Diagram generated!");
+};
+
+const setNodeProperties = ({
+  node,
+  index,
+  diagramId,
+  pluginData,
+}: {
+  node: ShapeWithTextNode;
+  index: number;
+  diagramId: string;
+  pluginData?: string;
+}) => {
+  setRelaunchButton(node, "expand", {
+    description: "Expand into more granular steps",
+  });
+
+  setRelaunchButton(node, "collapse", {
+    description: "Collapse into less granular steps",
+  });
+
+  if (index === 0) {
+    node.setPluginData("isRoot", "true");
+  }
+
+  if (pluginData) {
+    node.setPluginData("syntax", pluginData);
+    node.setPluginData("diagramId", diagramId);
+  }
 };
