@@ -1,6 +1,8 @@
 import { setRelaunchButton } from "@create-figma-plugin/utilities";
+
 import { DEFAULT_NODE_HEIGHT, DEFAULT_NODE_WIDTH } from "./constants";
 import { DiagramElement, Position, Node, NodeLink } from "./types";
+import { generateTimeBasedUUID } from "./util";
 
 const NodeSize: { [k in Node["shape"]]: { width: number; height: number } } = {
   SQUARE: { width: 300, height: 300 },
@@ -17,10 +19,13 @@ const NodeSize: { [k in Node["shape"]]: { width: number; height: number } } = {
   ENG_FOLDER: { width: 180, height: 85 },
 };
 
-const createNode = async (
-  node: Node,
-  position: Position
-): Promise<ShapeWithTextNode> => {
+const createNode = async ({
+  node,
+  position,
+}: {
+  node: Node;
+  position: Position;
+}): Promise<ShapeWithTextNode> => {
   const figmaNode = figma.createShapeWithText();
   figmaNode.shapeType = node.shape;
   figmaNode.fills = [
@@ -40,11 +45,17 @@ const createNode = async (
   return figmaNode;
 };
 
-const createLink = async (
-  from: SceneNode,
-  to: SceneNode,
-  link: NodeLink
-): Promise<ConnectorNode> => {
+const createLink = async ({
+  from,
+  to,
+  link,
+  diagramId,
+}: {
+  from: SceneNode;
+  to: SceneNode;
+  link: NodeLink;
+  diagramId: string;
+}): Promise<ConnectorNode> => {
   const connector = figma.createConnector();
   const fromPosition = from.relativeTransform[0][2];
   const toPosition = to.relativeTransform[0][2];
@@ -81,6 +92,7 @@ export const drawDiagram = async ({
   positionsObject: { [key: string]: Position };
   pluginData?: string;
 }): Promise<void> => {
+  const diagramId = generateTimeBasedUUID();
   const positions = new Map(Object.entries(positionsObject));
   const nodeShapes: { [id: string]: ShapeWithTextNode } = {};
   const links: SceneNode[] = [];
@@ -93,13 +105,18 @@ export const drawDiagram = async ({
           console.error(`No position provided for node: ${node.id}`);
           return;
         }
-        nodeShapes[node.id] = await createNode(node, position);
+        nodeShapes[node.id] = await createNode({ node, position });
       }
     }
 
     if (nodeShapes[from.id] && nodeShapes[to.id]) {
       links.push(
-        await createLink(nodeShapes[from.id], nodeShapes[to.id], link)
+        await createLink({
+          from: nodeShapes[from.id],
+          to: nodeShapes[to.id],
+          link,
+          diagramId,
+        })
       );
     }
   }
@@ -120,6 +137,7 @@ export const drawDiagram = async ({
 
     if (pluginData) {
       node.setPluginData("syntax", pluginData);
+      node.setPluginData("diagramId", diagramId);
     }
 
     figma.currentPage.appendChild(node);

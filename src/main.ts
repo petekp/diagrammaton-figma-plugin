@@ -53,15 +53,7 @@ export default function () {
 
     if (firstSelectedNode) {
       console.log(firstSelectedNode.getPluginData("syntax"));
-    }
-
-    if (firstSelectedNode) {
-      const diagramRoot = findDiagramRoot(firstSelectedNode);
-      if (diagramRoot) {
-        const diagramNodes = getDiagramNodes(diagramRoot);
-        const mermaidSyntax = generateMermaidSyntax(diagramNodes);
-        console.log(mermaidSyntax);
-      }
+      console.log(firstSelectedNode.getPluginData("diagramId"));
     }
 
     figma.currentPage.selection.forEach((node) => {
@@ -156,18 +148,4 @@ export default function () {
     },
     { defaultSettings }
   );
-}
-
-
-function findDiagramRoot(node: SceneNode): FrameNode | null {
-  // Traverse up the node hierarchy to find the root of the diagram (e.g., a FrameNode with a specific plugin data)
-  // Return null if the node is not part of a diagram
-}
-
-function getDiagramNodes(root: FrameNode): SceneNode[] {
-  // Collect all nodes in the diagram starting from the root
-}
-
-function generateMermaidSyntax(nodes: SceneNode[]): string {
-  // Traverse the nodes and generate the corresponding Mermaid syntax
 }
