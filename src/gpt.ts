@@ -1,6 +1,4 @@
 import { removeStringsFromArray } from "./util/index";
-const GPT3 = "gpt-3.5-turbo-0613";
-// const GPT4 = "gpt-4-0613";
 
 export const GPTModels = {
   gpt3: "gpt-3.5-turbo-0613",
@@ -9,9 +7,17 @@ export const GPTModels = {
 
 const functions = [
   {
-    name: "create_diagram",
-    description:
-      "Creates a diagram using valid Mermaid syntax if provided valid input",
+    name: "print_diagram",
+    description: `Prints valid Mermaid syntax that adheres to the following principles without fail:
+
+    - MUST BE VALID MERMAID SYNTAX ONLY that resembles the example responses provided
+    - Always OMIT the "graph {TD|LR|etc}" instruction, if one exists since we aren't able to parse these yet
+    - Every step in the diagram MUST have a user-facing label
+    - Free of erroneous characters that might not parse cleanly
+    - Make sure to use concise (but grammatically correct) NodeLink labels to ensure the diagram is neat and tidy
+    - When I provide a high level diagram description, you must infer additional details based on the most use cases related to the general flow being described
+    - CRITICAL: One of your primary goals is to surprise and vastly exceed the user's expectations in robustly thinking through and including edge cases and conditions that the user may forget, overlook, or have not even considered!
+    `,
     parameters: {
       type: "object",
       properties: {
@@ -20,22 +26,23 @@ const functions = [
           items: {
             type: "string",
           },
-          description: "An array of diagram steps in valid Mermaid syntax",
+          description: `An array of diagram steps in valid Mermaid syntax`,
         },
       },
     },
   },
   {
-    name: "report_error",
+    name: "print_error",
     description:
-      "Reports if there are any issues creating a diagram using valid Mermaid syntax, or if the user input is invalid",
+      "Prints a user-readable error if there are any issues creating a diagram using valid Mermaid syntax, or if the user input is invalid",
     type: "object",
     parameters: {
       type: "object",
       properties: {
         message: {
           type: "string",
-          description: "A concise description of the issue",
+          description:
+            "A concise description of the issue that will be displayed to the user",
         },
       },
     },
@@ -45,67 +52,58 @@ const functions = [
 const createMessages = (input: string) => [
   {
     role: "system",
-    content: `You are a helpful AI assistant with deep knowledge and expertise in software UI and UX design that helps translate natural language descriptions of UI and UX flows into valid Mermaid diagram syntax. As input, I will provide a high level description of a diagram. As output, provide the corresponding Mermaid syntax, keeping the following factors in mind:
+    content: `You are a helpful AI assistant with deep knowledge and expertise in software UI and UX design that helps translate natural language descriptions of UI and UX flows into valid Mermaid diagram syntax. Call print_diagram if you are able to successfully parse the user's natural language description into valid Mermaid syntax, otherwise call print_error.
 
-            - Make extra sure to check that the mermaid syntax you're providing is valid and free of erroneous characters that might not parse cleanly. DO NOT return an empty diagram or a diagram that doesn't precisely match the user's input. Instead, use the report_errors function to report any issues.
-            - Make sure to use concise (but grammatically correct) NodeLink labels to ensure the diagram is neat and tidy.
-            - When I provide a high level diagram description, you must infer additional details based on the most use cases related to the general flow being described.
-            - CRITICAL: One of your primary goals is to surprise and exceed my expectations in robustly handling edge cases and conditions that I may forget, overlook, or not even consider!`,
+    [Example 1]
+
+    User input: “a user flow in a fitness app where the user chooses between a workout or a meditation session.”
+
+    print_diagram response:
+
+    \`\`\`
+    B --> C{First Time User?}
+    C -- Yes --> D[Show Onboarding]
+    C -- No --> E[Choose Activity]
+    D --> E
+    E --> F{Workout?}
+    F -- Yes --> G[Select Workout Type]
+    F -- No --> H[Select Meditation Type]
+    G --> I{Workout Type Exists?}
+    H --> J{Meditation Type Exists?}
+    I -- Yes --> K[\Start Workout/]
+    I -- No --> L[Show Error: "Workout Type Not Found"]
+    J -- Yes --> M[(Start Meditation)]
+    J -- No --> N[Show Error: "Meditation Type Not Found"]
+    K --> O[/End Workout/]
+    M --> P[\End Meditation\]
+    \`\`\`
+
+    [Example 2]
+
+    User input: “A sign up flow”
+
+    print_diagram response:
+
+    \`\`\`
+    Start((Start)) --> EnterDetails(Enter User Details)
+    EnterDetails --> ValidateDetails[Validate Details]
+    ValidateDetails -- Valid --> SendVerificationEmail[\Send Verification Email/]
+    ValidateDetails -- Invalid --> ErrorDetails[/Show Error Message\]
+    ErrorDetails --> EnterDetails
+    SendVerificationEmail --> VerifyEmail[(Verify Email)]
+    VerifyEmail -- Not Verified --> SendVerificationEmail
+    VerifyEmail -- Verified --> AcceptTOS[Accept Terms of Service]
+    AcceptTOS -- Not Accepted --> End[End: User Exits]
+    AcceptTOS -- Accepted --> ConfirmAccount[Confirm Account]
+    ConfirmAccount -- Not Confirmed --> SendConfirmationEmail[Send Confirmation Email]
+    SendConfirmationEmail --> ConfirmAccount
+    ConfirmAccount -- Confirmed --> End[End: Signup Complete]
+    \`\`\`
+    `,
   },
   {
     role: "user",
-    content: `
-        Before we begin, here are two examples of the input and output we expect:
-
-[Example 1]
-
-Description: “a user flow in a fitness app where the user chooses between a workout or a meditation session.”
-
-Mermaid syntax:
-
-\`\`\`
-B --> C{First Time User?}
-C -- Yes --> D[Show Onboarding]
-C -- No --> E[Choose Activity]
-D --> E
-E --> F{Workout?}
-F -- Yes --> G[Select Workout Type]
-F -- No --> H[Select Meditation Type]
-G --> I{Workout Type Exists?}
-H --> J{Meditation Type Exists?}
-I -- Yes --> K[\Start Workout/]
-I -- No --> L[Show Error: "Workout Type Not Found"]
-J -- Yes --> M[(Start Meditation)]
-J -- No --> N[Show Error: "Meditation Type Not Found"]
-K --> O[/End Workout/]
-M --> P[\End Meditation\]
-\`\`\`
-
-[Example 2]
-
-Description: “A sign up flow”
-
-Mermaid syntax:
-
-\`\`\`
-Start((Start)) --> EnterDetails(Enter User Details)
-EnterDetails --> ValidateDetails[Validate Details]
-ValidateDetails -- Valid --> SendVerificationEmail[\Send Verification Email/]
-ValidateDetails -- Invalid --> ErrorDetails[/Show Error Message\]
-ErrorDetails --> EnterDetails
-SendVerificationEmail --> VerifyEmail[(Verify Email)]
-VerifyEmail -- Not Verified --> SendVerificationEmail
-VerifyEmail -- Verified --> AcceptTOS[Accept Terms of Service]
-AcceptTOS -- Not Accepted --> End[End: User Exits]
-AcceptTOS -- Accepted --> ConfirmAccount[Confirm Account]
-ConfirmAccount -- Not Confirmed --> SendConfirmationEmail[Send Confirmation Email]
-SendConfirmationEmail --> ConfirmAccount
-ConfirmAccount -- Confirmed --> End[End: Signup Complete]
-\`\`\`
-
-Input: ${input}
-
-Output:`,
+    content: input,
   },
 ];
 
@@ -139,6 +137,7 @@ export async function gpt({
   const { choices } = await response.json();
 
   if (choices && choices.length > 0) {
+    console.log(choices[0].message.function_call);
     const { steps, message } = JSON.parse(
       choices[0].message.function_call.arguments
     );
