@@ -4,11 +4,9 @@ import { useCallback } from "preact/hooks";
 import {
   Banner,
   Button,
-  Columns,
   Container,
   IconWarning32,
   Stack,
-  TextboxMultiline,
   VerticalSpace,
 } from "@create-figma-plugin/ui";
 import { emit } from "@create-figma-plugin/utilities";
@@ -36,8 +34,10 @@ export function SyntaxInputView() {
   const handleExecutePlugin = useCallback(
     async function () {
       clearErrors();
+      console.log("create syntax diagram");
       let result = parser.parse(diagramSyntax);
-      const positionsObject = await createDiagram(result);
+      console.log({ result });
+      const positionsObject = await createDiagram({ parsedOutput: result });
 
       emit<ExecutePlugin>("EXECUTE_PLUGIN", {
         diagram: result,

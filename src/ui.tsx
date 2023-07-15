@@ -14,7 +14,6 @@ function Plugin({ defaultSettings }: { defaultSettings: PersistedState }) {
   const [rendered, setRendered] = useState(false);
   useEffect(() => {
     if (!rendered) {
-      console.log("first render");
       emit<SetUILoaded>("SET_UI_LOADED");
       setRendered(true);
     }
@@ -22,7 +21,7 @@ function Plugin({ defaultSettings }: { defaultSettings: PersistedState }) {
 
   return (
     <PluginContextProvider defaultSettings={defaultSettings}>
-      <div className={styles.outerContainer}>
+      <div className={styles.outerContainer} style={{ position: "fixed" }}>
         <PrimaryTabs />
       </div>
     </PluginContextProvider>

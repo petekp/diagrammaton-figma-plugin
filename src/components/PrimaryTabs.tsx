@@ -1,6 +1,5 @@
 import { Tabs, TabsOption, TabsProps } from "@create-figma-plugin/ui";
 import { h, JSX } from "preact";
-import { useState } from "preact/hooks";
 
 import { pluginContext } from "./PluginContext";
 import { SettingsView } from "./SettingsView";

@@ -4,21 +4,6 @@ import { DEFAULT_NODE_HEIGHT, DEFAULT_NODE_WIDTH } from "./constants";
 import { DiagramElement, Position, Node, NodeLink } from "./types";
 import { generateTimeBasedUUID } from "./util";
 
-const NodeSize: { [k in Node["shape"]]: { width: number; height: number } } = {
-  SQUARE: { width: 300, height: 300 },
-  ELLIPSE: { width: 180, height: 85 },
-  ROUNDED_RECTANGLE: { width: 180, height: 85 },
-  DIAMOND: { width: 180, height: 85 },
-  TRIANGLE_UP: { width: 180, height: 85 },
-  TRIANGLE_DOWN: { width: 180, height: 85 },
-  PARALLELOGRAM_LEFT: { width: 180, height: 85 },
-  PARALLELOGRAM_RIGHT: { width: 180, height: 85 },
-  ENG_DATABASE: { width: 200, height: 150 },
-  ENG_QUEUE: { width: 180, height: 85 },
-  ENG_FILE: { width: 180, height: 85 },
-  ENG_FOLDER: { width: 180, height: 85 },
-};
-
 const createNode = async ({
   node,
   position,
@@ -143,13 +128,13 @@ const setNodeProperties = ({
   diagramId: string;
   pluginData?: string;
 }) => {
-  setRelaunchButton(node, "expand", {
-    description: "Expand into more granular steps",
-  });
+  // setRelaunchButton(node, "expand", {
+  //   description: "Expand into more granular steps",
+  // });
 
-  setRelaunchButton(node, "collapse", {
-    description: "Collapse into less granular steps",
-  });
+  // setRelaunchButton(node, "collapse", {
+  //   description: "Collapse into less granular steps",
+  // });
 
   if (index === 0) {
     node.setPluginData("isRoot", "true");

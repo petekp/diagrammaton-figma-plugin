@@ -5,7 +5,7 @@ import { DEFAULT_NODE_HEIGHT, DEFAULT_NODE_WIDTH } from "./constants";
 
 const layoutDiagram = ({
   diagram,
-  orientation = "LR",
+  orientation,
 }: {
   diagram: DiagramElement[];
   orientation: string;
@@ -14,7 +14,10 @@ const layoutDiagram = ({
     .setGraph({ rankdir: orientation, nodesep: 200, ranksep: 200 })
     .setDefaultEdgeLabel(() => ({}));
 
+  console.log(diagram);
+
   diagram.forEach(({ from, to }) => {
+    console.log(from, to);
     g.setNode(from.id, {
       label: from.label,
       width: DEFAULT_NODE_WIDTH,
@@ -33,10 +36,10 @@ const layoutDiagram = ({
 
 export const createDiagram = async ({
   parsedOutput,
-  orientation,
+  orientation = "LR",
 }: {
   parsedOutput: DiagramElement[];
-  orientation: string;
+  orientation?: string;
 }): Promise<{ [key: string]: Position }> => {
   const positionsObject: { [key: string]: Position } = {};
 

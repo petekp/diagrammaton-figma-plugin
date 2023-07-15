@@ -11,16 +11,15 @@ import {
   VerticalSpace,
 } from "@create-figma-plugin/ui";
 import { emit } from "@create-figma-plugin/utilities";
-import { ExecutePlugin } from "../types";
-import { createDiagram } from "../createDiagramClient";
-
-import styles from "./styles.css";
 
 // @ts-ignore
 import parser from "../lib/grammar.js";
 import { gpt } from "../gpt";
 import { AutoSizeTextInput } from "./AutoSizeTextInput";
 import { TEXT_AREA_HEIGHT } from "../constants";
+import { ExecutePlugin } from "../types";
+import { createDiagram } from "../createDiagramClient";
+import styles from "./styles.css";
 
 export function NaturalInputView() {
   const {
@@ -35,6 +34,7 @@ export function NaturalInputView() {
     naturalInput,
     setNaturalInput,
     diagramSyntax,
+    numNodesSelected,
     model,
   } = pluginContext();
 
@@ -42,11 +42,11 @@ export function NaturalInputView() {
     setError("");
     setIsLoading(true);
     try {
-      const steps = await gpt({ apiKey, model, input: naturalInput });
+      const gptOutput = await gpt({ apiKey, model, input: naturalInput });
 
-      setDiagramSyntax(steps);
+      setDiagramSyntax(gptOutput);
 
-      await handleExecutePlugin(steps);
+      await handleExecutePlugin(gptOutput);
     } catch (err) {
       console.log({ err });
       // @ts-ignore-next
@@ -58,6 +58,7 @@ export function NaturalInputView() {
 
   const handleExecutePlugin = useCallback(
     async function (input: string) {
+      console.log("create natural diagram");
       let result = parser.parse(input);
       const positionsObject = await createDiagram({
         parsedOutput: result,
@@ -106,10 +107,20 @@ export function NaturalInputView() {
             <span className={styles.warningBanner}>{error}</span>
           </Banner>
         )}
-
-        <Button loading={isLoading} fullWidth onClick={handleGetCompletions}>
-          Generate
-        </Button>
+        {numNodesSelected > 0 ? (
+          <Columns space="small">
+            <Button fullWidth onClick={() => {}}>
+              Expand
+            </Button>
+            <Button fullWidth onClick={() => {}}>
+              Remix
+            </Button>
+          </Columns>
+        ) : (
+          <Button loading={isLoading} fullWidth onClick={handleGetCompletions}>
+            Generate
+          </Button>
+        )}
       </Stack>
     </Container>
   );

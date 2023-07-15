@@ -85,13 +85,14 @@ export function SettingsView({ showRequired }: { showRequired: boolean }) {
               value: "LR",
             },
             {
-              children: <IconArrowLeft16 />,
-              value: "RL",
-            },
-            {
               children: <IconArrowDown16 />,
               value: "TB",
             },
+            {
+              children: <IconArrowLeft16 />,
+              value: "RL",
+            },
+
             {
               children: <IconArrowUp16 />,
               value: "BT",

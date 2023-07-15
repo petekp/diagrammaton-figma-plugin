@@ -97,7 +97,6 @@ export const PluginContextProvider = ({
   };
 
   useEffect(() => {
-    console.log("context rendered");
     if (settingsLoaded) {
       emit<SavePersistedState>("SAVE_PERSISTED_STATE", {
         ...defaultSettings,

@@ -8,7 +8,7 @@ export const AutoSizeTextInput = (
   const [fontSize, setFontSize] = useState(20);
 
   useEffect(() => {
-    const newFontSize = Math.max(14, 20 - props.value.length / 40);
+    const newFontSize = Math.max(14, 20 - props.value.length / 80);
     setFontSize(newFontSize);
   }, [props.value]);
 
