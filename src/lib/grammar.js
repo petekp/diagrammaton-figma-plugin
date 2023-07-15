@@ -262,7 +262,7 @@ function peg$parse(input, options) {
   var peg$f24 = function(label) { return { label, shape: 'SQUARE' }; };
   var peg$f25 = function(label) { return { label, shape: 'ENG_DATABASE' }; };
   var peg$f26 = function(label) { return { label, shape: 'ENG_DATABASE' }; };
-  var peg$f27 = function(id, shape) { return { id: id.join(''), ...shape, shape: shape?.shape || 'SQUARE' }; };
+  var peg$f27 = function(id, shape) { return { id: id.join(''), label: shape?.label || id.join(''), shape: shape?.shape || 'SQUARE' }; };
   var peg$f28 = function(label) { return label.join("").trim() };
   var peg$f29 = function(head, tail) {
       const elements = tail.map(([_, link, __, node]) => ({ from: head, link, to: node }));

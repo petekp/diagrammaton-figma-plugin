@@ -41,7 +41,7 @@ NodeShapeChars
   = [()[\]/\\]+
 
 Node
-  = id:NodeID shape:AnyNodeShape? { return { id: id.join(''), ...shape, shape: shape?.shape || 'SQUARE' }; }
+    = id:NodeID shape:AnyNodeShape? { return { id: id.join(''), label: shape?.label || id.join(''), shape: shape?.shape || 'SQUARE' }; }
 
 NodeLabel
   = label:[^(){}[\]]+ { return label.join("").trim() };
