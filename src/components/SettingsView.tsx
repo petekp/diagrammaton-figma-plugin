@@ -12,19 +12,20 @@ import {
   IconArrowLeft16,
   IconArrowRight16,
   Muted,
+  Link,
   Bold,
   Divider,
   Columns,
 } from "@create-figma-plugin/ui";
 import { pluginContext } from "./PluginContext";
-import { GPTModels } from "../gpt";
+import { GPTModels } from "../fetchDiagramData";
 
 export function SettingsView({ showRequired }: { showRequired: boolean }) {
   const {
     model,
     setModel,
-    apiKey,
-    setAPIKey,
+    licenseKey,
+    setLicenseKey,
     customPrompt,
     setCustomPrompt,
     clearErrors,
@@ -32,11 +33,11 @@ export function SettingsView({ showRequired }: { showRequired: boolean }) {
     setOrientation,
   } = pluginContext();
 
-  const apiKeyInput = (
+  const licenseKeyInput = (
     <Columns space="small">
       <Stack space="small">
         <Text>
-          <Bold>OpenAI API key</Bold>{" "}
+          <Bold>License key</Bold>{" "}
           {showRequired && (
             <span style={{ marginLeft: 4, fontWeight: 600, color: "#E95324" }}>
               ← Required
@@ -44,7 +45,11 @@ export function SettingsView({ showRequired }: { showRequired: boolean }) {
           )}
         </Text>
         <Text>
-          <Muted>Encrypted and persisted locally</Muted>
+          <Muted>
+            <Link target="_window" href="https://figma-plugins-pete.vercel.app">
+              Get a license key
+            </Link>
+          </Muted>
         </Text>
       </Stack>
 
@@ -52,9 +57,9 @@ export function SettingsView({ showRequired }: { showRequired: boolean }) {
         spellCheck={false}
         variant="border"
         password={true}
-        value={apiKey}
+        value={licenseKey}
         onValueInput={(val: string) => {
-          setAPIKey(val);
+          setLicenseKey(val);
         }}
         onFocusCapture={() => {
           clearErrors();
@@ -154,7 +159,7 @@ export function SettingsView({ showRequired }: { showRequired: boolean }) {
     <Container space="small">
       <VerticalSpace space="medium" />
       <Stack space="large">
-        {apiKeyInput}
+        {licenseKeyInput}
         <Divider />
         {/* {customPromptInput} */}
         {orientationSelection}

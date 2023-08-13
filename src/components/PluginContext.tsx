@@ -12,7 +12,7 @@ import {
   CreateTab,
   PrimaryTab,
 } from "../types";
-import { GPTModels } from "../gpt";
+import { GPTModels } from "../fetchDiagramData";
 
 export type StateContextType = {
   isFigJam: boolean;
@@ -28,8 +28,8 @@ export type StateContextType = {
   setDiagramSyntax: (syntax: string) => void;
   naturalInput: string;
   setNaturalInput: (input: string) => void;
-  apiKey: string;
-  setAPIKey: (key: string) => void;
+  licenseKey: string;
+  setLicenseKey: (key: string) => void;
   customPrompt: string;
   setCustomPrompt: (prompt: string) => void;
   model: keyof typeof GPTModels;
@@ -73,7 +73,9 @@ export const PluginContextProvider = ({
   const [naturalInput, setNaturalInput] = useState<string>(
     defaultSettings.naturalInput
   );
-  const [apiKey, setAPIKey] = useState<string>(defaultSettings.apiKey);
+  const [licenseKey, setLicenseKey] = useState<string>(
+    defaultSettings.licenseKey
+  );
   const [customPrompt, setCustomPrompt] = useState<string>(
     defaultSettings.customPrompt
   );
@@ -100,7 +102,7 @@ export const PluginContextProvider = ({
     if (settingsLoaded) {
       emit<SavePersistedState>("SAVE_PERSISTED_STATE", {
         ...defaultSettings,
-        apiKey,
+        licenseKey,
         model,
         customPrompt,
         naturalInput,
@@ -109,7 +111,7 @@ export const PluginContextProvider = ({
       });
     }
   }, [
-    apiKey,
+    licenseKey,
     model,
     customPrompt,
     defaultSettings,
@@ -128,7 +130,7 @@ export const PluginContextProvider = ({
   );
 
   once<GetPersistedState>("GET_PERSISTED_STATE", (state: PersistedState) => {
-    setAPIKey(state.apiKey);
+    setLicenseKey(state.licenseKey);
     setModel(state.model);
     setCustomPrompt(state.customPrompt);
     setPersistedStateLoaded(true);
@@ -157,8 +159,8 @@ export const PluginContextProvider = ({
         setDiagramSyntax,
         naturalInput,
         setNaturalInput,
-        apiKey,
-        setAPIKey,
+        licenseKey,
+        setLicenseKey,
         customPrompt,
         setCustomPrompt,
         model,

@@ -12,12 +12,10 @@ import {
 } from "@create-figma-plugin/ui";
 import { emit } from "@create-figma-plugin/utilities";
 
-// @ts-ignore
-import parser from "../lib/grammar.js";
-import { gpt } from "../gpt";
+import { fetchDiagramData } from "../fetchDiagramData";
 import { AutoSizeTextInput } from "./AutoSizeTextInput";
 import { TEXT_AREA_HEIGHT } from "../constants";
-import { ExecutePlugin } from "../types";
+import { ExecutePlugin, DiagramElement } from "../types";
 import { createDiagram } from "../createDiagramClient";
 import styles from "./styles.css";
 
@@ -29,7 +27,7 @@ export function NaturalInputView() {
     setDiagramSyntax,
     isLoading,
     setIsLoading,
-    apiKey,
+    licenseKey,
     orientation,
     naturalInput,
     setNaturalInput,
@@ -42,9 +40,15 @@ export function NaturalInputView() {
     setError("");
     setIsLoading(true);
     try {
-      const gptOutput = await gpt({ apiKey, model, input: naturalInput });
+      const gptOutput = await fetchDiagramData({
+        licenseKey,
+        model,
+        input: naturalInput,
+      });
 
-      setDiagramSyntax(gptOutput);
+      console.log({ gptOutput });
+
+      // setDiagramSyntax(gptOutput);
 
       await handleExecutePlugin(gptOutput);
     } catch (err) {
@@ -54,19 +58,18 @@ export function NaturalInputView() {
     } finally {
       setIsLoading(false);
     }
-  }, [naturalInput, apiKey]);
+  }, [naturalInput, licenseKey]);
 
   const handleExecutePlugin = useCallback(
-    async function (input: string) {
+    async function (input: DiagramElement[]) {
       console.log("create natural diagram");
-      let result = parser.parse(input);
       const positionsObject = await createDiagram({
-        parsedOutput: result,
+        parsedOutput: input,
         orientation,
       });
 
       emit<ExecutePlugin>("EXECUTE_PLUGIN", {
-        diagram: result,
+        diagram: input,
         positionsObject,
         syntax: diagramSyntax,
       });

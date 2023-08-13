@@ -2,29 +2,19 @@
   "dependencies": {
     "@create-figma-plugin/ui": "^2.4.0",
     "@create-figma-plugin/utilities": "^2.4.0",
-    "crypto-js": "^4.1.1",
     "dagre": "^0.8.5",
-    "lodash": "^4.17.21",
-    "peggy": "^3.0.2",
     "preact": ">=10"
   },
   "devDependencies": {
     "@create-figma-plugin/build": "^2.4.0",
     "@create-figma-plugin/tsconfig": "^2.4.0",
     "@figma/plugin-typings": "1.57.1",
-    "@types/crypto-js": "^4.1.1",
     "@types/dagre": "^0.7.48",
-    "@types/lodash": "^4.14.195",
-    "nodemon": "^2.0.22",
-    "patch-package": "^7.0.0",
-    "postinstall-postinstall": "^2.1.0",
     "typescript": ">=4"
   },
   "scripts": {
     "build": "build-figma-plugin --typecheck --minify",
-    "watch": "build-figma-plugin --typecheck --watch",
-    "postinstall": "patch-package",
-    "watch:grammar": "nodemon --watch ./src/lib/grammar.peggy --exec 'npx peggy -o ./src/lib/grammar.js ./src/lib/grammar.peggy'"
+    "watch": "build-figma-plugin --typecheck --watch"
   },
   "figma-plugin": {
     "editorType": [
@@ -35,19 +25,11 @@
     "name": "Diagrammaton",
     "main": "src/main.ts",
     "ui": "src/ui.tsx",
-    "relaunchButtons": {
-      "expand": {
-        "main": "src/main.ts",
-        "command": "expand",
-        "name": "Expand",
-        "multipleSelection": true
-      },
-      "collapse": {
-        "main": "src/main.ts",
-        "command": "collapse",
-        "name": "Collapse",
-        "multipleSelection": true
-      }
+    "networkAccess": {
+      "allowedDomains": [
+        "figma-plugins-pete.vercel.app"
+      ],
+      "reasoning": "Endpoints for generating diagram syntax"
     }
   }
 }
