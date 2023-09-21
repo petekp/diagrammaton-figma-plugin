@@ -46,8 +46,8 @@ export function SettingsView({ showRequired }: { showRequired: boolean }) {
         </Text>
         <Text>
           <Muted>
-            <Link target="_window" href="https://figma-plugins-pete.vercel.app">
-              Get a license key
+            <Link target="_window" href="https://www.diagrammaton.com">
+              View your account
             </Link>
           </Muted>
         </Text>

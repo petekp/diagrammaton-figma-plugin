@@ -21,7 +21,7 @@ function Plugin({ defaultSettings }: { defaultSettings: PersistedState }) {
 
   return (
     <PluginContextProvider defaultSettings={defaultSettings}>
-      <div className={styles.outerContainer} style={{ position: "fixed" }}>
+      <div className={styles.outerContainer}>
         <PrimaryTabs />
       </div>
     </PluginContextProvider>

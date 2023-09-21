@@ -2,19 +2,16 @@ import { h } from "preact";
 import { pluginContext } from "./PluginContext";
 import { useCallback } from "preact/hooks";
 import {
-  Banner,
   Button,
-  Columns,
   Container,
   IconWarning32,
-  Stack,
+  IconCross32,
   VerticalSpace,
 } from "@create-figma-plugin/ui";
 import { emit } from "@create-figma-plugin/utilities";
 
 import { fetchDiagramData } from "../fetchDiagramData";
 import { AutoSizeTextInput } from "./AutoSizeTextInput";
-import { TEXT_AREA_HEIGHT } from "../constants";
 import { ExecutePlugin, DiagramElement } from "../types";
 import { createDiagram } from "../createDiagramClient";
 import styles from "./styles.css";
@@ -24,7 +21,6 @@ export function NaturalInputView() {
     error,
     setError,
     setShowRequired,
-    setDiagramSyntax,
     isLoading,
     setIsLoading,
     licenseKey,
@@ -48,9 +44,14 @@ export function NaturalInputView() {
 
       console.log({ gptOutput });
 
-      // setDiagramSyntax(gptOutput);
+      const { type } = gptOutput;
 
-      await handleExecutePlugin(gptOutput);
+      if (type === "message") {
+        setError(gptOutput.data);
+        return;
+      }
+
+      await handleExecutePlugin(gptOutput.data);
     } catch (err) {
       console.log({ err });
       // @ts-ignore-next
@@ -62,7 +63,6 @@ export function NaturalInputView() {
 
   const handleExecutePlugin = useCallback(
     async function (input: DiagramElement[]) {
-      console.log("create natural diagram");
       const positionsObject = await createDiagram({
         parsedOutput: input,
         orientation,
@@ -78,14 +78,19 @@ export function NaturalInputView() {
   );
 
   return (
-    <Container space="small">
+    <Container
+      space="small"
+      style={{ display: "flex", flexDirection: "column", flex: 1 }}
+    >
       <VerticalSpace space="small" />
-      <Stack space="small">
+      <div
+        style={{ display: "flex", flexDirection: "column", gap: 10, flex: 1 }}
+      >
         <AutoSizeTextInput
           disabled={isLoading}
           style={{
             lineHeight: 1.3,
-            height: TEXT_AREA_HEIGHT,
+            flex: 1,
           }}
           placeholder="Describe a diagram"
           grow={false}
@@ -102,29 +107,17 @@ export function NaturalInputView() {
         />
 
         {error && (
-          <Banner
-            className={styles.warningBanner}
-            icon={<IconWarning32 />}
-            variant="warning"
-          >
-            <span className={styles.warningBanner}>{error}</span>
-          </Banner>
+          <div className={styles.warningBanner}>
+            <IconWarning32 />
+            <div className={styles.warningText}>{error}</div>
+            <IconCross32 onClick={() => setError("")} />
+          </div>
         )}
-        {numNodesSelected > 0 ? (
-          <Columns space="small">
-            <Button fullWidth onClick={() => {}}>
-              Expand
-            </Button>
-            <Button fullWidth onClick={() => {}}>
-              Remix
-            </Button>
-          </Columns>
-        ) : (
-          <Button loading={isLoading} fullWidth onClick={handleGetCompletions}>
-            Generate
-          </Button>
-        )}
-      </Stack>
+        <Button loading={isLoading} fullWidth onClick={handleGetCompletions}>
+          Generate
+        </Button>
+      </div>
+      <VerticalSpace space="small" />
     </Container>
   );
 }

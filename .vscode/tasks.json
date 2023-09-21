@@ -3,16 +3,6 @@
     "tasks": [
         {
             "type": "npm",
-            "script": "watch:grammar",
-            "problemMatcher": [],
-            "label": "npm: watch:grammar",
-            "isBackground": true,
-            "runOptions": {
-                "runOn": "folderOpen"
-            }
-        },
-        {
-            "type": "npm",
             "script": "watch",
             "problemMatcher": [],
             "label": "npm: watch",

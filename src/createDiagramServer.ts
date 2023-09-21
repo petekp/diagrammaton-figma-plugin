@@ -1,7 +1,13 @@
 import { setRelaunchButton } from "@create-figma-plugin/utilities";
 
 import { DEFAULT_NODE_HEIGHT, DEFAULT_NODE_WIDTH } from "./constants";
-import { DiagramElement, Position, Node, NodeLink } from "./types";
+import {
+  DiagramElement,
+  Position,
+  Node,
+  NodeLink,
+  MagnetDirection,
+} from "./types";
 import { generateTimeBasedUUID } from "./util";
 
 const createNode = async ({
@@ -35,29 +41,23 @@ const createLink = async ({
   to,
   link,
   diagramId,
+  fromMagnet,
+  toMagnet,
+  isBidirectional,
 }: {
   from: SceneNode;
   to: SceneNode;
   link: NodeLink;
   diagramId: string;
+  fromMagnet: MagnetDirection;
+  toMagnet: MagnetDirection;
+  isBidirectional?: boolean;
 }): Promise<ConnectorNode> => {
   const connector = figma.createConnector();
-  const fromPosition = from.relativeTransform[0][2];
-  const toPosition = to.relativeTransform[0][2];
-  const fromMagnet =
-    fromPosition === toPosition
-      ? "BOTTOM"
-      : fromPosition < toPosition
-      ? "RIGHT"
-      : "LEFT";
-  const toMagnet =
-    fromPosition === toPosition
-      ? "TOP"
-      : fromPosition < toPosition
-      ? "LEFT"
-      : "RIGHT";
+
   connector.connectorStart = { endpointNodeId: from.id, magnet: fromMagnet };
   connector.connectorEnd = { endpointNodeId: to.id, magnet: toMagnet };
+
   if (link.label) {
     await figma.loadFontAsync({ family: "Inter", style: "Medium" });
     connector.text.characters = link.label || "";
@@ -81,6 +81,11 @@ export const drawDiagram = async ({
   const positions = new Map(Object.entries(positionsObject));
   const nodeShapes: { [id: string]: ShapeWithTextNode } = {};
   const links: SceneNode[] = [];
+  const linkMap: Map<string, boolean> = new Map();
+  const magnetMap: Map<string, { [key in MagnetDirection]: boolean }> =
+    new Map();
+
+  let backlinkCounter = 0;
 
   for (const { from, link, to } of diagram) {
     for (const node of [from, to]) {
@@ -91,16 +96,39 @@ export const drawDiagram = async ({
           return;
         }
         nodeShapes[node.id] = await createNode({ node, position });
+        magnetMap.set(node.id, {
+          TOP: false,
+          RIGHT: false,
+          BOTTOM: false,
+          LEFT: false,
+        });
       }
     }
 
     if (nodeShapes[from.id] && nodeShapes[to.id]) {
+      linkMap.set(`${from.id}-${to.id}`, true);
+      const isBidirectional = linkMap.has(`${to.id}-${from.id}`);
+
+      let fromMagnet: MagnetDirection;
+      let toMagnet: MagnetDirection;
+
+      if (isBidirectional) {
+        backlinkCounter += 1;
+        fromMagnet = backlinkCounter % 2 === 0 ? "TOP" : "BOTTOM";
+        toMagnet = fromMagnet;
+      } else {
+        fromMagnet = "RIGHT";
+        toMagnet = "LEFT";
+      }
+
       links.push(
         await createLink({
           from: nodeShapes[from.id],
           to: nodeShapes[to.id],
           link,
           diagramId,
+          fromMagnet,
+          toMagnet,
         })
       );
     }

@@ -10,14 +10,17 @@ const layoutDiagram = ({
   diagram: DiagramElement[];
   orientation: string;
 }): Map<string, Position> => {
+  const maxLabelLength = getMaxLabelLength(diagram);
+
   const g = new dagre.graphlib.Graph()
-    .setGraph({ rankdir: orientation, nodesep: 200, ranksep: 200 })
+    .setGraph({
+      rankdir: orientation,
+      nodesep: 200 + maxLabelLength,
+      ranksep: 200 + maxLabelLength,
+    })
     .setDefaultEdgeLabel(() => ({}));
 
-  console.log(diagram);
-
   diagram.forEach(({ from, to }) => {
-    console.log(from, to);
     g.setNode(from.id, {
       label: from.label,
       width: DEFAULT_NODE_WIDTH,
@@ -41,10 +44,21 @@ export const createDiagram = async ({
   parsedOutput: DiagramElement[];
   orientation?: string;
 }): Promise<{ [key: string]: Position }> => {
+  console.log("parsedOutput: ", parsedOutput);
   const positionsObject: { [key: string]: Position } = {};
 
   layoutDiagram({ diagram: parsedOutput, orientation }).forEach(
     (value, key) => (positionsObject[key] = value)
   );
   return positionsObject;
+};
+
+const getMaxLabelLength = (diagram: DiagramElement[]): number => {
+  let maxLength = 0;
+  diagram.forEach(({ link }) => {
+    if (link && link.label) {
+      maxLength = Math.max(maxLength, link.label.length);
+    }
+  });
+  return maxLength;
 };

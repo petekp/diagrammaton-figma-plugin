@@ -31,6 +31,7 @@ export function PrimaryTabs() {
       onChange={handleChange}
       options={tabOptions}
       value={currentPrimaryTab}
+      style={{display: 'flex', flexDirection: 'column'}}
     />
   );
 }

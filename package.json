@@ -18,7 +18,6 @@
   },
   "figma-plugin": {
     "editorType": [
-      "figma",
       "figjam"
     ],
     "id": "1245959998347196208",
@@ -27,7 +26,8 @@
     "ui": "src/ui.tsx",
     "networkAccess": {
       "allowedDomains": [
-        "figma-plugins-pete.vercel.app"
+        "https://figma-plugins-pete.vercel.app",
+        "https://www.diagrammaton.com"
       ],
       "reasoning": "Endpoints for generating diagram syntax"
     }

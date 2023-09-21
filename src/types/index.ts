@@ -8,7 +8,7 @@ export type PersistedState = {
   isFigJam: boolean;
   licenseKey: string;
   customPrompt: string;
-  model: keyof typeof GPTModels;
+  model: GPTModels;
   naturalInput: string;
   syntaxInput: string;
   orientation: string;

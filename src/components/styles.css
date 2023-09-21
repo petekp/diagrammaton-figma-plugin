@@ -2,6 +2,19 @@
   position: relative;
   height: 100%;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+
+  & > *:not([class*='tabs']) {
+    display: flex;
+    flex-direction: column;
+    flex: 1
+  }
+}
+
+[class*='textboxMultiline'] {
+  display: flex;
+  flex: 1;
 }
 
 .innerContainer {
@@ -12,7 +25,26 @@
   align-items: center;
 }
 
+.textAreaAndBannerContainer {
+  position: relative;
+}
+
 .warningBanner {
+  display: flex;
   word-break: break-word;
   overflow: hidden;
+  z-index: 1;
+  background-color: var(--figma-color-bg-warning);
+  padding: var(--space-extra-small);
+}
+
+.warningText {
+  flex: 1;
+  padding: var(--space-extra-small);
+}
+
+.closeIcon {
+  position: absolute;
+  top: 8px;
+  right: 8px;
 }

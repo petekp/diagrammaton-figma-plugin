@@ -16,6 +16,7 @@ export const AutoSizeTextInput = (
     <TextboxMultiline
       {...props}
       style={{
+        flex: 1,
         ...(props.style as {}),
         padding: "8px 12px",
         fontSize: `${fontSize}px`,

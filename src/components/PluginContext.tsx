@@ -32,8 +32,8 @@ export type StateContextType = {
   setLicenseKey: (key: string) => void;
   customPrompt: string;
   setCustomPrompt: (prompt: string) => void;
-  model: keyof typeof GPTModels;
-  setModel: (model: keyof typeof GPTModels) => void;
+  model: GPTModels;
+  setModel: (model: GPTModels) => void;
   orientation: string;
   setOrientation: (orientation: string) => void;
   currentPrimaryTab: PrimaryTab;
@@ -79,7 +79,7 @@ export const PluginContextProvider = ({
   const [customPrompt, setCustomPrompt] = useState<string>(
     defaultSettings.customPrompt
   );
-  const [model, setModel] = useState<keyof typeof GPTModels>(
+  const [model, setModel] = useState<GPTModels>(
     defaultSettings.model
   );
   const [orientation, setOrientation] = useState<string>(
