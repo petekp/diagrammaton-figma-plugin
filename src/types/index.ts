@@ -10,6 +10,10 @@ export type PersistedState = {
   customPrompt: string;
   model: GPTModels;
   naturalInput: string;
+  isNewUser: boolean;
+  isSignInVisible: boolean;
+  currentPrimaryTab: PrimaryTab;
+  feedback: string;
   syntaxInput: string;
   orientation: string;
 };

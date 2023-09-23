@@ -11,6 +11,8 @@ export interface Node {
 
 export interface NodeLink {
   label: string;
+  fromMagnet: MagnetDirection;
+  toMagnet: MagnetDirection;
 }
 
 export interface DiagramElement {

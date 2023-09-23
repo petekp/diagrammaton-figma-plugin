@@ -16,18 +16,21 @@ import {
   Bold,
   Divider,
   Columns,
+  Checkbox,
+  IconLockLocked16,
 } from "@create-figma-plugin/ui";
 import { pluginContext } from "./PluginContext";
 import { GPTModels } from "../fetchDiagramData";
 
-export function SettingsView({ showRequired }: { showRequired: boolean }) {
+export function SettingsView() {
   const {
     model,
     setModel,
     licenseKey,
     setLicenseKey,
-    customPrompt,
-    setCustomPrompt,
+    debug,
+    showRequired,
+    setDebug,
     clearErrors,
     orientation,
     setOrientation,
@@ -57,6 +60,7 @@ export function SettingsView({ showRequired }: { showRequired: boolean }) {
         spellCheck={false}
         variant="border"
         password={true}
+        icon={<IconLockLocked16 />}
         value={licenseKey}
         onValueInput={(val: string) => {
           setLicenseKey(val);
@@ -109,20 +113,22 @@ export function SettingsView({ showRequired }: { showRequired: boolean }) {
   );
 
   const customPromptInput = (
-    <Stack space="small">
-      <Text>Custom Prompt</Text>
-      <TextboxMultiline
-        spellCheck={false}
-        variant="border"
-        value={customPrompt}
-        onValueInput={(val: string) => {
-          setCustomPrompt(val);
-        }}
-        onFocusCapture={() => {
-          clearErrors();
-        }}
-      />
-    </Stack>
+    <Columns space="small">
+      <Stack space="small">
+        <Bold>Debug</Bold>
+      </Stack>
+      <div style={{ float: "right" }}>
+        <Checkbox
+          name="debug"
+          onValueChange={(val: boolean) => {
+            setDebug(val ? true : false);
+          }}
+          value={debug}
+        >
+          Debug Mode
+        </Checkbox>
+      </div>
+    </Columns>
   );
 
   const modelSelection = (
@@ -138,7 +144,7 @@ export function SettingsView({ showRequired }: { showRequired: boolean }) {
       <div style={{ float: "right" }}>
         <SegmentedControl
           value={model}
-          onValueChange={(val: keyof typeof GPTModels) => {
+          onValueChange={(val: GPTModels) => {
             setModel(val);
           }}
           options={[
@@ -161,7 +167,9 @@ export function SettingsView({ showRequired }: { showRequired: boolean }) {
       <Stack space="large">
         {licenseKeyInput}
         <Divider />
-        {/* {customPromptInput} */}
+
+        {customPromptInput}
+        <Divider />
         {orientationSelection}
         <Divider />
         {modelSelection}

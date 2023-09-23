@@ -5,6 +5,8 @@ declare const styles: {
   readonly "warningBanner": string;
   readonly "warningText": string;
   readonly "closeIcon": string;
+  readonly "blurContainer": string;
+  readonly "fullScreen": string;
 };
 export = styles;
 

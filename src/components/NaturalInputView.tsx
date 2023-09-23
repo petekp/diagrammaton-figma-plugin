@@ -29,29 +29,39 @@ export function NaturalInputView() {
     setNaturalInput,
     diagramSyntax,
     numNodesSelected,
+    debug,
     model,
   } = pluginContext();
 
   const handleGetCompletions = useCallback(async () => {
+    if (!naturalInput) {
+      setError("Please enter a diagram description");
+      return;
+    }
+    if (!licenseKey) {
+      setShowRequired(true);
+      setError("Please enter a license key in Settings");
+      return;
+    }
+
     setError("");
     setIsLoading(true);
     try {
-      const gptOutput = await fetchDiagramData({
+      const { type, data } = await fetchDiagramData({
         licenseKey,
         model,
         input: naturalInput,
+        debug,
       });
 
-      console.log({ gptOutput });
+      console.log("Response: ", { type, data });
 
-      const { type } = gptOutput;
-
-      if (type === "message") {
-        setError(gptOutput.data);
+      if (type === "message" || type === "error") {
+        setError(data);
         return;
       }
 
-      await handleExecutePlugin(gptOutput.data);
+      await handleExecutePlugin(data);
     } catch (err) {
       console.log({ err });
       // @ts-ignore-next
@@ -92,7 +102,7 @@ export function NaturalInputView() {
             lineHeight: 1.3,
             flex: 1,
           }}
-          placeholder="Describe a diagram"
+          placeholder="What would you like to diagram?"
           grow={false}
           spellCheck={false}
           variant="border"
@@ -102,7 +112,6 @@ export function NaturalInputView() {
           }}
           onFocusCapture={() => {
             setError("");
-            setShowRequired(false);
           }}
         />
 

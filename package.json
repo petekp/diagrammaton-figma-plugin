@@ -3,6 +3,7 @@
     "@create-figma-plugin/ui": "^2.4.0",
     "@create-figma-plugin/utilities": "^2.4.0",
     "dagre": "^0.8.5",
+    "framer-motion": "^10.16.4",
     "preact": ">=10"
   },
   "devDependencies": {
@@ -29,7 +30,10 @@
         "https://figma-plugins-pete.vercel.app",
         "https://www.diagrammaton.com"
       ],
-      "reasoning": "Endpoints for generating diagram syntax"
+      "reasoning": "Endpoints for generating diagram syntax",
+      "devAllowedDomains": [
+        "http://localhost:3000"
+      ]
     }
   }
 }

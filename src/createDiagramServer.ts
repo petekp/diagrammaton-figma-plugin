@@ -1,5 +1,3 @@
-import { setRelaunchButton } from "@create-figma-plugin/utilities";
-
 import { DEFAULT_NODE_HEIGHT, DEFAULT_NODE_WIDTH } from "./constants";
 import {
   DiagramElement,
@@ -9,6 +7,8 @@ import {
   MagnetDirection,
 } from "./types";
 import { generateTimeBasedUUID } from "./util";
+
+const useServerMagnet = false;
 
 const createNode = async ({
   node,
@@ -110,15 +110,21 @@ export const drawDiagram = async ({
       const isBidirectional = linkMap.has(`${to.id}-${from.id}`);
 
       let fromMagnet: MagnetDirection;
-      let toMagnet: MagnetDirection;
+      let toMagnet: MagnetDirection = "LEFT";
 
-      if (isBidirectional) {
-        backlinkCounter += 1;
-        fromMagnet = backlinkCounter % 2 === 0 ? "TOP" : "BOTTOM";
-        toMagnet = fromMagnet;
+      if (useServerMagnet) {
+        fromMagnet = link.fromMagnet || "RIGHT";
+        toMagnet = link.toMagnet || "LEFT";
       } else {
-        fromMagnet = "RIGHT";
-        toMagnet = "LEFT";
+        if (isBidirectional) {
+          backlinkCounter += 1;
+          fromMagnet = backlinkCounter % 2 === 0 ? "TOP" : "BOTTOM";
+        } else {
+          const fromMagnetMap = magnetMap.get(from.id);
+          fromMagnet =
+            fromMagnetMap && !fromMagnetMap["RIGHT"] ? "RIGHT" : "BOTTOM";
+          if (fromMagnetMap) fromMagnetMap[fromMagnet] = true;
+        }
       }
 
       links.push(

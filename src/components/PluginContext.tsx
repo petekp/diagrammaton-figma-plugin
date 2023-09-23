@@ -16,10 +16,18 @@ import { GPTModels } from "../fetchDiagramData";
 
 export type StateContextType = {
   isFigJam: boolean;
+  isNewUser: boolean;
+  setIsNewUser: (isNewUser: boolean) => void;
+  isPersistedStateLoading: boolean;
+  setIsPersistedStateLoading: (isLoading: boolean) => void;
+  debug: boolean;
+  setDebug: (enabled: boolean) => void;
   numNodesSelected: number;
   setNumNodesSelected: (num: number) => void;
   error: string;
   setError: (err: string) => void;
+  feedback: string;
+  setFeedback: (feedback: string) => void;
   showRequired: boolean;
   setShowRequired: (showRequired: boolean) => void;
   isLoading: boolean;
@@ -63,6 +71,10 @@ export const PluginContextProvider = ({
   defaultSettings: PersistedState;
   children?: ComponentChildren;
 }) => {
+  const [debug, setDebug] = useState<boolean>(false);
+  const [isNewUser, setIsNewUser] = useState<boolean>(
+    defaultSettings.isNewUser
+  );
   const [numNodesSelected, setNumNodesSelected] = useState<number>(0);
   const [showRequired, setShowRequired] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -73,21 +85,23 @@ export const PluginContextProvider = ({
   const [naturalInput, setNaturalInput] = useState<string>(
     defaultSettings.naturalInput
   );
+  const [feedback, setFeedback] = useState<string>(defaultSettings.feedback);
   const [licenseKey, setLicenseKey] = useState<string>(
     defaultSettings.licenseKey
   );
   const [customPrompt, setCustomPrompt] = useState<string>(
     defaultSettings.customPrompt
   );
-  const [model, setModel] = useState<GPTModels>(
-    defaultSettings.model
-  );
+  const [model, setModel] = useState<GPTModels>(defaultSettings.model);
   const [orientation, setOrientation] = useState<string>(
     defaultSettings.orientation
   );
-  const [settingsLoaded, setPersistedStateLoaded] = useState<boolean>(false);
-  const [currentPrimaryTab, setCurrentPrimaryTab] =
-    useState<PrimaryTab>("Create");
+  const [isPersistedStateLoading, setIsPersistedStateLoading] =
+    useState<boolean>(true);
+
+  const [currentPrimaryTab, setCurrentPrimaryTab] = useState<PrimaryTab>(
+    defaultSettings.currentPrimaryTab
+  );
   const [currentCreateTab, setCurrentCreateTab] =
     useState<CreateTab>("Natural");
 
@@ -99,13 +113,16 @@ export const PluginContextProvider = ({
   };
 
   useEffect(() => {
-    if (settingsLoaded) {
+    if (!isPersistedStateLoading) {
       emit<SavePersistedState>("SAVE_PERSISTED_STATE", {
         ...defaultSettings,
         licenseKey,
         model,
         customPrompt,
+        isNewUser,
         naturalInput,
+        currentPrimaryTab,
+        feedback,
         syntaxInput: diagramSyntax,
         orientation,
       });
@@ -115,7 +132,10 @@ export const PluginContextProvider = ({
     model,
     customPrompt,
     defaultSettings,
-    settingsLoaded,
+    isPersistedStateLoading,
+    isNewUser,
+    currentPrimaryTab,
+    feedback,
     naturalInput,
     diagramSyntax,
     orientation,
@@ -133,10 +153,14 @@ export const PluginContextProvider = ({
     setLicenseKey(state.licenseKey);
     setModel(state.model);
     setCustomPrompt(state.customPrompt);
-    setPersistedStateLoaded(true);
+    setFeedback(state.feedback);
+    setCurrentPrimaryTab(state.currentPrimaryTab);
+    setIsNewUser(state.isNewUser);
     setNaturalInput(state.naturalInput);
     setDiagramSyntax(state.syntaxInput);
     setOrientation(state.orientation);
+
+    setIsPersistedStateLoading(false);
   });
 
   on<HandleError>("HANDLE_ERROR", handleError);
@@ -147,12 +171,18 @@ export const PluginContextProvider = ({
     <PluginContext.Provider
       value={{
         isFigJam,
+        isNewUser,
+        setIsNewUser,
+        debug,
+        setDebug,
         numNodesSelected,
         setNumNodesSelected,
         error,
         setError,
         showRequired,
         setShowRequired,
+        isPersistedStateLoading,
+        setIsPersistedStateLoading,
         isLoading,
         setIsLoading,
         diagramSyntax,
@@ -172,6 +202,8 @@ export const PluginContextProvider = ({
         setCurrentPrimaryTab,
         currentCreateTab,
         setCurrentCreateTab,
+        feedback,
+        setFeedback,
       }}
     >
       {children}
