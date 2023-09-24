@@ -20,8 +20,6 @@ export type StateContextType = {
   setIsNewUser: (isNewUser: boolean) => void;
   isPersistedStateLoading: boolean;
   setIsPersistedStateLoading: (isLoading: boolean) => void;
-  debug: boolean;
-  setDebug: (enabled: boolean) => void;
   numNodesSelected: number;
   setNumNodesSelected: (num: number) => void;
   error: string;
@@ -71,7 +69,6 @@ export const PluginContextProvider = ({
   defaultSettings: PersistedState;
   children?: ComponentChildren;
 }) => {
-  const [debug, setDebug] = useState<boolean>(false);
   const [isNewUser, setIsNewUser] = useState<boolean>(
     defaultSettings.isNewUser
   );
@@ -99,9 +96,8 @@ export const PluginContextProvider = ({
   const [isPersistedStateLoading, setIsPersistedStateLoading] =
     useState<boolean>(true);
 
-  const [currentPrimaryTab, setCurrentPrimaryTab] = useState<PrimaryTab>(
-    defaultSettings.currentPrimaryTab
-  );
+  const [currentPrimaryTab, setCurrentPrimaryTab] =
+    useState<PrimaryTab>("Create");
   const [currentCreateTab, setCurrentCreateTab] =
     useState<CreateTab>("Natural");
 
@@ -121,7 +117,6 @@ export const PluginContextProvider = ({
         customPrompt,
         isNewUser,
         naturalInput,
-        currentPrimaryTab,
         feedback,
         syntaxInput: diagramSyntax,
         orientation,
@@ -134,7 +129,6 @@ export const PluginContextProvider = ({
     defaultSettings,
     isPersistedStateLoading,
     isNewUser,
-    currentPrimaryTab,
     feedback,
     naturalInput,
     diagramSyntax,
@@ -154,7 +148,6 @@ export const PluginContextProvider = ({
     setModel(state.model);
     setCustomPrompt(state.customPrompt);
     setFeedback(state.feedback);
-    setCurrentPrimaryTab(state.currentPrimaryTab);
     setIsNewUser(state.isNewUser);
     setNaturalInput(state.naturalInput);
     setDiagramSyntax(state.syntaxInput);
@@ -173,8 +166,6 @@ export const PluginContextProvider = ({
         isFigJam,
         isNewUser,
         setIsNewUser,
-        debug,
-        setDebug,
         numNodesSelected,
         setNumNodesSelected,
         error,

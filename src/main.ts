@@ -19,6 +19,8 @@ import {
   SavePersistedState,
 } from "./types";
 
+import debug from "./debug";
+
 import { drawDiagram } from "./createDiagramServer";
 
 const SETTINGS_KEY = "cohere-plugin";
@@ -29,9 +31,8 @@ const defaultSettings: PersistedState = {
   customPrompt: "",
   model: "gpt3",
   feedback: "",
-  isNewUser: true,
+  isNewUser: debug.isNewUser ? true : false,
   isSignInVisible: false,
-  currentPrimaryTab: "Create",
   naturalInput: "",
   syntaxInput: "",
   orientation: "LR",
@@ -62,7 +63,10 @@ export default function () {
     "SAVE_PERSISTED_STATE",
     async function (settings: PersistedState) {
       try {
-        await saveSettingsAsync({ ...settings }, SETTINGS_KEY);
+        await saveSettingsAsync(
+          { ...settings, isNewUser: defaultSettings.isNewUser },
+          SETTINGS_KEY
+        );
       } catch (error: any) {
         emit<HandleError>("HANDLE_ERROR", error.message);
       }

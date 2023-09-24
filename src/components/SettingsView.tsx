@@ -28,9 +28,7 @@ export function SettingsView() {
     setModel,
     licenseKey,
     setLicenseKey,
-    debug,
     showRequired,
-    setDebug,
     clearErrors,
     orientation,
     setOrientation,
@@ -50,7 +48,7 @@ export function SettingsView() {
         <Text>
           <Muted>
             <Link target="_window" href="https://www.diagrammaton.com">
-              View your account
+              View account
             </Link>
           </Muted>
         </Text>
@@ -112,25 +110,6 @@ export function SettingsView() {
     </Columns>
   );
 
-  const customPromptInput = (
-    <Columns space="small">
-      <Stack space="small">
-        <Bold>Debug</Bold>
-      </Stack>
-      <div style={{ float: "right" }}>
-        <Checkbox
-          name="debug"
-          onValueChange={(val: boolean) => {
-            setDebug(val ? true : false);
-          }}
-          value={debug}
-        >
-          Debug Mode
-        </Checkbox>
-      </div>
-    </Columns>
-  );
-
   const modelSelection = (
     <Columns space="small">
       <Stack space="small">
@@ -138,7 +117,7 @@ export function SettingsView() {
           <Bold>Model</Bold>{" "}
         </Text>
         <Text>
-          <Muted>GPT 4 is often more accurate but slower</Muted>
+          <Muted>GPT 4 is better but slower and pricier</Muted>
         </Text>
       </Stack>
       <div style={{ float: "right" }}>
@@ -165,14 +144,11 @@ export function SettingsView() {
     <Container space="small">
       <VerticalSpace space="medium" />
       <Stack space="large">
-        {licenseKeyInput}
-        <Divider />
-
-        {customPromptInput}
+        {modelSelection}
         <Divider />
         {orientationSelection}
         <Divider />
-        {modelSelection}
+        {licenseKeyInput}
       </Stack>
     </Container>
   );

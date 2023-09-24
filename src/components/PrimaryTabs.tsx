@@ -8,8 +8,9 @@ import { PrimaryTab } from "../types";
 import { FeedbackView } from "./FeedbackView";
 import SignIn from "./SignIn";
 import LoadingSettingsOverlay from "./LoadingSettingsOverlay";
-import { AnimatePresence, motion } from "framer-motion";
 import styles from "./styles.css";
+import debug from "../debug";
+import { MotionDiv, AnimatePresence } from "./Motion";
 
 export function PrimaryTabs() {
   const {
@@ -29,36 +30,39 @@ export function PrimaryTabs() {
       value: "Create",
       children: <CreateView />,
     },
-
-    {
-      value: "Feedback",
-      children: <FeedbackView />,
-    },
     {
       value: "Settings",
       children: <SettingsView />,
     },
+    {
+      value: "Feedback",
+      children: <FeedbackView />,
+    },
   ];
 
   const variants = {
-    hidden: { opacity: 0 },
+    hidden: { opacity: 0, delay: 0.5 },
     visible: {
       opacity: 1,
     },
     exit: {
       opacity: 0,
-      transition: { delay: 1 }, // delay the exit
+      transition: { delay: 0.5 },
     },
   };
 
   console.log("isPersistedStateLoading", isPersistedStateLoading);
   console.log("isNewUser", isNewUser);
 
+  const showLoading = !(
+    isPersistedStateLoading === false && debug.isLoadingSettings === false
+  );
+
   return (
     <Fragment>
       <AnimatePresence>
-        {isPersistedStateLoading && (
-          <motion.div
+        {showLoading && (
+          <MotionDiv
             className={styles.fullScreen}
             style={{ zIndex: 100 }}
             initial={{ opacity: 1 }}
@@ -66,12 +70,12 @@ export function PrimaryTabs() {
             exit={{ opacity: 0 }}
           >
             <LoadingSettingsOverlay />
-          </motion.div>
+          </MotionDiv>
         )}
       </AnimatePresence>
       <AnimatePresence>
         {isNewUser && (
-          <motion.div
+          <MotionDiv
             className={styles.fullScreen}
             style={{ zIndex: 50 }}
             initial="hidden"
@@ -80,12 +84,12 @@ export function PrimaryTabs() {
             variants={variants}
           >
             <SignIn />
-          </motion.div>
+          </MotionDiv>
         )}
       </AnimatePresence>
       <AnimatePresence>
         {!isNewUser && !isPersistedStateLoading && (
-          <motion.div
+          <MotionDiv
             className={styles.fullScreen}
             style={{ zIndex: 25 }}
             initial={{ opacity: 0 }}
@@ -98,7 +102,7 @@ export function PrimaryTabs() {
               value={currentPrimaryTab}
               style={{ display: "flex", flexDirection: "column" }}
             />
-          </motion.div>
+          </MotionDiv>
         )}
       </AnimatePresence>
     </Fragment>

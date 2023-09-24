@@ -7,6 +7,7 @@ declare const styles: {
   readonly "closeIcon": string;
   readonly "blurContainer": string;
   readonly "fullScreen": string;
+  readonly "logoType": string;
 };
 export = styles;
 

@@ -1,5 +1,5 @@
-import { useState, useEffect } from "preact/hooks";
-import { TextboxMultiline } from "@create-figma-plugin/ui";
+import { useState, useEffect, useRef } from "preact/hooks";
+import { TextboxMultiline, useInitialFocus } from "@create-figma-plugin/ui";
 import { ComponentProps, h } from "preact";
 
 export const AutoSizeTextInput = (
@@ -12,13 +12,20 @@ export const AutoSizeTextInput = (
     setFontSize(newFontSize);
   }, [props.value]);
 
+  useEffect(() => {
+    const textarea = document.querySelector("textarea");
+    if (textarea) {
+      textarea.focus();
+    }
+  }, []);
+
   return (
     <TextboxMultiline
       {...props}
       style={{
         flex: 1,
         ...(props.style as {}),
-        padding: "8px 12px",
+        padding: "12px 16px",
         fontSize: `${fontSize}px`,
       }}
     />

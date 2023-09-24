@@ -12,7 +12,6 @@ export type PersistedState = {
   naturalInput: string;
   isNewUser: boolean;
   isSignInVisible: boolean;
-  currentPrimaryTab: PrimaryTab;
   feedback: string;
   syntaxInput: string;
   orientation: string;

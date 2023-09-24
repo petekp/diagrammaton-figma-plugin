@@ -1,4 +1,5 @@
 import { DiagramElement } from "./types";
+import debug from "./debug";
 
 const debugValue: ReturnType = {
   type: "steps",
@@ -232,16 +233,13 @@ export async function fetchDiagramData({
   licenseKey,
   model,
   input,
-  debug,
 }: {
   licenseKey: string;
   model: GPTModels;
   input: string;
-  debug: boolean;
 }): Promise<ReturnType> {
   try {
-    console.log("debug: ", debug);
-    if (debug) {
+    if (debug.stubDiagram) {
       return debugValue;
     }
 
@@ -269,6 +267,6 @@ export async function fetchDiagramData({
 
     return response.json();
   } catch (err) {
-    throw new Error("Something unexpected happened 🫠");
+    throw new Error("Server unreachable 🫠");
   }
 }

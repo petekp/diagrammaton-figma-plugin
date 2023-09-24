@@ -1,6 +1,6 @@
 import { h } from "preact";
 import { pluginContext } from "./PluginContext";
-import { useCallback } from "preact/hooks";
+import { useCallback, useEffect, useRef } from "preact/hooks";
 import {
   Button,
   Container,
@@ -17,6 +17,7 @@ import { createDiagram } from "../createDiagramClient";
 import styles from "./styles.css";
 
 export function NaturalInputView() {
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const {
     error,
     setError,
@@ -28,8 +29,6 @@ export function NaturalInputView() {
     naturalInput,
     setNaturalInput,
     diagramSyntax,
-    numNodesSelected,
-    debug,
     model,
   } = pluginContext();
 
@@ -51,7 +50,6 @@ export function NaturalInputView() {
         licenseKey,
         model,
         input: naturalInput,
-        debug,
       });
 
       console.log("Response: ", { type, data });
@@ -87,6 +85,20 @@ export function NaturalInputView() {
     [naturalInput]
   );
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Enter" && event.shiftKey) {
+        handleGetCompletions();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleGetCompletions]);
+
   return (
     <Container
       space="small"
@@ -102,7 +114,7 @@ export function NaturalInputView() {
             lineHeight: 1.3,
             flex: 1,
           }}
-          placeholder="What would you like to diagram?"
+          placeholder="Describe your diagram"
           grow={false}
           spellCheck={false}
           variant="border"
@@ -123,7 +135,7 @@ export function NaturalInputView() {
           </div>
         )}
         <Button loading={isLoading} fullWidth onClick={handleGetCompletions}>
-          Generate
+          Generate &nbsp; (⇧ + ⏎)
         </Button>
       </div>
       <VerticalSpace space="small" />

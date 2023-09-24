@@ -12,6 +12,8 @@ const layoutDiagram = ({
 }): Map<string, Position> => {
   const maxLabelLength = getMaxLabelLength(diagram);
 
+  console.log("maxLabelLength: ", maxLabelLength);
+
   const g = new dagre.graphlib.Graph()
     .setGraph({
       rankdir: orientation,

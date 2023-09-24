@@ -3,14 +3,18 @@
     "@create-figma-plugin/ui": "^2.4.0",
     "@create-figma-plugin/utilities": "^2.4.0",
     "dagre": "^0.8.5",
+    "esbuild-plugin-alias": "^0.2.1",
     "framer-motion": "^10.16.4",
-    "preact": ">=10"
+    "preact": ">=10",
+    "react": "^18.2.0"
   },
   "devDependencies": {
     "@create-figma-plugin/build": "^2.4.0",
     "@create-figma-plugin/tsconfig": "^2.4.0",
     "@figma/plugin-typings": "1.57.1",
     "@types/dagre": "^0.7.48",
+    "@types/react": "^18.2.22",
+    "@types/react-dom": "^18.2.7",
     "typescript": ">=4"
   },
   "scripts": {
@@ -28,7 +32,8 @@
     "networkAccess": {
       "allowedDomains": [
         "https://figma-plugins-pete.vercel.app",
-        "https://www.diagrammaton.com"
+        "https://www.diagrammaton.com",
+        "https://fonts.googleapis.com"
       ],
       "reasoning": "Endpoints for generating diagram syntax",
       "devAllowedDomains": [
