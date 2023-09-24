@@ -70,7 +70,7 @@ export function FeedbackView() {
             lineHeight: 1.3,
             flex: 1,
           }}
-          placeholder="What would make your experience better?"
+          placeholder="How can we improve your experience?"
           grow={false}
           spellCheck={false}
           variant="border"
@@ -93,7 +93,7 @@ export function FeedbackView() {
         )}
         {wasSuccessful && (
           <Banner icon={<IconCheckCircle32 />} variant="success">
-            Feedback sent. Appreciate it!
+            Feedback sent. Thank you for taking the time! 🤍
           </Banner>
         )}
 

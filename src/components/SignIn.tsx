@@ -9,6 +9,7 @@ import {
   Stack,
   Text,
   Textbox,
+  VerticalSpace,
 } from "@create-figma-plugin/ui";
 import { useState } from "preact/hooks";
 import { AnimationProps } from "framer-motion";
@@ -19,6 +20,54 @@ import { pluginContext } from "./PluginContext";
 import { verifyLicenseKey } from "../verifyLicenseKey";
 
 import { MotionDiv, MotionSpan } from "./Motion";
+import StarArrows from "./StarArrows";
+
+const approxDiamondAnimLength = 2;
+
+const diamondAnimation: AnimationProps = {
+  initial: {
+    opacity: 0,
+    scale: 0.5,
+    rotate: 45,
+  },
+  animate: {
+    opacity: 1,
+    scale: 1,
+    rotate: 45,
+    transition: { type: "spring", damping: 50, stiffness: 80 },
+  },
+};
+
+const arrowsAnimation: AnimationProps = {
+  initial: {
+    opacity: 0,
+    scale: 0.85,
+  },
+  animate: {
+    opacity: 0.5,
+    scale: 1,
+    transition: { type: "spring", damping: 50, stiffness: 80 },
+  },
+};
+
+const logoAnimation: AnimationProps = {
+  initial: {
+    opacity: 0,
+    scale: 0.9,
+    y: 10,
+  },
+  animate: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: {
+      type: "spring",
+      damping: 20,
+      stiffness: 40,
+      delay: 1.3,
+    },
+  },
+};
 
 const staggerAnimation: AnimationProps = {
   initial: "hidden",
@@ -31,8 +80,8 @@ const staggerAnimation: AnimationProps = {
         type: "spring",
         damping: 50,
         stiffness: 50,
-        delayChildren: 1,
         staggerChildren: 0.05,
+        delayChildren: 1,
       },
     },
   },
@@ -43,6 +92,47 @@ const letterAnimation: AnimationProps = {
   animate: {
     opacity: 1,
     transition: { type: "spring", damping: 40, stiffness: 150 },
+  },
+};
+
+const descriptionAnimation: AnimationProps = {
+  initial: { opacity: 0, y: -15 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      delay: approxDiamondAnimLength,
+      type: "spring",
+      damping: 20,
+      stiffness: 100,
+    },
+  },
+};
+
+const containerAnimation: AnimationProps = {
+  initial: { y: 0 },
+
+  animate: {
+    y: -35,
+    transition: {
+      delay: approxDiamondAnimLength + 2,
+      type: "spring",
+      damping: 35,
+      stiffness: 150,
+    },
+  },
+};
+const signInAnimation: AnimationProps = {
+  initial: { opacity: 0, y: 0 },
+  animate: {
+    opacity: 1,
+    y: -10,
+    transition: {
+      delay: approxDiamondAnimLength + 2.07,
+      type: "spring",
+      damping: 40,
+      stiffness: 150,
+    },
   },
 };
 
@@ -91,7 +181,7 @@ function SignIn() {
             justifyContent: "space-between",
           }}
         >
-          <Text>Please paste your license key</Text>
+          <Text>Paste your license key</Text>
           <Link fullWidth href="https://diagrammaton.com" target="_blank">
             Need a key?
           </Link>
@@ -130,22 +220,74 @@ function SignIn() {
   return (
     <div className={styles.blurContainer}>
       <MiddleAlign>
-        <Logo />
-        <div className={styles.logoType}>
-          {" "}
-          <MotionDiv {...staggerAnimation}>
-            {"Diagrammaton".split("").map((char, index) => (
-              <MotionSpan
-                key={index}
-                {...letterAnimation}
-                variants={staggerAnimation.variants}
-              >
-                {char}
-              </MotionSpan>
-            ))}
+        <MotionDiv {...containerAnimation}>
+          <MotionDiv
+            {...logoAnimation}
+            style={{ display: "flex", justifyContent: "center" }}
+          >
+            <Logo size={64} />
           </MotionDiv>
-        </div>
+          <VerticalSpace space="extraLarge" />
+          <div className={styles.logoType}>
+            {" "}
+            <MotionDiv {...staggerAnimation}>
+              {"Diagrammaton".split("").map((char, index) => (
+                <MotionSpan
+                  key={index}
+                  {...letterAnimation}
+                  variants={staggerAnimation.variants}
+                >
+                  {char}
+                </MotionSpan>
+              ))}
+            </MotionDiv>
+          </div>
+          <MotionDiv {...descriptionAnimation} className={styles.description}>
+            AI powered diagrams for FigJam
+          </MotionDiv>
+        </MotionDiv>
+        <MotionDiv
+          {...signInAnimation}
+          onAnimationStart={() => {
+            setTimeout(() => {
+              document.querySelector("input")?.focus();
+            }, 100);
+          }}
+        >
+          {signInForm}
+        </MotionDiv>
       </MiddleAlign>
+      <MotionDiv
+        {...arrowsAnimation}
+        style={{
+          position: "fixed",
+          display: "flex",
+          minHeight: "100vh",
+          minWidth: "100vw",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: -1,
+        }}
+      >
+        <StarArrows />
+      </MotionDiv>
+      <MotionDiv
+        {...diamondAnimation}
+        style={{
+          borderRadius: "0.25rem",
+          position: "fixed",
+          height: "380px",
+          left: "calc(50% - 190px)",
+          top: "calc(50% - 190px)",
+          width: "380px",
+          transformOrigin: "center",
+          transform: "rotate(45deg)",
+          border: "1px solid #d1d5db",
+          background:
+            "radial-gradient(circle, rgba(255, 255, 255, 0.8) 30%, rgba(255, 255, 255, 0.4) 100%)",
+          zIndex: -1,
+        }}
+      />
     </div>
   );
 }
