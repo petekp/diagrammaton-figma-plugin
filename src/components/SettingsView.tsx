@@ -16,11 +16,11 @@ import {
   Bold,
   Divider,
   Columns,
-  Checkbox,
   IconLockLocked16,
 } from "@create-figma-plugin/ui";
 import { pluginContext } from "./PluginContext";
 import { GPTModels } from "../fetchDiagramData";
+import { RELEASE_VERSION } from "../constants";
 
 export function SettingsView() {
   const {
@@ -149,7 +149,21 @@ export function SettingsView() {
         {orientationSelection}
         <Divider />
         {licenseKeyInput}
+        <Divider />
       </Stack>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          width: "100%",
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          padding: 16,
+        }}
+      >
+        <Muted>{RELEASE_VERSION}</Muted>
+      </div>
     </Container>
   );
 }

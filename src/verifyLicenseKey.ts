@@ -15,6 +15,9 @@ export async function verifyLicenseKey({ licenseKey }: { licenseKey: string }) {
 
     return response.json();
   } catch (err) {
+    if (err instanceof Error) {
+      return { tyoe: "error", message: "Unable to reach server 🫠" };
+    }
     throw new Error("Something unexpected happened 🫠");
   }
 }

@@ -87,7 +87,10 @@ export function NaturalInputView() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Enter" && event.shiftKey) {
+      if (
+        (event.key === "Enter" && event.shiftKey) ||
+        (event.key === "Enter" && event.metaKey)
+      ) {
         handleGetCompletions();
       }
     };
@@ -98,6 +101,8 @@ export function NaturalInputView() {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [handleGetCompletions]);
+
+  const isWindows = navigator.platform.toUpperCase().indexOf("WIN") >= 0;
 
   return (
     <Container
@@ -114,7 +119,7 @@ export function NaturalInputView() {
             lineHeight: 1.3,
             flex: 1,
           }}
-          placeholder="Describe your diagram"
+          placeholder="Generate a diagram of..."
           grow={false}
           spellCheck={false}
           variant="border"
@@ -135,7 +140,7 @@ export function NaturalInputView() {
           </div>
         )}
         <Button loading={isLoading} fullWidth onClick={handleGetCompletions}>
-          Generate &nbsp; (⇧ + ⏎)
+          Generate &nbsp; {isWindows ? "Ctrl" : "⌘"} + ⏎
         </Button>
       </div>
       <VerticalSpace space="small" />

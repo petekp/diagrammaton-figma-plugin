@@ -2,9 +2,13 @@ import { h } from "preact";
 import {
   Banner,
   IconCheckCircle32,
+  IconCheckCircleFilled32,
   IconLockLocked16,
+  IconLockLocked32,
+  IconLockUnlocked32,
   IconWarning32,
   Link,
+  LoadingIndicator,
   MiddleAlign,
   Stack,
   Text,
@@ -19,7 +23,7 @@ import Logo from "./Logo";
 import { pluginContext } from "./PluginContext";
 import { verifyLicenseKey } from "../verifyLicenseKey";
 
-import { MotionDiv, MotionSpan } from "./Motion";
+import { AnimatePresence, MotionDiv, MotionSpan } from "./Motion";
 import StarArrows from "./StarArrows";
 
 const approxDiamondAnimLength = 2;
@@ -110,28 +114,28 @@ const descriptionAnimation: AnimationProps = {
 };
 
 const containerAnimation: AnimationProps = {
-  initial: { y: 0 },
+  initial: { y: -4 },
 
   animate: {
     y: -35,
     transition: {
       delay: approxDiamondAnimLength + 2,
       type: "spring",
-      damping: 35,
-      stiffness: 150,
+      damping: 16,
+      stiffness: 160,
     },
   },
 };
 const signInAnimation: AnimationProps = {
-  initial: { opacity: 0, y: 0 },
+  initial: { opacity: 0, y: -20 },
   animate: {
     opacity: 1,
     y: -10,
     transition: {
       delay: approxDiamondAnimLength + 2.07,
       type: "spring",
-      damping: 40,
-      stiffness: 150,
+      damping: 16,
+      stiffness: 160,
     },
   },
 };
@@ -139,8 +143,15 @@ const signInAnimation: AnimationProps = {
 const licenseKeyLength = 18;
 
 function SignIn() {
-  const { setLicenseKey, setError, isNewUser, setIsNewUser, error } =
-    pluginContext();
+  const {
+    setLicenseKey,
+    setError,
+    isNewUser,
+    setIsNewUser,
+    error,
+    setIsLoading,
+    isLoading,
+  } = pluginContext();
   const [lastVerifiedKey, setLastVerifiedKey] = useState("");
 
   const [licenseKeyInputValue, setLicenseKeyInputValue] = useState("");
@@ -150,15 +161,20 @@ function SignIn() {
       return;
     }
 
+    setIsLoading(true);
+
     const { success, message } = await verifyLicenseKey({
       licenseKey: licenseKeyInputValue,
     });
+
+    setIsLoading(false);
 
     if (!success) {
       setError(message);
       setLicenseKeyInputValue("");
       return;
     }
+
     setError("");
     setLicenseKey(licenseKeyInputValue);
     setIsNewUser(false);
@@ -198,10 +214,12 @@ function SignIn() {
             setLicenseKeyInputValue(val);
           }}
           icon={
-            isNewUser ? (
-              <IconLockLocked16 />
+            isLoading ? (
+              <LoadingIndicator color="component" />
+            ) : isNewUser ? (
+              <IconLockLocked32 />
             ) : (
-              <IconCheckCircle32 color="success" />
+              <IconLockUnlocked32 color="success" />
             )
           }
           onFocusCapture={() => {
@@ -231,7 +249,7 @@ function SignIn() {
           <div className={styles.logoType}>
             {" "}
             <MotionDiv {...staggerAnimation}>
-              {"Diagrammaton".split("").map((char, index) => (
+              {"DIAGRAMMATON".split("").map((char, index) => (
                 <MotionSpan
                   key={index}
                   {...letterAnimation}
