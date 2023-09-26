@@ -31,7 +31,7 @@ const defaultSettings: PersistedState = {
   customPrompt: "",
   model: "gpt3",
   feedback: "",
-  isNewUser: debug.isNewUser ? true : false,
+  isNewUser: true,
   isSignInVisible: false,
   naturalInput: "",
   syntaxInput: "",
@@ -63,10 +63,7 @@ export default function () {
     "SAVE_PERSISTED_STATE",
     async function (settings: PersistedState) {
       try {
-        await saveSettingsAsync(
-          { ...settings, isNewUser: defaultSettings.isNewUser },
-          SETTINGS_KEY
-        );
+        await saveSettingsAsync({ ...settings }, SETTINGS_KEY);
       } catch (error: any) {
         emit<HandleError>("HANDLE_ERROR", error.message);
       }

@@ -239,12 +239,12 @@ export async function fetchDiagramData({
   input: string;
 }): Promise<ReturnType> {
   try {
-    if (debug.stubDiagram) {
+    if (debug.enabled && debug.stubDiagram) {
       return debugValue;
     }
 
     const response = await fetch(
-      "http://localhost:3000/api/diagrammaton/generate",
+      "https://www.diagrammaton.com/api/diagrammaton/generate",
       {
         method: "POST",
         headers: {

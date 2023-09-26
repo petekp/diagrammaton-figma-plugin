@@ -3,7 +3,7 @@ import { Fragment, h, JSX } from "preact";
 
 import { pluginContext } from "./PluginContext";
 import { SettingsView } from "./SettingsView";
-import { CreateView } from "./CreateView";
+import { GenerateView } from "./GenerateView";
 import { PrimaryTab } from "../types";
 import { FeedbackView } from "./FeedbackView";
 import SignIn from "./SignIn";
@@ -27,8 +27,8 @@ export function PrimaryTabs() {
 
   const tabOptions: Array<TabsOption> = [
     {
-      value: "Create",
-      children: <CreateView />,
+      value: "Generate",
+      children: <GenerateView />,
     },
     {
       value: "Settings",
@@ -54,9 +54,9 @@ export function PrimaryTabs() {
   console.log("isPersistedStateLoading", isPersistedStateLoading);
   console.log("isNewUser", isNewUser);
 
-  const showLoading = !(
-    isPersistedStateLoading === false && debug.isLoadingSettings === false
-  );
+  const showLoading = debug.enabled
+    ? debug.isLoadingSettings
+    : isPersistedStateLoading;
 
   return (
     <Fragment>

@@ -13,11 +13,15 @@
     "@types/dagre": "^0.7.48",
     "@types/react": "^18.2.22",
     "@types/react-dom": "^18.2.7",
+    "archiver": "^6.0.1",
     "typescript": ">=4"
   },
   "scripts": {
-    "build": "build-figma-plugin --typecheck --minify",
-    "watch": "build-figma-plugin --typecheck --watch"
+    "createZip": "node ./util/createZip ./build ./manifest.json ./ beta-0.7",
+    "toggleDebugOff": "node ./util/toggleDebug false",
+    "toggleDebugOn": "node ./util/toggleDebug true",
+    "build": "npm run toggleDebugOff; build-figma-plugin --typecheck --minify; npm run createZip",
+    "watch": "npm run toggleDebugOn; build-figma-plugin --typecheck --watch"
   },
   "figma-plugin": {
     "editorType": [

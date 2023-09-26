@@ -8,7 +8,7 @@ export async function sendFeedback({
   try {
     console.log("feedback: ", message);
     const response = await fetch(
-      "http://localhost:3000/api/diagrammaton/feedback",
+      "https://www.diagrammaton.com/api/diagrammaton/feedback",
       {
         method: "POST",
         headers: {

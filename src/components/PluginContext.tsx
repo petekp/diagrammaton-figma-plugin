@@ -9,10 +9,11 @@ import {
   SetLoading,
   SetSelectedNodesCount,
   PersistedState,
-  CreateTab,
+  GenerateTab,
   PrimaryTab,
 } from "../types";
 import { GPTModels } from "../fetchDiagramData";
+import debug from "../debug";
 
 export type StateContextType = {
   isFigJam: boolean;
@@ -44,8 +45,8 @@ export type StateContextType = {
   setOrientation: (orientation: string) => void;
   currentPrimaryTab: PrimaryTab;
   setCurrentPrimaryTab: (tab: PrimaryTab) => void;
-  currentCreateTab: CreateTab;
-  setCurrentCreateTab: (tab: CreateTab) => void;
+  currentGenerateTab: GenerateTab;
+  setCurrentGenerateTab: (tab: GenerateTab) => void;
 
   clearErrors: () => void;
 };
@@ -97,9 +98,9 @@ export const PluginContextProvider = ({
     useState<boolean>(true);
 
   const [currentPrimaryTab, setCurrentPrimaryTab] =
-    useState<PrimaryTab>("Create");
-  const [currentCreateTab, setCurrentCreateTab] =
-    useState<CreateTab>("Natural");
+    useState<PrimaryTab>("Generate");
+  const [currentGenerateTab, setCurrentGenerateTab] =
+    useState<GenerateTab>("Natural");
 
   const { isFigJam } = defaultSettings;
 
@@ -148,7 +149,7 @@ export const PluginContextProvider = ({
     setModel(state.model);
     setCustomPrompt(state.customPrompt);
     setFeedback(state.feedback);
-    setIsNewUser(state.isNewUser);
+    setIsNewUser(debug.enabled ? debug.isNewUser : state.isNewUser);
     setNaturalInput(state.naturalInput);
     setDiagramSyntax(state.syntaxInput);
     setOrientation(state.orientation);
@@ -191,8 +192,8 @@ export const PluginContextProvider = ({
         clearErrors,
         currentPrimaryTab,
         setCurrentPrimaryTab,
-        currentCreateTab,
-        setCurrentCreateTab,
+        currentGenerateTab,
+        setCurrentGenerateTab,
         feedback,
         setFeedback,
       }}
