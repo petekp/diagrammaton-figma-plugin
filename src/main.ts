@@ -19,23 +19,21 @@ import {
   SavePersistedState,
 } from "./types";
 
-import debug from "./debug";
-
 import { drawDiagram } from "./createDiagramServer";
 
-const SETTINGS_KEY = "cohere-plugin";
+const SETTINGS_KEY = "figjam-diagrammaton-plugin";
 
-const defaultSettings: PersistedState = {
-  isFigJam: figma.editorType === "figjam",
-  licenseKey: "",
+export const defaultSettings: PersistedState = {
   customPrompt: "",
-  model: "gpt3",
   feedback: "",
+  isFigJam: figma.editorType === "figjam",
   isNewUser: true,
   isSignInVisible: false,
+  licenseKey: "",
+  model: "gpt3",
   naturalInput: "",
-  syntaxInput: "",
   orientation: "LR",
+  syntaxInput: "",
 };
 
 export default function () {
@@ -45,17 +43,15 @@ export default function () {
       figma.currentPage.selection.length
     );
 
-    console.log(figma.currentPage.selection);
-
     const firstSelectedNode = figma.currentPage.selection[0];
 
     if (firstSelectedNode) {
-      console.log(firstSelectedNode.getPluginData("syntax"));
-      console.log(firstSelectedNode.getPluginData("diagramId"));
+      // console.log(firstSelectedNode.getPluginData("syntax"));
+      // console.log(firstSelectedNode.getPluginData("diagramId"));
     }
 
     figma.currentPage.selection.forEach((node) => {
-      console.log(node.id);
+      // console.log(node.id);
     });
   });
 
@@ -83,8 +79,8 @@ export default function () {
 
   on<ExecutePlugin>(
     "EXECUTE_PLUGIN",
-    async function ({ diagram, positionsObject, syntax }) {
-      await drawDiagram({ diagram, positionsObject, pluginData: syntax });
+    async function ({ diagram, positionsObject }) {
+      await drawDiagram({ diagram, positionsObject });
 
       try {
         emit<SetLoading>("SET_LOADING", true);

@@ -17,7 +17,6 @@ export type PersistedState = {
   orientation: string;
 };
 
-export type GenerateTab = "Natural" | "Syntax";
 export type PrimaryTab = "Generate" | "Settings";
 
 export interface GetPersistedState extends EventHandler {
@@ -35,11 +34,9 @@ export interface ExecutePlugin extends EventHandler {
   handler: ({
     diagram,
     positionsObject,
-    syntax,
   }: {
     diagram: DiagramElement[];
     positionsObject: { [key: string]: Position };
-    syntax: string;
   }) => void;
 }
 
@@ -67,3 +64,74 @@ export interface SetUILoaded extends EventHandler {
   name: "SET_UI_LOADED";
   handler: () => void;
 }
+
+export type PluginState = PersistedState & {
+  currentPrimaryTab: PrimaryTab;
+  error: string;
+  isLoading: boolean;
+  isPersistedStateLoading: boolean;
+  numNodesSelected: number;
+  showRequired: boolean;
+};
+
+export type Action =
+  | {
+      type: "SET_IS_NEW_USER";
+      payload: boolean;
+    }
+  | {
+      type: "SET_NUM_NODES_SELECTED";
+      payload: number;
+    }
+  | {
+      type: "SET_ERROR";
+      payload: string;
+    }
+  | {
+      type: "SET_IS_LOADING";
+      payload: boolean;
+    }
+  | {
+      type: "SET_DIAGRAM_SYNTAX";
+      payload: string;
+    }
+  | {
+      type: "SET_NATURAL_INPUT";
+      payload: string;
+    }
+  | {
+      type: "SET_FEEDBACK";
+      payload: string;
+    }
+  | {
+      type: "SET_LICENSE_KEY";
+      payload: string;
+    }
+  | {
+      type: "SET_CUSTOM_PROMPT";
+      payload: string;
+    }
+  | {
+      type: "SET_MODEL";
+      payload: GPTModels;
+    }
+  | {
+      type: "SET_ORIENTATION";
+      payload: string;
+    }
+  | {
+      type: "SET_IS_PERSISTED_STATE_LOADING";
+      payload: boolean;
+    }
+  | {
+      type: "SET_SHOW_REQUIRED";
+      payload: boolean;
+    }
+  | {
+      type: "SET_CURRENT_PRIMARY_TAB";
+      payload: PrimaryTab;
+    }
+  | {
+      type: "SET_IS_FIGJAM";
+      payload: boolean;
+    };

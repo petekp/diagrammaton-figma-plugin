@@ -12,8 +12,6 @@ const layoutDiagram = ({
 }): Map<string, Position> => {
   const maxLabelLength = getMaxLabelLength(diagram);
 
-  console.log("maxLabelLength: ", maxLabelLength);
-
   const g = new dagre.graphlib.Graph()
     .setGraph({
       rankdir: orientation,
@@ -46,7 +44,6 @@ export const createDiagram = async ({
   parsedOutput: DiagramElement[];
   orientation?: string;
 }): Promise<{ [key: string]: Position }> => {
-  console.log("parsedOutput: ", parsedOutput);
   const positionsObject: { [key: string]: Position } = {};
 
   layoutDiagram({ diagram: parsedOutput, orientation }).forEach(

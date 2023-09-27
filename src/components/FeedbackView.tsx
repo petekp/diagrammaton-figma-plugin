@@ -19,24 +19,34 @@ export function FeedbackView() {
   const [wasSuccessful, setWasSuccessful] = useState(false);
 
   const {
-    feedback,
-    setFeedback,
-    isLoading,
-    error,
-    setError,
-    setShowRequired,
-    licenseKey,
-    setIsLoading,
+    state: {
+      feedback,
+
+      isLoading,
+      error,
+
+      licenseKey,
+    },
+    dispatch,
   } = pluginContext();
 
   const handleSendFeedback = useCallback(async () => {
     if (!licenseKey) {
-      setShowRequired(true);
-      setError("Please enter a license key in Settings");
+      dispatch({ type: "SET_SHOW_REQUIRED", payload: true });
+      dispatch({
+        type: "SET_ERROR",
+        payload: "Please enter a license key in Settings",
+      });
       return;
     }
-    setError("");
-    setIsLoading(true);
+    dispatch({
+      type: "SET_ERROR",
+      payload: "",
+    });
+    dispatch({
+      type: "SET_IS_LOADING",
+      payload: true,
+    });
     setWasSuccessful(false);
     try {
       await sendFeedback({
@@ -44,14 +54,23 @@ export function FeedbackView() {
         licenseKey,
       });
       setWasSuccessful(true);
-      setFeedback("");
+      dispatch({
+        type: "SET_FEEDBACK",
+        payload: "",
+      });
     } catch (err) {
       setWasSuccessful(false);
       if (err instanceof Error) {
-        setError(err.message || "There was an error");
+        dispatch({
+          type: "SET_ERROR",
+          payload: err.message || "There was an error",
+        });
       }
     } finally {
-      setIsLoading(false);
+      dispatch({
+        type: "SET_IS_LOADING",
+        payload: false,
+      });
     }
   }, [feedback]);
 
@@ -76,10 +95,11 @@ export function FeedbackView() {
           variant="border"
           value={feedback || ""}
           onValueInput={(val: string) => {
-            setFeedback(val);
+            dispatch({ type: "SET_FEEDBACK", payload: val });
           }}
           onFocusCapture={() => {
-            setError("");
+            dispatch({ type: "SET_ERROR", payload: "" });
+
             setWasSuccessful(false);
           }}
         />
@@ -88,7 +108,9 @@ export function FeedbackView() {
           <div className={styles.warningBanner}>
             <IconWarning32 />
             <div className={styles.warningText}>{error}</div>
-            <IconCross32 onClick={() => setError("")} />
+            <IconCross32
+              onClick={() => dispatch({ type: "SET_ERROR", payload: "" })}
+            />
           </div>
         )}
         {wasSuccessful && (

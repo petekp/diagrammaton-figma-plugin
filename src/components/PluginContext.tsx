@@ -1,57 +1,26 @@
-import { h, createContext, ComponentChildren } from "preact";
-import { useCallback, useContext, useEffect, useState } from "preact/hooks";
 import { emit, on, once } from "@create-figma-plugin/utilities";
+import { h, createContext, ComponentChildren } from "preact";
+import { useContext, useEffect, useReducer } from "preact/hooks";
 
 import {
+  Action,
   GetPersistedState,
   HandleError,
+  PersistedState,
+  PluginState,
   SavePersistedState,
   SetLoading,
   SetSelectedNodesCount,
-  PersistedState,
-  GenerateTab,
-  PrimaryTab,
 } from "../types";
-import { GPTModels } from "../fetchDiagramData";
 import debug from "../debug";
+import { useRef } from "react";
 
-export type StateContextType = {
-  isFigJam: boolean;
-  isNewUser: boolean;
-  setIsNewUser: (isNewUser: boolean) => void;
-  isPersistedStateLoading: boolean;
-  setIsPersistedStateLoading: (isLoading: boolean) => void;
-  numNodesSelected: number;
-  setNumNodesSelected: (num: number) => void;
-  error: string;
-  setError: (err: string) => void;
-  feedback: string;
-  setFeedback: (feedback: string) => void;
-  showRequired: boolean;
-  setShowRequired: (showRequired: boolean) => void;
-  isLoading: boolean;
-  setIsLoading: (isLoading: boolean) => void;
-  diagramSyntax: string;
-  setDiagramSyntax: (syntax: string) => void;
-  naturalInput: string;
-  setNaturalInput: (input: string) => void;
-  licenseKey: string;
-  setLicenseKey: (key: string) => void;
-  customPrompt: string;
-  setCustomPrompt: (prompt: string) => void;
-  model: GPTModels;
-  setModel: (model: GPTModels) => void;
-  orientation: string;
-  setOrientation: (orientation: string) => void;
-  currentPrimaryTab: PrimaryTab;
-  setCurrentPrimaryTab: (tab: PrimaryTab) => void;
-  currentGenerateTab: GenerateTab;
-  setCurrentGenerateTab: (tab: GenerateTab) => void;
-
-  clearErrors: () => void;
+type PluginContextType = {
+  state: PluginState;
+  dispatch: React.Dispatch<Action>;
 };
 
-const PluginContext = createContext<StateContextType | undefined>(undefined);
+const PluginContext = createContext<PluginContextType | undefined>(undefined);
 
 export const pluginContext = () => {
   const context = useContext(PluginContext);
@@ -70,135 +39,114 @@ export const PluginContextProvider = ({
   defaultSettings: PersistedState;
   children?: ComponentChildren;
 }) => {
-  const [isNewUser, setIsNewUser] = useState<boolean>(
-    defaultSettings.isNewUser
-  );
-  const [numNodesSelected, setNumNodesSelected] = useState<number>(0);
-  const [showRequired, setShowRequired] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>("");
-  const [diagramSyntax, setDiagramSyntax] = useState<string>(
-    defaultSettings.syntaxInput
-  );
-  const [naturalInput, setNaturalInput] = useState<string>(
-    defaultSettings.naturalInput
-  );
-  const [feedback, setFeedback] = useState<string>(defaultSettings.feedback);
-  const [licenseKey, setLicenseKey] = useState<string>(
-    defaultSettings.licenseKey
-  );
-  const [customPrompt, setCustomPrompt] = useState<string>(
-    defaultSettings.customPrompt
-  );
-  const [model, setModel] = useState<GPTModels>(defaultSettings.model);
-  const [orientation, setOrientation] = useState<string>(
-    defaultSettings.orientation
-  );
-  const [isPersistedStateLoading, setIsPersistedStateLoading] =
-    useState<boolean>(true);
-
-  const [currentPrimaryTab, setCurrentPrimaryTab] =
-    useState<PrimaryTab>("Generate");
-  const [currentGenerateTab, setCurrentGenerateTab] =
-    useState<GenerateTab>("Natural");
-
-  const { isFigJam } = defaultSettings;
-
-  const clearErrors = () => {
-    setError("");
-    setShowRequired(false);
+  const initialState: PluginState = {
+    ...defaultSettings,
+    currentPrimaryTab: "Generate",
+    error: "",
+    isFigJam: false,
+    isLoading: false,
+    isPersistedStateLoading: false,
+    numNodesSelected: 0,
+    showRequired: false,
   };
 
-  useEffect(() => {
-    if (!isPersistedStateLoading) {
-      emit<SavePersistedState>("SAVE_PERSISTED_STATE", {
-        ...defaultSettings,
-        licenseKey,
-        model,
-        customPrompt,
-        isNewUser,
-        naturalInput,
-        feedback,
-        syntaxInput: diagramSyntax,
-        orientation,
-      });
-    }
-  }, [
-    licenseKey,
-    model,
-    customPrompt,
-    defaultSettings,
-    isPersistedStateLoading,
-    isNewUser,
-    feedback,
-    naturalInput,
-    diagramSyntax,
-    orientation,
-  ]);
-
-  const handleError = useCallback(
-    function (error: string) {
-      setError(error);
-      setIsLoading(false);
-    },
-    [error]
-  );
-
   once<GetPersistedState>("GET_PERSISTED_STATE", (state: PersistedState) => {
-    setLicenseKey(state.licenseKey);
-    setModel(state.model);
-    setCustomPrompt(state.customPrompt);
-    setFeedback(state.feedback);
-    setIsNewUser(debug.enabled ? debug.isNewUser : state.isNewUser);
-    setNaturalInput(state.naturalInput);
-    setDiagramSyntax(state.syntaxInput);
-    setOrientation(state.orientation);
+    dispatch({ type: "SET_LICENSE_KEY", payload: state.licenseKey });
+    dispatch({ type: "SET_MODEL", payload: state.model });
+    dispatch({ type: "SET_CUSTOM_PROMPT", payload: state.customPrompt });
+    dispatch({ type: "SET_FEEDBACK", payload: state.feedback });
+    dispatch({
+      type: "SET_IS_NEW_USER",
+      payload: debug.enabled ? debug.isNewUser : state.isNewUser,
+    });
+    dispatch({ type: "SET_NATURAL_INPUT", payload: state.naturalInput });
+    dispatch({ type: "SET_ORIENTATION", payload: state.orientation });
 
-    setIsPersistedStateLoading(false);
+    // Hide overlay once state is loaded
+    dispatch({ type: "SET_IS_PERSISTED_STATE_LOADING", payload: false });
   });
 
-  on<HandleError>("HANDLE_ERROR", handleError);
-  on<SetLoading>("SET_LOADING", setIsLoading);
-  on<SetSelectedNodesCount>("SET_SELECTED_NODES_COUNT", setNumNodesSelected);
+  const [state, dispatch] = useReducer<PluginState, Action>(
+    (state, { type, payload }) => {
+      switch (type) {
+        case "SET_LICENSE_KEY":
+          return { ...state, licenseKey: payload };
+        case "SET_MODEL":
+          return { ...state, model: payload };
+        case "SET_CUSTOM_PROMPT":
+          return { ...state, customPrompt: payload };
+        case "SET_FEEDBACK":
+          return { ...state, feedback: payload };
+        case "SET_IS_NEW_USER":
+          return { ...state, isNewUser: payload };
+        case "SET_NATURAL_INPUT":
+          return { ...state, naturalInput: payload };
+        case "SET_ORIENTATION":
+          return { ...state, orientation: payload };
+        case "SET_IS_PERSISTED_STATE_LOADING":
+          return { ...state, isPersistedStateLoading: payload };
+        case "SET_IS_LOADING":
+          return { ...state, isLoading: payload };
+        case "SET_ERROR":
+          return { ...state, error: payload };
+        case "SET_NUM_NODES_SELECTED":
+          return { ...state, numNodesSelected: payload };
+        case "SET_SHOW_REQUIRED":
+          return { ...state, showRequired: payload };
+        case "SET_CURRENT_PRIMARY_TAB":
+          return { ...state, currentPrimaryTab: payload };
+        case "SET_IS_FIGJAM":
+          return { ...state, isFigJam: payload };
+        default:
+          throw new Error();
+      }
+    },
+    initialState
+  );
+
+  const { isPersistedStateLoading, ...restOfState } = state;
+
+  useDeepCompareEffect(() => {
+    if (!state.isPersistedStateLoading) {
+      emit<SavePersistedState>("SAVE_PERSISTED_STATE", {
+        ...defaultSettings,
+        ...restOfState,
+      });
+    }
+  }, [restOfState]);
+
+  on<HandleError>("HANDLE_ERROR", (err) =>
+    dispatch({ type: "SET_ERROR", payload: err })
+  );
+  on<SetLoading>("SET_LOADING", (isLoading) =>
+    dispatch({ type: "SET_IS_LOADING", payload: isLoading })
+  );
+  on<SetSelectedNodesCount>("SET_SELECTED_NODES_COUNT", (num) =>
+    dispatch({ type: "SET_NUM_NODES_SELECTED", payload: num })
+  );
+  on<SetSelectedNodesCount>("SET_SELECTED_NODES_COUNT", (num) =>
+    dispatch({ type: "SET_NUM_NODES_SELECTED", payload: num })
+  );
 
   return (
-    <PluginContext.Provider
-      value={{
-        isFigJam,
-        isNewUser,
-        setIsNewUser,
-        numNodesSelected,
-        setNumNodesSelected,
-        error,
-        setError,
-        showRequired,
-        setShowRequired,
-        isPersistedStateLoading,
-        setIsPersistedStateLoading,
-        isLoading,
-        setIsLoading,
-        diagramSyntax,
-        setDiagramSyntax,
-        naturalInput,
-        setNaturalInput,
-        licenseKey,
-        setLicenseKey,
-        customPrompt,
-        setCustomPrompt,
-        model,
-        setModel,
-        orientation,
-        setOrientation,
-        clearErrors,
-        currentPrimaryTab,
-        setCurrentPrimaryTab,
-        currentGenerateTab,
-        setCurrentGenerateTab,
-        feedback,
-        setFeedback,
-      }}
-    >
+    <PluginContext.Provider value={{ state, dispatch }}>
       {children}
     </PluginContext.Provider>
   );
 };
+
+function useDeepCompareEffect(callback: () => void, dependencies: any[]) {
+  const previousDependencies = useRef(dependencies);
+
+  useEffect(() => {
+    if (!areEqual(previousDependencies.current, dependencies)) {
+      callback();
+    }
+
+    previousDependencies.current = dependencies;
+  });
+}
+
+function areEqual(arr1: any[], arr2: any[]) {
+  return JSON.stringify(arr1) === JSON.stringify(arr2);
+}

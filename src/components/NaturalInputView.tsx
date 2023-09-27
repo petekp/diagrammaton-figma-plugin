@@ -17,34 +17,37 @@ import { createDiagram } from "../createDiagramClient";
 import styles from "./styles.css";
 
 export function NaturalInputView() {
-  const inputRef = useRef<HTMLTextAreaElement>(null);
   const {
-    error,
-    setError,
-    setShowRequired,
-    isLoading,
-    setIsLoading,
-    licenseKey,
-    orientation,
-    naturalInput,
-    setNaturalInput,
-    diagramSyntax,
-    model,
+    state: { naturalInput, licenseKey, model, orientation, error, isLoading },
+    dispatch,
   } = pluginContext();
 
   const handleGetCompletions = useCallback(async () => {
     if (!naturalInput) {
-      setError("Please enter a diagram description");
+      dispatch({
+        type: "SET_ERROR",
+        payload: "Please enter a diagram description",
+      });
       return;
     }
     if (!licenseKey) {
-      setShowRequired(true);
-      setError("Please enter a license key in Settings");
+      dispatch({
+        type: "SET_ERROR",
+        payload: "Please enter a license key in Settings",
+      });
+      dispatch({ type: "SET_SHOW_REQUIRED", payload: true });
       return;
     }
 
-    setError("");
-    setIsLoading(true);
+    dispatch({
+      type: "SET_ERROR",
+      payload: "",
+    });
+    dispatch({
+      type: "SET_IS_LOADING",
+      payload: true,
+    });
+
     try {
       const { type, data } = await fetchDiagramData({
         licenseKey,
@@ -52,20 +55,24 @@ export function NaturalInputView() {
         input: naturalInput,
       });
 
-      console.log("Response: ", { type, data });
-
       if (type === "message" || type === "error") {
-        setError(data);
+        dispatch({
+          type: "SET_ERROR",
+          payload: data,
+        });
         return;
       }
 
       await handleExecutePlugin(data);
     } catch (err) {
-      console.log({ err });
+      console.error({ err });
       // @ts-ignore-next
       setError(err.message || err || "There was an error");
     } finally {
-      setIsLoading(false);
+      dispatch({
+        type: "SET_IS_LOADING",
+        payload: false,
+      });
     }
   }, [naturalInput, licenseKey]);
 
@@ -79,7 +86,6 @@ export function NaturalInputView() {
       emit<ExecutePlugin>("EXECUTE_PLUGIN", {
         diagram: input,
         positionsObject,
-        syntax: diagramSyntax,
       });
     },
     [naturalInput]
@@ -88,7 +94,7 @@ export function NaturalInputView() {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (
-        (event.key === "Enter" && event.shiftKey) ||
+        (event.key === "Enter" && event.ctrlKey) ||
         (event.key === "Enter" && event.metaKey)
       ) {
         handleGetCompletions();
@@ -102,7 +108,7 @@ export function NaturalInputView() {
     };
   }, [handleGetCompletions]);
 
-  const isWindows = navigator.platform.toUpperCase().indexOf("WIN") >= 0;
+  const isWindows = navigator.userAgent.indexOf("Win") != -1;
 
   return (
     <Container
@@ -125,10 +131,10 @@ export function NaturalInputView() {
           variant="border"
           value={naturalInput}
           onValueInput={(val: string) => {
-            setNaturalInput(val);
+            dispatch({ type: "SET_NATURAL_INPUT", payload: val });
           }}
           onFocusCapture={() => {
-            setError("");
+            dispatch({ type: "SET_ERROR", payload: "" });
           }}
         />
 
@@ -136,7 +142,9 @@ export function NaturalInputView() {
           <div className={styles.warningBanner}>
             <IconWarning32 />
             <div className={styles.warningText}>{error}</div>
-            <IconCross32 onClick={() => setError("")} />
+            <IconCross32
+              onClick={() => dispatch({ type: "SET_ERROR", payload: "" })}
+            />
           </div>
         )}
         <Button loading={isLoading} fullWidth onClick={handleGetCompletions}>

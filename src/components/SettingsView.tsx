@@ -21,17 +21,20 @@ import {
 import { pluginContext } from "./PluginContext";
 import { GPTModels } from "../fetchDiagramData";
 import { RELEASE_VERSION } from "../constants";
+import { getBaseUrl } from "../util";
 
 export function SettingsView() {
   const {
-    model,
-    setModel,
-    licenseKey,
-    setLicenseKey,
-    showRequired,
-    clearErrors,
-    orientation,
-    setOrientation,
+    state: {
+      model,
+
+      licenseKey,
+
+      showRequired,
+
+      orientation,
+    },
+    dispatch,
   } = pluginContext();
 
   const licenseKeyInput = (
@@ -47,7 +50,7 @@ export function SettingsView() {
         </Text>
         <Text>
           <Muted>
-            <Link target="_window" href="https://www.diagrammaton.com">
+            <Link target="_window" href={getBaseUrl()}>
               View account
             </Link>
           </Muted>
@@ -61,10 +64,14 @@ export function SettingsView() {
         icon={<IconLockLocked16 />}
         value={licenseKey}
         onValueInput={(val: string) => {
-          setLicenseKey(val);
+          dispatch({
+            type: "SET_LICENSE_KEY",
+            payload: val,
+          });
         }}
         onFocusCapture={() => {
-          clearErrors();
+          dispatch({ type: "SET_SHOW_REQUIRED", payload: false });
+          dispatch({ type: "SET_ERROR", payload: "" });
         }}
       />
     </Columns>
@@ -84,7 +91,7 @@ export function SettingsView() {
         <SegmentedControl
           value={orientation}
           onValueChange={(val: string) => {
-            setOrientation(val);
+            dispatch({ type: "SET_ORIENTATION", payload: val });
           }}
           options={[
             {
@@ -117,14 +124,14 @@ export function SettingsView() {
           <Bold>Model</Bold>{" "}
         </Text>
         <Text>
-          <Muted>GPT 4 is better but slower and pricier</Muted>
+          <Muted>GPT 4 is better but slower/pricier</Muted>
         </Text>
       </Stack>
       <div style={{ float: "right" }}>
         <SegmentedControl
           value={model}
           onValueChange={(val: GPTModels) => {
-            setModel(val);
+            dispatch({ type: "SET_MODEL", payload: val });
           }}
           options={[
             {

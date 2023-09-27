@@ -1,9 +1,6 @@
 import { h } from "preact";
 import {
   Banner,
-  IconCheckCircle32,
-  IconCheckCircleFilled32,
-  IconLockLocked16,
   IconLockLocked32,
   IconLockUnlocked32,
   IconWarning32,
@@ -23,8 +20,9 @@ import Logo from "./Logo";
 import { pluginContext } from "./PluginContext";
 import { verifyLicenseKey } from "../verifyLicenseKey";
 
-import { AnimatePresence, MotionDiv, MotionSpan } from "./Motion";
+import { MotionDiv, MotionSpan } from "./Motion";
 import StarArrows from "./StarArrows";
+import { getBaseUrl } from "../util";
 
 const approxDiamondAnimLength = 2;
 
@@ -144,13 +142,14 @@ const licenseKeyLength = 18;
 
 function SignIn() {
   const {
-    setLicenseKey,
-    setError,
-    isNewUser,
-    setIsNewUser,
-    error,
-    setIsLoading,
-    isLoading,
+    state: {
+      isNewUser,
+
+      error,
+
+      isLoading,
+    },
+    dispatch,
   } = pluginContext();
   const [lastVerifiedKey, setLastVerifiedKey] = useState("");
 
@@ -161,23 +160,24 @@ function SignIn() {
       return;
     }
 
-    setIsLoading(true);
+    dispatch({ type: "SET_IS_LOADING", payload: true });
 
     const { success, message } = await verifyLicenseKey({
       licenseKey: licenseKeyInputValue,
     });
 
-    setIsLoading(false);
+    dispatch({ type: "SET_IS_LOADING", payload: false });
 
     if (!success) {
-      setError(message);
+      dispatch({ type: "SET_ERROR", payload: message });
       setLicenseKeyInputValue("");
       return;
     }
 
-    setError("");
-    setLicenseKey(licenseKeyInputValue);
-    setIsNewUser(false);
+    dispatch({ type: "SET_ERROR", payload: "" });
+
+    dispatch({ type: "SET_IS_NEW_USER", payload: false });
+    dispatch({ type: "SET_LICENSE_KEY", payload: licenseKeyInputValue });
     setLastVerifiedKey(licenseKeyInputValue);
   };
 
@@ -198,7 +198,7 @@ function SignIn() {
           }}
         >
           <Text>Paste your license key</Text>
-          <Link fullWidth href="https://diagrammaton.com" target="_blank">
+          <Link fullWidth href={getBaseUrl()} target="_blank">
             Need a key?
           </Link>
         </div>
@@ -223,7 +223,7 @@ function SignIn() {
             )
           }
           onFocusCapture={() => {
-            setError("");
+            dispatch({ type: "SET_ERROR", payload: "" });
           }}
         />
         {error && (

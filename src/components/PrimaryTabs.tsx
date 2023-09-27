@@ -14,15 +14,13 @@ import { MotionDiv, AnimatePresence } from "./Motion";
 
 export function PrimaryTabs() {
   const {
-    currentPrimaryTab,
-    setCurrentPrimaryTab,
-    isNewUser,
-    isPersistedStateLoading,
+    state: { currentPrimaryTab, isNewUser, isPersistedStateLoading },
+    dispatch,
   } = pluginContext();
 
   function handleChange(event: JSX.TargetedEvent<HTMLInputElement>) {
     const newValue = event.currentTarget.value as PrimaryTab;
-    setCurrentPrimaryTab(newValue);
+    dispatch({ type: "SET_CURRENT_PRIMARY_TAB", payload: newValue });
   }
 
   const tabOptions: Array<TabsOption> = [
@@ -50,9 +48,6 @@ export function PrimaryTabs() {
       transition: { delay: 0.7 },
     },
   };
-
-  console.log("isPersistedStateLoading", isPersistedStateLoading);
-  console.log("isNewUser", isNewUser);
 
   const showLoading = debug.enabled
     ? debug.isLoadingSettings

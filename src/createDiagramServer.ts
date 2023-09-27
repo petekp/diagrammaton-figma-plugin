@@ -71,11 +71,9 @@ const createLink = async ({
 export const drawDiagram = async ({
   diagram,
   positionsObject,
-  pluginData,
 }: {
   diagram: DiagramElement[];
   positionsObject: { [key: string]: Position };
-  pluginData?: string;
 }): Promise<void> => {
   const diagramId = generateTimeBasedUUID();
   const positions = new Map(Object.entries(positionsObject));
@@ -143,7 +141,7 @@ export const drawDiagram = async ({
   links.forEach((link) => figma.currentPage.appendChild(link));
 
   Object.values(nodeShapes).forEach((node, i) => {
-    setNodeProperties({ node, index: i, pluginData, diagramId });
+    setNodeProperties({ node, index: i, pluginData: diagram, diagramId });
 
     figma.currentPage.appendChild(node);
   });
@@ -160,7 +158,7 @@ const setNodeProperties = ({
   node: ShapeWithTextNode;
   index: number;
   diagramId: string;
-  pluginData?: string;
+  pluginData?: DiagramElement[];
 }) => {
   // setRelaunchButton(node, "expand", {
   //   description: "Expand into more granular steps",
@@ -175,7 +173,7 @@ const setNodeProperties = ({
   }
 
   if (pluginData) {
-    node.setPluginData("syntax", pluginData);
+    node.setPluginData("diagramData", JSON.stringify(pluginData));
     node.setPluginData("diagramId", diagramId);
   }
 };
