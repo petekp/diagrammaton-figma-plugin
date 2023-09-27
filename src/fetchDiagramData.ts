@@ -1,5 +1,6 @@
 import { DiagramElement } from "./types";
 import debug from "./debug";
+import { getBaseUrl } from "./util";
 
 const debugValue: ReturnType = {
   type: "steps",
@@ -243,27 +244,22 @@ export async function fetchDiagramData({
       return debugValue;
     }
 
-    const response = await fetch(
-      "https://www.diagrammaton.com/api/diagrammaton/generate",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          licenseKey,
-          diagramDescription: input,
-          model,
-        }),
-      }
-    );
+    const response = await fetch(`${getBaseUrl()}/api/diagrammaton/generate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        licenseKey,
+        diagramDescription: input,
+        model,
+      }),
+    });
 
     if (!response.ok) {
       const errorData = await response.json();
       return { type: "error", data: errorData.message };
     }
-
-    console.log({ response });
 
     return response.json();
   } catch (err) {

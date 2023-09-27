@@ -1,3 +1,5 @@
+import { getBaseUrl } from "./util";
+
 export async function sendFeedback({
   message,
   licenseKey,
@@ -6,20 +8,16 @@ export async function sendFeedback({
   licenseKey: string;
 }) {
   try {
-    console.log("feedback: ", message);
-    const response = await fetch(
-      "https://www.diagrammaton.com/api/diagrammaton/feedback",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message,
-          licenseKey,
-        }),
-      }
-    );
+    const response = await fetch(`${getBaseUrl()}/api/diagrammaton/feedback`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message,
+        licenseKey,
+      }),
+    });
 
     return response.json();
   } catch (err) {
