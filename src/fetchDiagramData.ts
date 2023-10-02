@@ -1,6 +1,7 @@
 import { DiagramElement } from "./types";
 import debug from "./debug";
 import { getBaseUrl } from "./util";
+import processStepsFromStream from "./processJson";
 
 const debugValue: ReturnType = {
   type: "steps",
@@ -265,4 +266,59 @@ export async function fetchDiagramData({
   } catch (err) {
     throw new Error("Server unreachable 🫠");
   }
+}
+
+export async function fetchDiagramDataStream({
+  input,
+}: {
+  input: string;
+}): Promise<ReadableStream<Uint8Array>> {
+  try {
+    const response = await fetch(`http://localhost:3000/api/gptStreaming`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        input,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message);
+    }
+
+    if (!response.body) {
+      throw new Error("No response body");
+    }
+
+    console.log(response.body);
+
+    return response.body;
+  } catch (err) {
+    throw new Error("Server unreachable 🫠");
+  }
+}
+
+const vercelFunctionUrl = "http://localhost:3000/api/gptStreaming";
+
+export async function fetchStream() {
+  const response = await fetch(vercelFunctionUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      input: "a to b to c",
+    }),
+  });
+
+  console.log("Processing stream...");
+
+  const nestingLevel = 1; // adjust as needed
+
+  processStepsFromStream(response.body!, (jsonObj) => {
+    console.log("Received nested object:", jsonObj);
+  });
 }
