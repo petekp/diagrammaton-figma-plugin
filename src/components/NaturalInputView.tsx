@@ -85,28 +85,34 @@ export function NaturalInputView() {
     });
     try {
       const diagramElements: DiagramElement[] = [];
-      for await (const newElement of fetchStream({
+      for await (const element of fetchStream({
         input: naturalInput,
         licenseKey,
         model,
       })) {
-        if (newElement) {
-          diagramElements.push(newElement);
-          console.log({ newElement });
-          console.log({ diagramElements });
-          handleExecutePlugin({ diagramElements, diagramId });
+        console.log(element);
+        if (element === null) {
+          console.log("set loading false");
+
+          dispatch({
+            type: "SET_IS_LOADING",
+            payload: false,
+          });
+        }
+
+        if (element) {
+          diagramElements.push(element);
+
+          handleExecutePlugin({
+            diagramElements,
+            diagramId,
+          });
         }
       }
-
-      dispatch({
-        type: "SET_IS_LOADING",
-        payload: false,
-      });
     } catch (err) {
       console.error({ err });
       // @ts-ignore-next
       setError(err.message || err || "There was an error");
-    } finally {
     }
   }, [naturalInput, licenseKey]);
 

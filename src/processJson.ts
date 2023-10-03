@@ -15,6 +15,7 @@ async function* processParametersFromStream(
     const { done, value } = await reader.read();
     if (done) {
       console.log("Stream ended.");
+      yield null; // Signal the end of the stream
       break;
     }
 

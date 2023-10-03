@@ -85,8 +85,6 @@ export default function () {
       emit<SetLoading>("SET_LOADING", true);
     } catch (error: any) {
       emit<HandleError>("HANDLE_ERROR", error.message);
-    } finally {
-      emit<SetLoading>("SET_LOADING", false);
     }
   });
 

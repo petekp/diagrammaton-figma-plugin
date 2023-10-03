@@ -6,9 +6,8 @@ import {
   NodeLink,
   MagnetDirection,
 } from "./types";
-import { generateTimeBasedUUID } from "./util";
 
-const useServerMagnet = true;
+const useServerMagnet = false;
 
 const createNode = async ({
   node,
@@ -164,7 +163,7 @@ export const drawDiagram = async ({
     node.visible = true;
   });
 
-  figma.notify("Diagram generated!");
+  // figma.notify("Diagram generated!");
 };
 
 const setNodeProperties = ({
