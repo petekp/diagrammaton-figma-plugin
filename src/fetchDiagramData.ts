@@ -310,15 +310,17 @@ export async function fetchStream() {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      input: "a to b to c",
+      input: "sdfnsxczxcksdjfn",
     }),
   });
 
   console.log("Processing stream...");
 
-  const nestingLevel = 1; // adjust as needed
-
-  processStepsFromStream(response.body!, (jsonObj) => {
-    console.log("Received nested object:", jsonObj);
-  });
+  if (response.body) {
+    processStepsFromStream(response.body, (jsonObj) => {
+      console.log("Received nested object:", jsonObj);
+    });
+  } else {
+    console.error("No response body");
+  }
 }

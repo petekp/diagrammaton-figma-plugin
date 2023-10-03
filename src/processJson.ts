@@ -1,31 +1,64 @@
 const stepsString = '\\"steps\\": [\\n';
+const messageString = '\\"message\\":';
 
-async function processStepsFromStream(
+async function processParametersFromStream(
   readableStream: ReadableStream<Uint8Array>,
   callback: (jsonObj: any) => void
 ) {
   const reader = readableStream.getReader();
   let buffer = "";
-  let inStepsArray = false;
   let jsonBuffer = "";
-  let braceCount = 0; // Added this line
+  let braceCount = 0;
+  let inStepsArray = false;
+  let inMessageArray = false;
 
   while (true) {
     const { done, value } = await reader.read();
     if (done) {
+      console.log("Stream ended.");
       break;
     }
 
     const chunk = new TextDecoder().decode(value);
     buffer += chunk;
 
-    // Look for the start of the "steps" array.
+    // console.log(buffer);
+
     if (!inStepsArray) {
       const stepsStart = buffer.indexOf(stepsString);
       if (stepsStart !== -1) {
         inStepsArray = true;
-        buffer = buffer.slice(stepsStart + 12); // Skip the "steps: [" part
+        buffer = buffer.slice(stepsStart + 12);
       }
+    }
+
+    if (!inMessageArray) {
+      const messageStart = buffer.indexOf(messageString);
+      if (messageStart !== -1) {
+        inMessageArray = true;
+        buffer = buffer.slice(messageStart + 9);
+      }
+    }
+
+    if (inMessageArray) {
+      console.log("inMessageArray");
+      for (let i = 0; i < buffer.length; i++) {
+        const char = buffer[i];
+        jsonBuffer += char;
+        console.log(jsonBuffer);
+
+        const cleanedJsonBuffer = jsonBuffer
+          .replace(/\\\"/g, '"')
+          .replace(/\\n/g, "")
+          .replace(/^[\s,]+/, "");
+
+        for (let j = 0; j < cleanedJsonBuffer.length; j++) {
+          callback(cleanedJsonBuffer[j]);
+        }
+
+        jsonBuffer = "";
+      }
+      buffer = "";
     }
 
     if (inStepsArray) {
@@ -40,10 +73,7 @@ async function processStepsFromStream(
           braceCount--;
         }
 
-        // If we find a closing brace and we are in the steps array,
-        // and the brace count is zero, try parsing the JSON object.
         if (char === "}" && braceCount === 0) {
-          // Clean the jsonBuffer
           const cleanedJsonBuffer = jsonBuffer
             .replace(/\\\"/g, '"')
             .replace(/\\n/g, "")
@@ -54,12 +84,12 @@ async function processStepsFromStream(
           } catch (err) {
             console.error("Failed to parse JSON:", err);
           }
-          jsonBuffer = ""; // Reset the JSON buffer
+          jsonBuffer = "";
         }
       }
-      buffer = ""; // Reset the main buffer
+      buffer = "";
     }
   }
 }
 
-export default processStepsFromStream;
+export default processParametersFromStream;
