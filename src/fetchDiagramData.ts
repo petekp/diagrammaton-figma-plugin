@@ -274,10 +274,12 @@ export async function* fetchStream({
   licenseKey,
   model,
   input,
+  signal,
 }: {
   licenseKey: string;
   model: GPTModels;
   input: string;
+  signal: AbortSignal;
 }): AsyncGenerator<DiagramElement | null, void, unknown> {
   const response = await fetch(vercelFunctionUrl, {
     method: "POST",
@@ -289,6 +291,7 @@ export async function* fetchStream({
       licenseKey,
       model,
     }),
+    signal,
   });
 
   console.log("Processing stream...");
@@ -296,7 +299,6 @@ export async function* fetchStream({
   if (response.body) {
     for await (const jsonObj of processStepsFromStream(response.body)) {
       if (jsonObj === null) {
-        // Stream has ended, yield null to signal the end of the stream
         yield null;
       } else {
         console.log("Received nested object:", jsonObj);

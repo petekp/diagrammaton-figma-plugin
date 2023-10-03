@@ -53,6 +53,8 @@ const createLink = async ({
   link,
   fromMagnet,
   toMagnet,
+  diagramId,
+  diagramData,
 }: {
   from: SceneNode;
   to: SceneNode;
@@ -61,8 +63,12 @@ const createLink = async ({
   fromMagnet: MagnetDirection;
   toMagnet: MagnetDirection;
   isBidirectional?: boolean;
+  diagramData: string;
 }): Promise<ConnectorNode> => {
   const connector = figma.createConnector();
+
+  connector.setPluginData("diagramId", diagramId);
+  connector.setPluginData("diagramData", diagramData);
 
   connector.connectorStart = { endpointNodeId: from.id, magnet: fromMagnet };
   connector.connectorEnd = { endpointNodeId: to.id, magnet: toMagnet };
@@ -109,6 +115,7 @@ export const drawDiagram = async ({
           console.error(`No position provided for node: ${node.id}`);
           return;
         }
+
         nodeShapes[node.id] = await createNode({ node, position });
         magnetMap.set(node.id, {
           TOP: false,
@@ -149,6 +156,7 @@ export const drawDiagram = async ({
           diagramId,
           fromMagnet,
           toMagnet,
+          diagramData: JSON.stringify(diagram),
         })
       );
     }
@@ -157,25 +165,23 @@ export const drawDiagram = async ({
   links.forEach((link) => figma.currentPage.appendChild(link));
 
   Object.values(nodeShapes).forEach((node, i) => {
-    setNodeProperties({ node, index: i, pluginData: diagram, diagramId });
+    setNodeProperties({ node, index: i, diagramData: diagram, diagramId });
 
     figma.currentPage.appendChild(node);
     node.visible = true;
   });
-
-  // figma.notify("Diagram generated!");
 };
 
 const setNodeProperties = ({
   node,
   index,
   diagramId,
-  pluginData,
+  diagramData,
 }: {
   node: ShapeWithTextNode;
   index: number;
   diagramId: string;
-  pluginData?: DiagramElement[];
+  diagramData?: DiagramElement[];
 }) => {
   // setRelaunchButton(node, "expand", {
   //   description: "Expand into more granular steps",
@@ -189,8 +195,8 @@ const setNodeProperties = ({
     node.setPluginData("isRoot", "true");
   }
 
-  if (pluginData) {
-    node.setPluginData("diagramData", JSON.stringify(pluginData));
+  if (diagramData) {
+    node.setPluginData("diagramData", JSON.stringify(diagramData));
     node.setPluginData("diagramId", diagramId);
   }
 };

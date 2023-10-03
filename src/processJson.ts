@@ -15,14 +15,12 @@ async function* processParametersFromStream(
     const { done, value } = await reader.read();
     if (done) {
       console.log("Stream ended.");
-      yield null; // Signal the end of the stream
+      yield null;
       break;
     }
 
     const chunk = new TextDecoder().decode(value);
     buffer += chunk;
-
-    // console.log(buffer);
 
     if (!inStepsArray) {
       const stepsStart = buffer.indexOf(stepsString);

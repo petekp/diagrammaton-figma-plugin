@@ -23,6 +23,8 @@ export function NaturalInputView() {
     dispatch,
   } = pluginContext();
 
+  const abortControllerRef = useRef(new AbortController());
+
   const handleGetCompletions = useCallback(async () => {
     if (!naturalInput) {
       dispatch({
@@ -79,6 +81,8 @@ export function NaturalInputView() {
 
   const handleGetCompletionsStream = useCallback(async () => {
     const diagramId = generateTimeBasedUUID();
+    abortControllerRef.current = new AbortController();
+
     dispatch({
       type: "SET_IS_LOADING",
       payload: true,
@@ -89,11 +93,10 @@ export function NaturalInputView() {
         input: naturalInput,
         licenseKey,
         model,
+        signal: abortControllerRef.current.signal,
       })) {
         console.log(element);
         if (element === null) {
-          console.log("set loading false");
-
           dispatch({
             type: "SET_IS_LOADING",
             payload: false,
@@ -110,9 +113,13 @@ export function NaturalInputView() {
         }
       }
     } catch (err) {
-      console.error({ err });
-      // @ts-ignore-next
-      setError(err.message || err || "There was an error");
+      if (err instanceof Error) {
+        if (err.name === "AbortError") {
+          console.log("Fetch aborted");
+        } else {
+          console.error({ err });
+        }
+      }
     }
   }, [naturalInput, licenseKey]);
 
@@ -138,6 +145,16 @@ export function NaturalInputView() {
     },
     [naturalInput]
   );
+
+  const handleCancel = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    dispatch({
+      type: "SET_IS_LOADING",
+      payload: false,
+    });
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -202,6 +219,11 @@ export function NaturalInputView() {
         >
           Generate &nbsp; {isWindows ? "Ctrl" : "⌘"} + ⏎
         </Button>
+        {isLoading && (
+          <Button fullWidth onClick={handleCancel}>
+            Cancel
+          </Button>
+        )}
       </div>
       <VerticalSpace space="small" />
     </Container>

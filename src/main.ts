@@ -47,12 +47,12 @@ export default function () {
     const firstSelectedNode = figma.currentPage.selection[0];
 
     if (firstSelectedNode) {
-      // console.log(firstSelectedNode.getPluginData("syntax"));
-      // console.log(firstSelectedNode.getPluginData("diagramId"));
+      console.log(firstSelectedNode.getPluginData("diagramData"));
+      console.log(firstSelectedNode.getPluginData("diagramId"));
     }
 
     figma.currentPage.selection.forEach((node) => {
-      // console.log(node.id);
+      console.log(node.id);
     });
   });
 
