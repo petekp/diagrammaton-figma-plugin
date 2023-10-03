@@ -1,9 +1,8 @@
 const stepsString = '\\"steps\\": [\\n';
 const messageString = '\\"message\\":';
 
-async function processParametersFromStream(
-  readableStream: ReadableStream<Uint8Array>,
-  callback: (jsonObj: any) => void
+async function* processParametersFromStream(
+  readableStream: ReadableStream<Uint8Array>
 ) {
   const reader = readableStream.getReader();
   let buffer = "";
@@ -53,7 +52,7 @@ async function processParametersFromStream(
           .replace(/^[\s,]+/, "");
 
         for (let j = 0; j < cleanedJsonBuffer.length; j++) {
-          callback(cleanedJsonBuffer[j]);
+          yield cleanedJsonBuffer[j];
         }
 
         jsonBuffer = "";
@@ -80,7 +79,7 @@ async function processParametersFromStream(
             .replace(/^[\s,]+/, "");
           try {
             const jsonObj = JSON.parse(cleanedJsonBuffer.trim());
-            callback(jsonObj);
+            yield jsonObj;
           } catch (err) {
             console.error("Failed to parse JSON:", err);
           }

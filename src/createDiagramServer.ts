@@ -8,7 +8,7 @@ import {
 } from "./types";
 import { generateTimeBasedUUID } from "./util";
 
-const useServerMagnet = false;
+const useServerMagnet = true;
 
 const createNode = async ({
   node,
@@ -18,6 +18,7 @@ const createNode = async ({
   position: Position;
 }): Promise<ShapeWithTextNode> => {
   const figmaNode = figma.createShapeWithText();
+  figmaNode.visible = false;
   figmaNode.shapeType = node.shape;
   figmaNode.fills = [
     { type: "SOLID", color: { r: 0.59, g: 0.278, b: 1 }, opacity: 1 },
@@ -36,14 +37,23 @@ const createNode = async ({
   return figmaNode;
 };
 
+const deleteNodes = async (diagramId: string) => {
+  const allNodes = figma.currentPage.findAll();
+  const nodesToDelete = allNodes.filter(
+    (node) => node.getPluginData("diagramId") === diagramId
+  );
+
+  for (const node of nodesToDelete) {
+    node.remove();
+  }
+};
+
 const createLink = async ({
   from,
   to,
   link,
-  diagramId,
   fromMagnet,
   toMagnet,
-  isBidirectional,
 }: {
   from: SceneNode;
   to: SceneNode;
@@ -70,12 +80,15 @@ const createLink = async ({
 
 export const drawDiagram = async ({
   diagram,
+  stream,
   positionsObject,
+  diagramId,
 }: {
   diagram: DiagramElement[];
+  stream?: boolean;
   positionsObject: { [key: string]: Position };
+  diagramId: string;
 }): Promise<void> => {
-  const diagramId = generateTimeBasedUUID();
   const positions = new Map(Object.entries(positionsObject));
   const nodeShapes: { [id: string]: ShapeWithTextNode } = {};
   const links: SceneNode[] = [];
@@ -84,6 +97,10 @@ export const drawDiagram = async ({
     new Map();
 
   let backlinkCounter = 0;
+
+  if (stream) {
+    await deleteNodes(diagramId);
+  }
 
   for (const { from, link, to } of diagram) {
     for (const node of [from, to]) {
@@ -144,6 +161,7 @@ export const drawDiagram = async ({
     setNodeProperties({ node, index: i, pluginData: diagram, diagramId });
 
     figma.currentPage.appendChild(node);
+    node.visible = true;
   });
 
   figma.notify("Diagram generated!");

@@ -20,6 +20,7 @@ import {
 } from "./types";
 
 import { drawDiagram } from "./createDiagramServer";
+import { generateTimeBasedUUID } from "./util";
 
 const SETTINGS_KEY = "figjam-diagrammaton-plugin";
 
@@ -77,20 +78,17 @@ export default function () {
     });
   });
 
-  on<ExecutePlugin>(
-    "EXECUTE_PLUGIN",
-    async function ({ diagram, positionsObject }) {
-      await drawDiagram({ diagram, positionsObject });
+  on<ExecutePlugin>("EXECUTE_PLUGIN", async function (params) {
+    await drawDiagram(params);
 
-      try {
-        emit<SetLoading>("SET_LOADING", true);
-      } catch (error: any) {
-        emit<HandleError>("HANDLE_ERROR", error.message);
-      } finally {
-        emit<SetLoading>("SET_LOADING", false);
-      }
+    try {
+      emit<SetLoading>("SET_LOADING", true);
+    } catch (error: any) {
+      emit<HandleError>("HANDLE_ERROR", error.message);
+    } finally {
+      emit<SetLoading>("SET_LOADING", false);
     }
-  );
+  });
 
   showUI(
     {

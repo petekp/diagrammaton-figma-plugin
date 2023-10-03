@@ -10,11 +10,12 @@ import {
 } from "@create-figma-plugin/ui";
 import { emit } from "@create-figma-plugin/utilities";
 
-import { fetchDiagramData } from "../fetchDiagramData";
+import { fetchDiagramData, fetchStream } from "../fetchDiagramData";
 import { AutoSizeTextInput } from "./AutoSizeTextInput";
 import { ExecutePlugin, DiagramElement } from "../types";
 import { createDiagram } from "../createDiagramClient";
 import styles from "./styles.css";
+import { generateTimeBasedUUID } from "../util";
 
 export function NaturalInputView() {
   const {
@@ -76,15 +77,56 @@ export function NaturalInputView() {
     }
   }, [naturalInput, licenseKey]);
 
+  const handleGetCompletionsStream = useCallback(async () => {
+    const diagramId = generateTimeBasedUUID();
+    dispatch({
+      type: "SET_IS_LOADING",
+      payload: true,
+    });
+    try {
+      const diagramElements: DiagramElement[] = [];
+      for await (const newElement of fetchStream({
+        input: naturalInput,
+        licenseKey,
+        model,
+      })) {
+        if (newElement) {
+          diagramElements.push(newElement);
+          console.log({ newElement });
+          console.log({ diagramElements });
+          handleExecutePlugin({ diagramElements, diagramId });
+        }
+      }
+
+      dispatch({
+        type: "SET_IS_LOADING",
+        payload: false,
+      });
+    } catch (err) {
+      console.error({ err });
+      // @ts-ignore-next
+      setError(err.message || err || "There was an error");
+    } finally {
+    }
+  }, [naturalInput, licenseKey]);
+
   const handleExecutePlugin = useCallback(
-    async function (input: DiagramElement[]) {
+    async function ({
+      diagramElements,
+      diagramId,
+    }: {
+      diagramElements: DiagramElement[];
+      diagramId: string;
+    }) {
       const positionsObject = await createDiagram({
-        parsedOutput: input,
+        parsedOutput: diagramElements,
         orientation,
       });
 
       emit<ExecutePlugin>("EXECUTE_PLUGIN", {
-        diagram: input,
+        diagram: diagramElements,
+        diagramId,
+        stream: true,
         positionsObject,
       });
     },
@@ -97,7 +139,7 @@ export function NaturalInputView() {
         (event.key === "Enter" && event.ctrlKey) ||
         (event.key === "Enter" && event.metaKey)
       ) {
-        handleGetCompletions();
+        handleGetCompletionsStream();
       }
     };
 
@@ -106,7 +148,7 @@ export function NaturalInputView() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [handleGetCompletions]);
+  }, [handleGetCompletionsStream]);
 
   const isWindows = navigator.userAgent.indexOf("Win") != -1;
 
@@ -147,7 +189,11 @@ export function NaturalInputView() {
             />
           </div>
         )}
-        <Button loading={isLoading} fullWidth onClick={handleGetCompletions}>
+        <Button
+          loading={isLoading}
+          fullWidth
+          onClick={handleGetCompletionsStream}
+        >
           Generate &nbsp; {isWindows ? "Ctrl" : "⌘"} + ⏎
         </Button>
       </div>

@@ -268,58 +268,36 @@ export async function fetchDiagramData({
   }
 }
 
-export async function fetchDiagramDataStream({
-  input,
-}: {
-  input: string;
-}): Promise<ReadableStream<Uint8Array>> {
-  try {
-    const response = await fetch(`http://localhost:3000/api/gptStreaming`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        input,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message);
-    }
-
-    if (!response.body) {
-      throw new Error("No response body");
-    }
-
-    console.log(response.body);
-
-    return response.body;
-  } catch (err) {
-    throw new Error("Server unreachable 🫠");
-  }
-}
-
 const vercelFunctionUrl = "http://localhost:3000/api/gptStreaming";
 
-export async function fetchStream() {
+export async function* fetchStream({
+  licenseKey,
+  model,
+  input,
+}: {
+  licenseKey: string;
+  model: GPTModels;
+  input: string;
+}): AsyncGenerator<DiagramElement | void, void, unknown> {
   const response = await fetch(vercelFunctionUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      input: "sdfnsxczxcksdjfn",
+      input,
+      licenseKey,
+      model,
     }),
   });
 
   console.log("Processing stream...");
 
   if (response.body) {
-    processStepsFromStream(response.body, (jsonObj) => {
+    for await (const jsonObj of processStepsFromStream(response.body)) {
       console.log("Received nested object:", jsonObj);
-    });
+      yield jsonObj as DiagramElement;
+    }
   } else {
     console.error("No response body");
   }

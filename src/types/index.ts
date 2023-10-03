@@ -33,9 +33,13 @@ export interface ExecutePlugin extends EventHandler {
   name: "EXECUTE_PLUGIN";
   handler: ({
     diagram,
+    diagramId,
+    stream,
     positionsObject,
   }: {
     diagram: DiagramElement[];
+    diagramId: string;
+    stream?: boolean;
     positionsObject: { [key: string]: Position };
   }) => void;
 }

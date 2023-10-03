@@ -37,12 +37,10 @@
         "https://figma-plugins-pete.vercel.app",
         "https://www.diagrammaton.com",
         "https://fonts.googleapis.com",
-        "https://fonts.gstatic.com"
-      ],
-      "reasoning": "Endpoints for generating diagram syntax",
-      "devAllowedDomains": [
+        "https://fonts.gstatic.com",
         "http://localhost:3000"
-      ]
+      ],
+      "reasoning": "Endpoints for generating diagram syntax"
     }
   }
 }
