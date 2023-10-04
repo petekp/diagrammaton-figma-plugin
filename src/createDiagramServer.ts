@@ -7,6 +7,21 @@ import {
   MagnetDirection,
 } from "./types";
 
+const validShapes: ShapeWithTextNode["shapeType"][] = [
+  "SQUARE",
+  "ELLIPSE",
+  "ROUNDED_RECTANGLE",
+  "DIAMOND",
+  "TRIANGLE_UP",
+  "TRIANGLE_DOWN",
+  "PARALLELOGRAM_RIGHT",
+  "PARALLELOGRAM_LEFT",
+  "ENG_DATABASE",
+  "ENG_QUEUE",
+  "ENG_FILE",
+  "ENG_FOLDER",
+];
+
 const useServerMagnet = false;
 
 const createNode = async ({
@@ -18,7 +33,11 @@ const createNode = async ({
 }): Promise<ShapeWithTextNode> => {
   const figmaNode = figma.createShapeWithText();
   figmaNode.visible = false;
-  figmaNode.shapeType = node.shape;
+
+  figmaNode.shapeType = validShapes.includes(node.shape)
+    ? node.shape
+    : "ROUNDED_RECTANGLE";
+
   figmaNode.fills = [
     { type: "SOLID", color: { r: 0.59, g: 0.278, b: 1 }, opacity: 1 },
   ];

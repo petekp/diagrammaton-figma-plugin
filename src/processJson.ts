@@ -1,5 +1,8 @@
-const stepsString = '\\"steps\\": [\\n';
-const messageString = '\\"message\\":';
+import debug from "./debug";
+
+const stepsBegin = '\\"steps\\": [\\n';
+const messageStringBegin = '\\"message\\": \\"';
+const messageStringEnd = '\\"\\n';
 
 async function* processParametersFromStream(
   readableStream: ReadableStream<Uint8Array>
@@ -7,14 +10,17 @@ async function* processParametersFromStream(
   const reader = readableStream.getReader();
   let buffer = "";
   let jsonBuffer = "";
+  let messageBuffer = "";
   let braceCount = 0;
   let inStepsArray = false;
-  let inMessageArray = false;
+  let inMessageString = false;
 
   while (true) {
     const { done, value } = await reader.read();
     if (done) {
-      console.log("Stream ended.");
+      if (debug.enabled) {
+        console.log("Stream ended.");
+      }
       yield null;
       break;
     }
@@ -23,37 +29,41 @@ async function* processParametersFromStream(
     buffer += chunk;
 
     if (!inStepsArray) {
-      const stepsStart = buffer.indexOf(stepsString);
+      const stepsStart = buffer.indexOf(stepsBegin);
       if (stepsStart !== -1) {
         inStepsArray = true;
-        buffer = buffer.slice(stepsStart + 12);
+        buffer = buffer.slice(stepsStart + stepsBegin.length);
       }
     }
 
-    if (!inMessageArray) {
-      const messageStart = buffer.indexOf(messageString);
+    if (!inMessageString) {
+      const messageStart = buffer.indexOf(messageStringBegin);
       if (messageStart !== -1) {
-        inMessageArray = true;
-        buffer = buffer.slice(messageStart + 9);
+        inMessageString = true;
+        buffer = buffer.slice(messageStart + messageStringBegin.length);
       }
     }
 
-    if (inMessageArray) {
-      for (let i = 0; i < buffer.length; i++) {
+    if (inMessageString) {
+      let i = 0;
+      while (i < buffer.length) {
         const char = buffer[i];
-        jsonBuffer += char;
+        messageBuffer += char;
 
-        const cleanedJsonBuffer = jsonBuffer
-          .replace(/\\\"/g, '"')
-          .replace(/\\n/g, "")
-          .replace(/^[\s,]+/, "");
-
-        for (let j = 0; j < cleanedJsonBuffer.length; j++) {
-          yield cleanedJsonBuffer[j];
+        if (messageBuffer.endsWith(messageStringEnd)) {
+          messageBuffer = messageBuffer.slice(0, -messageStringEnd.length);
+          buffer = buffer.slice(i + 1);
+          inMessageString = false;
+          break;
         }
-
-        jsonBuffer = "";
+        i++;
       }
+
+      if (messageBuffer !== "") {
+        yield messageBuffer;
+        messageBuffer = "";
+      }
+
       buffer = "";
     }
 

@@ -24,11 +24,18 @@ export function NaturalInputView() {
     dispatch,
   } = pluginContext();
 
+  let errorMessage = error;
+
   const abortControllerRef = useRef(new AbortController());
 
   const handleGetCompletionsStream = useCallback(async () => {
     const diagramId = generateTimeBasedUUID();
     abortControllerRef.current = new AbortController();
+    errorMessage = "";
+    dispatch({
+      type: "SET_ERROR",
+      payload: "",
+    });
 
     dispatch({
       type: "SET_IS_LOADING",
@@ -42,8 +49,7 @@ export function NaturalInputView() {
         model,
         signal: abortControllerRef.current.signal,
       })) {
-        console.log("Element: ", element);
-        if (!element) {
+        if (element === null) {
           console.log("set loading false");
           dispatch({
             type: "SET_IS_LOADING",
@@ -51,8 +57,18 @@ export function NaturalInputView() {
           });
         }
 
-        if (element) {
-          diagramElements.push(element);
+        if (typeof element === "string") {
+          errorMessage += element;
+          dispatch({
+            type: "SET_ERROR",
+            payload: errorMessage,
+          });
+        }
+
+        console.log(typeof element);
+
+        if (typeof element === "object") {
+          diagramElements.push(element as DiagramElement);
 
           handleExecutePlugin({
             diagramElements,
@@ -69,7 +85,7 @@ export function NaturalInputView() {
         }
       }
     }
-  }, [naturalInput, licenseKey]);
+  }, [naturalInput, licenseKey, error]);
 
   const handleExecutePlugin = useCallback(
     async function ({

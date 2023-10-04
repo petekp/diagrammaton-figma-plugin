@@ -280,7 +280,7 @@ export async function* fetchStream({
   model: GPTModels;
   input: string;
   signal: AbortSignal;
-}): AsyncGenerator<DiagramElement | null, void, unknown> {
+}): AsyncGenerator<DiagramElement | null | string, void, unknown> {
   const response = await fetch(vercelFunctionUrl, {
     method: "POST",
     headers: {
@@ -294,15 +294,27 @@ export async function* fetchStream({
     signal,
   });
 
-  console.log("Processing stream...");
+  if (debug.enabled) {
+    console.log("Processing stream...");
+  }
 
   if (response.body) {
-    for await (const jsonObj of processStepsFromStream(response.body)) {
-      if (jsonObj === null) {
-        yield null;
-      } else {
-        yield jsonObj as DiagramElement;
+    try {
+      for await (const output of processStepsFromStream(response.body)) {
+        if (output === null) {
+          yield null;
+        }
+
+        if (typeof output === "string") {
+          yield output;
+        }
+
+        if (typeof output === "object") {
+          yield output as DiagramElement;
+        }
       }
+    } catch (err) {
+      throw new Error(err);
     }
   } else {
     console.error("No response body");

@@ -15,6 +15,6 @@
       "https://fonts.gstatic.com",
       "http://localhost:3000"
     ],
-    "reasoning": "Endpoints for generating diagram syntax"
+    "reasoning": "Endpoints for generating diagram syntax and downloading assets"
   }
 }
