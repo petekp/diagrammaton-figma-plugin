@@ -22,23 +22,23 @@ import { verifyLicenseKey } from "../verifyLicenseKey";
 
 import StarArrows from "./StarArrows";
 import { getBaseUrl } from "../util";
+import { useEffect } from "react";
 
 const approxDiamondAnimLength = 2;
 
 const diamondAnimation: AnimationProps = {
   initial: {
-    transform: {
-      scale: 0.5,
-      rotate: 45,
-    },
+    scale: 0.5,
+    rotate: 45,
+
     opacity: 0,
   },
   animate: {
     opacity: 1,
-    transform: {
-      scale: 1,
-      rotate: 45,
-    },
+
+    scale: 1,
+    rotate: 45,
+
     transition: { type: "spring", damping: 50, stiffness: 80 },
   },
 };
@@ -62,17 +62,16 @@ const arrowsAnimation: AnimationProps = {
 const logoAnimation: AnimationProps = {
   initial: {
     opacity: 0,
-    transform: {
-      scale: 0.9,
-      y: 10,
-    },
+
+    scale: 0.9,
+    y: 10,
   },
   animate: {
     opacity: 1,
-    transform: {
-      y: 0,
-      scale: 1,
-    },
+
+    y: 0,
+    scale: 1,
+
     transition: {
       type: "spring",
       damping: 20,
@@ -109,12 +108,12 @@ const letterAnimation: AnimationProps = {
 };
 
 const descriptionAnimation: AnimationProps = {
-  initial: { opacity: 0, transform: { y: -15 } },
+  initial: { opacity: 0 },
   animate: {
     opacity: 1,
-    transform: {
-      y: 0,
-    },
+
+    y: 0,
+
     transition: {
       delay: approxDiamondAnimLength,
       type: "spring",
@@ -125,10 +124,10 @@ const descriptionAnimation: AnimationProps = {
 };
 
 const containerAnimation: AnimationProps = {
-  initial: { transform: { y: -4 } },
+  initial: { y: -4 },
 
   animate: {
-    transform: { y: -35 },
+    y: -35,
     transition: {
       delay: approxDiamondAnimLength + 2,
       type: "spring",
@@ -138,12 +137,12 @@ const containerAnimation: AnimationProps = {
   },
 };
 const signInAnimation: AnimationProps = {
-  initial: { opacity: 0, transform: { y: -20 } },
+  initial: { opacity: 0, y: -20 },
   animate: {
     opacity: 1,
-    transform: {
-      y: -10,
-    },
+
+    y: -10,
+
     transition: {
       delay: approxDiamondAnimLength + 2.07,
       type: "spring",
@@ -175,11 +174,15 @@ function SignIn() {
       return;
     }
 
+    console.log("Verifying key");
+
     dispatch({ type: "SET_IS_LOADING", payload: true });
 
     const { success, message } = await verifyLicenseKey({
       licenseKey: licenseKeyInputValue,
     });
+
+    console.log("Key verified");
 
     dispatch({ type: "SET_IS_LOADING", payload: false });
 
@@ -198,9 +201,11 @@ function SignIn() {
 
   const lengthHit = licenseKeyInputValue.length === licenseKeyLength;
 
-  if (lengthHit) {
-    verifyKey();
-  }
+  useEffect(() => {
+    if (lengthHit && licenseKeyInputValue !== lastVerifiedKey) {
+      verifyKey();
+    }
+  }, [licenseKeyInputValue, lastVerifiedKey]);
 
   const signInForm = (
     <Stack space="small">
