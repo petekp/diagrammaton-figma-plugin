@@ -47,13 +47,13 @@ export default function () {
     const firstSelectedNode = figma.currentPage.selection[0];
 
     if (firstSelectedNode) {
-      console.log(firstSelectedNode.getPluginData("diagramData"));
-      console.log(firstSelectedNode.getPluginData("diagramId"));
+      // console.log(firstSelectedNode.getPluginData("diagramData"));
+      // console.log(firstSelectedNode.getPluginData("diagramId"));
     }
 
-    figma.currentPage.selection.forEach((node) => {
-      console.log(node.id);
-    });
+    // figma.currentPage.selection.forEach((node) => {
+    //   console.log(node.id);
+    // });
   });
 
   on<SavePersistedState>(
@@ -80,12 +80,6 @@ export default function () {
 
   on<ExecutePlugin>("EXECUTE_PLUGIN", async function (params) {
     await drawDiagram(params);
-
-    try {
-      emit<SetLoading>("SET_LOADING", true);
-    } catch (error: any) {
-      emit<HandleError>("HANDLE_ERROR", error.message);
-    }
   });
 
   showUI(

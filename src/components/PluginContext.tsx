@@ -118,9 +118,10 @@ export const PluginContextProvider = ({
   on<HandleError>("HANDLE_ERROR", (err) =>
     dispatch({ type: "SET_ERROR", payload: err })
   );
-  on<SetLoading>("SET_LOADING", (isLoading) =>
-    dispatch({ type: "SET_IS_LOADING", payload: isLoading })
-  );
+  on<SetLoading>("SET_LOADING", (isLoading) => {
+    dispatch({ type: "SET_IS_LOADING", payload: isLoading });
+    console.log("set loading: ", isLoading);
+  });
   on<SetSelectedNodesCount>("SET_SELECTED_NODES_COUNT", (num) =>
     dispatch({ type: "SET_NUM_NODES_SELECTED", payload: num })
   );

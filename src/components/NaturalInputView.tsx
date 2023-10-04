@@ -42,8 +42,9 @@ export function NaturalInputView() {
         model,
         signal: abortControllerRef.current.signal,
       })) {
-        console.log(element);
-        if (element === null) {
+        console.log("Element: ", element);
+        if (!element) {
+          console.log("set loading false");
           dispatch({
             type: "SET_IS_LOADING",
             payload: false,
@@ -109,6 +110,7 @@ export function NaturalInputView() {
         (event.key === "Enter" && event.ctrlKey) ||
         (event.key === "Enter" && event.metaKey)
       ) {
+        console.log("handle key down");
         handleGetCompletionsStream();
       }
     };

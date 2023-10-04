@@ -39,11 +39,9 @@ async function* processParametersFromStream(
     }
 
     if (inMessageArray) {
-      console.log("inMessageArray");
       for (let i = 0; i < buffer.length; i++) {
         const char = buffer[i];
         jsonBuffer += char;
-        console.log(jsonBuffer);
 
         const cleanedJsonBuffer = jsonBuffer
           .replace(/\\\"/g, '"')

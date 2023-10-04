@@ -301,7 +301,6 @@ export async function* fetchStream({
       if (jsonObj === null) {
         yield null;
       } else {
-        console.log("Received nested object:", jsonObj);
         yield jsonObj as DiagramElement;
       }
     }
