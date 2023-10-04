@@ -7,10 +7,11 @@ import {
   IconWarning32,
   IconCross32,
   VerticalSpace,
+  Columns,
 } from "@create-figma-plugin/ui";
 import { emit } from "@create-figma-plugin/utilities";
 
-import { fetchDiagramData, fetchStream } from "../fetchDiagramData";
+import { fetchStream } from "../fetchDiagramData";
 import { AutoSizeTextInput } from "./AutoSizeTextInput";
 import { ExecutePlugin, DiagramElement } from "../types";
 import { createDiagram } from "../createDiagramClient";
@@ -24,60 +25,6 @@ export function NaturalInputView() {
   } = pluginContext();
 
   const abortControllerRef = useRef(new AbortController());
-
-  const handleGetCompletions = useCallback(async () => {
-    if (!naturalInput) {
-      dispatch({
-        type: "SET_ERROR",
-        payload: "Please enter a diagram description",
-      });
-      return;
-    }
-    if (!licenseKey) {
-      dispatch({
-        type: "SET_ERROR",
-        payload: "Please enter a license key in Settings",
-      });
-      dispatch({ type: "SET_SHOW_REQUIRED", payload: true });
-      return;
-    }
-
-    dispatch({
-      type: "SET_ERROR",
-      payload: "",
-    });
-    dispatch({
-      type: "SET_IS_LOADING",
-      payload: true,
-    });
-
-    try {
-      const { type, data } = await fetchDiagramData({
-        licenseKey,
-        model,
-        input: naturalInput,
-      });
-
-      if (type === "message" || type === "error") {
-        dispatch({
-          type: "SET_ERROR",
-          payload: data,
-        });
-        return;
-      }
-
-      await handleExecutePlugin(data);
-    } catch (err) {
-      console.error({ err });
-      // @ts-ignore-next
-      setError(err.message || err || "There was an error");
-    } finally {
-      dispatch({
-        type: "SET_IS_LOADING",
-        payload: false,
-      });
-    }
-  }, [naturalInput, licenseKey]);
 
   const handleGetCompletionsStream = useCallback(async () => {
     const diagramId = generateTimeBasedUUID();
@@ -212,18 +159,28 @@ export function NaturalInputView() {
             />
           </div>
         )}
-        <Button
-          loading={isLoading}
-          fullWidth
-          onClick={handleGetCompletionsStream}
-        >
-          Generate &nbsp; {isWindows ? "Ctrl" : "⌘"} + ⏎
-        </Button>
-        {isLoading && (
-          <Button fullWidth onClick={handleCancel}>
-            Cancel
+        <Columns space="extraSmall">
+          {isLoading ? (
+            <Button
+              fullWidth
+              secondary
+              className={styles.fullWidth}
+              onClick={handleCancel}
+            >
+              Stop
+            </Button>
+          ) : null}
+
+          <Button
+            loading={isLoading}
+            fullWidth
+            disabled={isLoading}
+            className={styles.fullWidth}
+            onClick={handleGetCompletionsStream}
+          >
+            Generate &nbsp; {isWindows ? "Ctrl" : "⌘"} + ⏎
           </Button>
-        )}
+        </Columns>
       </div>
       <VerticalSpace space="small" />
     </Container>

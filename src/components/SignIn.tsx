@@ -13,14 +13,13 @@ import {
   VerticalSpace,
 } from "@create-figma-plugin/ui";
 import { useState } from "preact/hooks";
-import { AnimationProps } from "framer-motion";
+import { AnimationProps, motion } from "framer-motion";
 
 import styles from "./styles.css";
 import Logo from "./Logo";
 import { pluginContext } from "./PluginContext";
 import { verifyLicenseKey } from "../verifyLicenseKey";
 
-import { MotionDiv, MotionSpan } from "./Motion";
 import StarArrows from "./StarArrows";
 import { getBaseUrl } from "../util";
 
@@ -28,14 +27,18 @@ const approxDiamondAnimLength = 2;
 
 const diamondAnimation: AnimationProps = {
   initial: {
+    transform: {
+      scale: 0.5,
+      rotate: 45,
+    },
     opacity: 0,
-    scale: 0.5,
-    rotate: 45,
   },
   animate: {
     opacity: 1,
-    scale: 1,
-    rotate: 45,
+    transform: {
+      scale: 1,
+      rotate: 45,
+    },
     transition: { type: "spring", damping: 50, stiffness: 80 },
   },
 };
@@ -43,11 +46,15 @@ const diamondAnimation: AnimationProps = {
 const arrowsAnimation: AnimationProps = {
   initial: {
     opacity: 0,
-    scale: 0.85,
+
+    transform: {
+      scale: 0.85,
+    },
   },
   animate: {
     opacity: 0.5,
-    scale: 1,
+
+    transform: { scale: 1 },
     transition: { type: "spring", damping: 50, stiffness: 80 },
   },
 };
@@ -55,13 +62,17 @@ const arrowsAnimation: AnimationProps = {
 const logoAnimation: AnimationProps = {
   initial: {
     opacity: 0,
-    scale: 0.9,
-    y: 10,
+    transform: {
+      scale: 0.9,
+      y: 10,
+    },
   },
   animate: {
     opacity: 1,
-    scale: 1,
-    y: 0,
+    transform: {
+      y: 0,
+      scale: 1,
+    },
     transition: {
       type: "spring",
       damping: 20,
@@ -98,10 +109,12 @@ const letterAnimation: AnimationProps = {
 };
 
 const descriptionAnimation: AnimationProps = {
-  initial: { opacity: 0, y: -15 },
+  initial: { opacity: 0, transform: { y: -15 } },
   animate: {
     opacity: 1,
-    y: 0,
+    transform: {
+      y: 0,
+    },
     transition: {
       delay: approxDiamondAnimLength,
       type: "spring",
@@ -112,10 +125,10 @@ const descriptionAnimation: AnimationProps = {
 };
 
 const containerAnimation: AnimationProps = {
-  initial: { y: -4 },
+  initial: { transform: { y: -4 } },
 
   animate: {
-    y: -35,
+    transform: { y: -35 },
     transition: {
       delay: approxDiamondAnimLength + 2,
       type: "spring",
@@ -125,10 +138,12 @@ const containerAnimation: AnimationProps = {
   },
 };
 const signInAnimation: AnimationProps = {
-  initial: { opacity: 0, y: -20 },
+  initial: { opacity: 0, transform: { y: -20 } },
   animate: {
     opacity: 1,
-    y: -10,
+    transform: {
+      y: -10,
+    },
     transition: {
       delay: approxDiamondAnimLength + 2.07,
       type: "spring",
@@ -238,33 +253,33 @@ function SignIn() {
   return (
     <div className={styles.blurContainer}>
       <MiddleAlign>
-        <MotionDiv {...containerAnimation}>
-          <MotionDiv
+        <motion.div {...containerAnimation}>
+          <motion.div
             {...logoAnimation}
             style={{ display: "flex", justifyContent: "center" }}
           >
             <Logo size={64} />
-          </MotionDiv>
+          </motion.div>
           <VerticalSpace space="extraLarge" />
           <div className={styles.logoType}>
             {" "}
-            <MotionDiv {...staggerAnimation}>
+            <motion.div {...staggerAnimation}>
               {"DIAGRAMMATON".split("").map((char, index) => (
-                <MotionSpan
+                <motion.span
                   key={index}
                   {...letterAnimation}
                   variants={staggerAnimation.variants}
                 >
                   {char}
-                </MotionSpan>
+                </motion.span>
               ))}
-            </MotionDiv>
+            </motion.div>
           </div>
-          <MotionDiv {...descriptionAnimation} className={styles.description}>
+          <motion.div {...descriptionAnimation} className={styles.description}>
             AI powered diagrams for FigJam
-          </MotionDiv>
-        </MotionDiv>
-        <MotionDiv
+          </motion.div>
+        </motion.div>
+        <motion.div
           {...signInAnimation}
           onAnimationStart={() => {
             setTimeout(() => {
@@ -273,9 +288,9 @@ function SignIn() {
           }}
         >
           {signInForm}
-        </MotionDiv>
+        </motion.div>
       </MiddleAlign>
-      <MotionDiv
+      <motion.div
         {...arrowsAnimation}
         style={{
           position: "fixed",
@@ -288,8 +303,8 @@ function SignIn() {
         }}
       >
         <StarArrows />
-      </MotionDiv>
-      <MotionDiv
+      </motion.div>
+      <motion.div
         {...diamondAnimation}
         style={{
           borderRadius: "0.25rem",

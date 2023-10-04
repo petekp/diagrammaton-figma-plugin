@@ -4,7 +4,12 @@
     "jsx": "react",
     "target": "ESNext",
     "lib": ["ES2019"],
-    "typeRoots": ["node_modules/@figma", "node_modules/@types"]
+    "typeRoots": ["node_modules/@figma", "node_modules/@types"],
+    "skipLibCheck": true,
+    "paths": {
+      "react": ["./node_modules/preact/compat/"],
+      "react-dom": ["./node_modules/preact/compat/"]
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"]
 }

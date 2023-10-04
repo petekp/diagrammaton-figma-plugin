@@ -10,7 +10,7 @@ import SignIn from "./SignIn";
 import LoadingSettingsOverlay from "./LoadingSettingsOverlay";
 import styles from "./styles.css";
 import debug from "../debug";
-import { MotionDiv, AnimatePresence } from "./Motion";
+import { AnimatePresence, motion } from "framer-motion";
 
 export function PrimaryTabs() {
   const {
@@ -57,20 +57,21 @@ export function PrimaryTabs() {
     <Fragment>
       <AnimatePresence>
         {showLoading && (
-          <MotionDiv
+          <motion.div
             className={styles.fullScreen}
             style={{ zIndex: 100 }}
             initial={{ opacity: 1 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            pm
           >
             <LoadingSettingsOverlay />
-          </MotionDiv>
+          </motion.div>
         )}
       </AnimatePresence>
       <AnimatePresence>
         {isNewUser && (
-          <MotionDiv
+          <motion.div
             className={styles.fullScreen}
             style={{ zIndex: 50 }}
             initial="hidden"
@@ -79,12 +80,12 @@ export function PrimaryTabs() {
             variants={variants}
           >
             <SignIn />
-          </MotionDiv>
+          </motion.div>
         )}
       </AnimatePresence>
       <AnimatePresence>
         {!isNewUser && !isPersistedStateLoading && (
-          <MotionDiv
+          <motion.div
             className={styles.fullScreen}
             style={{ zIndex: 25 }}
             initial={{ opacity: 0 }}
@@ -97,7 +98,7 @@ export function PrimaryTabs() {
               value={currentPrimaryTab}
               style={{ display: "flex", flexDirection: "column" }}
             />
-          </MotionDiv>
+          </motion.div>
         )}
       </AnimatePresence>
     </Fragment>

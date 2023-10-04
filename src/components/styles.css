@@ -98,3 +98,8 @@
   font-size: 14px;
   text-align: center;
 }
+
+.fullWidth {
+  flex: 1;
+  width: 100%;
+}

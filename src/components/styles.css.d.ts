@@ -9,6 +9,7 @@ declare const styles: {
   readonly "fullScreen": string;
   readonly "logoType": string;
   readonly "description": string;
+  readonly "fullWidth": string;
 };
 export = styles;
 
