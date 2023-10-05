@@ -1,6 +1,7 @@
 import { h } from "preact";
 import { pluginContext } from "./PluginContext";
 import { useCallback, useEffect, useRef } from "preact/hooks";
+import { z } from "zod";
 import {
   Button,
   Container,
@@ -11,7 +12,7 @@ import {
 } from "@create-figma-plugin/ui";
 import { emit } from "@create-figma-plugin/utilities";
 
-import { fetchStream } from "../fetchDiagramData";
+import { StreamElement, fetchStream } from "../fetchDiagramData";
 import { AutoSizeTextInput } from "./AutoSizeTextInput";
 import { ExecutePlugin, DiagramElement } from "../types";
 import { createDiagram } from "../createDiagramClient";
@@ -26,58 +27,54 @@ export function NaturalInputView() {
 
   let errorMessage = error;
   const diagramId = useRef(generateTimeBasedUUID());
-  const diagramElements = useRef<DiagramElement[]>([]);
+  const diagramNodes = useRef<z.infer<typeof DiagramElement>[]>([]);
 
   const abortControllerRef = useRef(new AbortController());
 
-  const handleStreamElement = (element) => {
-    if (element === null) {
-      console.log("set loading false");
-      dispatch({
-        type: "SET_IS_LOADING",
-        payload: false,
-      });
+  const handleStreamElement = (element: z.infer<typeof StreamElement>) => {
+    switch (element.type) {
+      case "end":
+        dispatch({
+          type: "SET_ERROR",
+          payload: "",
+        });
+        dispatch({
+          type: "SET_IS_LOADING",
+          payload: false,
+        });
+        break;
+      case "message":
+        errorMessage += element.data;
+        dispatch({
+          type: "SET_ERROR",
+          payload: errorMessage,
+        });
+        break;
+      case "error":
+        dispatch({
+          type: "SET_ERROR",
+          payload: element.data,
+        });
+        dispatch({
+          type: "SET_IS_LOADING",
+          payload: false,
+        });
+        break;
 
-      return;
-    }
-
-    if (
-      typeof element === "object" &&
-      "type" in element &&
-      element.type === "error"
-    ) {
-      console.log("error", element.message);
-      dispatch({
-        type: "SET_ERROR",
-        payload: element.message,
-      });
-      dispatch({
-        type: "SET_IS_LOADING",
-        payload: false,
-      });
-      return;
-    }
-
-    if (typeof element === "string") {
-      errorMessage += element;
-      console.log(errorMessage);
-      dispatch({
-        type: "SET_ERROR",
-        payload: errorMessage,
-      });
-
-      return;
-    }
-
-    if (typeof element === "object") {
-      diagramElements.current.push(element as DiagramElement);
-
-      handleExecutePlugin({
-        diagramElements: diagramElements.current,
-        diagramId: diagramId.current,
-      });
+      case "node":
+        if (element.data) {
+          diagramNodes.current = diagramNodes.current.concat(element.data);
+        }
+        if (diagramNodes.current) {
+          handleExecutePlugin({
+            diagramNodes: diagramNodes.current,
+            diagramId: diagramId.current,
+          });
+        }
+        break;
     }
   };
+
   const handleError = (err: unknown) => {
     if (err instanceof Error) {
       if (err.name === "AbortError") {
@@ -107,26 +104,27 @@ export function NaturalInputView() {
     } catch (err) {
       handleError(err);
     } finally {
-      diagramElements.current = [];
+      diagramNodes.current = [];
+      dispatch({ type: "SET_IS_LOADING", payload: false });
     }
   }, [naturalInput, licenseKey, error]);
 
   const handleExecutePlugin = useCallback(
     async function ({
-      diagramElements,
+      diagramNodes,
       diagramId,
     }: {
-      diagramElements: DiagramElement[];
+      diagramNodes: z.infer<typeof DiagramElement>[];
       diagramId: string;
     }) {
       console.log(diagramId);
       const positionsObject = await createDiagram({
-        parsedOutput: diagramElements,
+        parsedOutput: diagramNodes,
         orientation,
       });
 
       emit<ExecutePlugin>("EXECUTE_PLUGIN", {
-        diagram: diagramElements,
+        diagram: diagramNodes,
         diagramId,
         stream: true,
         positionsObject,

@@ -4,7 +4,8 @@
     "@create-figma-plugin/utilities": "^2.4.0",
     "dagre": "^0.8.5",
     "framer-motion": "^10.16.4",
-    "preact": ">=10"
+    "preact": ">=10",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@create-figma-plugin/build": "^2.4.0",

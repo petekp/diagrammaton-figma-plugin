@@ -1,29 +1,43 @@
-export interface Diagram {
-  elements: DiagramElement[];
-  orientation: "TB" | "TD" | "BT" | "LR" | "RL";
-}
+import { z } from "zod";
 
-export interface Node {
-  id: string;
-  label: string;
-  shape: ShapeWithTextNode["shapeType"];
-}
+export const Node = z.object({
+  id: z.string(),
+  label: z.string(),
+  shape: z.enum(["RECTANGLE", "ROUNDED_RECTANGLE", "ELLIPSE", "DIAMOND"]),
+});
 
-export interface NodeLink {
-  label: string;
-  fromMagnet: MagnetDirection;
-  toMagnet: MagnetDirection;
-}
+const MagnetDirection = z.enum(["TOP", "BOTTOM", "LEFT", "RIGHT"]);
 
-export interface DiagramElement {
-  from: Node;
-  link: NodeLink;
-  to: Node;
-}
+export const NodeLink = z.object({
+  label: z.string(),
+  fromMagnet: MagnetDirection,
+  toMagnet: MagnetDirection,
+});
 
-export interface Position {
-  x: number;
-  y: number;
-}
+export const DiagramElement = z.object({
+  from: z.object({
+    id: z.string(),
+    label: z.string(),
+    shape: z.string(),
+  }),
+  link: z.object({
+    label: z.string(),
+    fromMagnet: MagnetDirection,
+    toMagnet: MagnetDirection,
+  }),
+  to: z.object({
+    id: z.string(),
+    label: z.string(),
+    shape: z.string(),
+  }),
+});
 
-export type MagnetDirection = "TOP" | "BOTTOM" | "LEFT" | "RIGHT";
+export const Diagram = z.object({
+  elements: z.array(DiagramElement),
+  orientation: z.enum(["TB", "TD", "BT", "LR", "RL"]),
+});
+
+export const Position = z.object({
+  x: z.number(),
+  y: z.number(),
+});
