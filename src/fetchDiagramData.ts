@@ -268,26 +268,37 @@ export async function fetchDiagramData({
   }
 }
 
-const vercelFunctionUrl = "http://localhost:3000/api/gptStreaming";
+const streamingUrl = `${getBaseUrl()}/api/gptStreaming`;
 
 export async function* fetchStream({
   licenseKey,
   model,
-  input,
+  diagramDescription,
   signal,
 }: {
   licenseKey: string;
   model: GPTModels;
-  input: string;
+  diagramDescription: string;
   signal: AbortSignal;
-}): AsyncGenerator<DiagramElement | null | string, void, unknown> {
-  const response = await fetch(vercelFunctionUrl, {
+}): AsyncGenerator<
+  DiagramElement | null | string | { type: string; message: string },
+  void,
+  unknown
+> {
+  if (debug.enabled && debug.stubDiagram) {
+    for (const data of debugValue.data) {
+      yield data;
+    }
+    yield null;
+  }
+
+  const response = await fetch(streamingUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      input,
+      diagramDescription,
       licenseKey,
       model,
     }),
@@ -295,7 +306,12 @@ export async function* fetchStream({
   });
 
   if (debug.enabled) {
-    console.log("Processing stream...");
+    console.info("Processing stream...");
+  }
+
+  if (!response.ok) {
+    const err = await response.json();
+    yield err;
   }
 
   if (response.body) {
@@ -314,7 +330,7 @@ export async function* fetchStream({
         }
       }
     } catch (err) {
-      throw new Error(err);
+      console.log("error: ", err);
     }
   } else {
     console.error("No response body");

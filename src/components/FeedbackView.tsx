@@ -89,7 +89,7 @@ export function FeedbackView() {
             lineHeight: 1.3,
             flex: 1,
           }}
-          placeholder="How can we improve your experience?"
+          placeholder="How could we improve?"
           grow={false}
           spellCheck={false}
           variant="border"
@@ -119,7 +119,12 @@ export function FeedbackView() {
           </Banner>
         )}
 
-        <Button loading={isLoading} fullWidth onClick={handleSendFeedback}>
+        <Button
+          loading={isLoading}
+          disabled={isLoading}
+          fullWidth
+          onClick={handleSendFeedback}
+        >
           Share feedback
         </Button>
       </div>

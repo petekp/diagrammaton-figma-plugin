@@ -25,65 +25,89 @@ export function NaturalInputView() {
   } = pluginContext();
 
   let errorMessage = error;
+  const diagramId = useRef(generateTimeBasedUUID());
+  const diagramElements = useRef<DiagramElement[]>([]);
 
   const abortControllerRef = useRef(new AbortController());
 
+  const handleStreamElement = (element) => {
+    if (element === null) {
+      console.log("set loading false");
+      dispatch({
+        type: "SET_IS_LOADING",
+        payload: false,
+      });
+
+      return;
+    }
+
+    if (
+      typeof element === "object" &&
+      "type" in element &&
+      element.type === "error"
+    ) {
+      console.log("error", element.message);
+      dispatch({
+        type: "SET_ERROR",
+        payload: element.message,
+      });
+      dispatch({
+        type: "SET_IS_LOADING",
+        payload: false,
+      });
+      return;
+    }
+
+    if (typeof element === "string") {
+      errorMessage += element;
+      console.log(errorMessage);
+      dispatch({
+        type: "SET_ERROR",
+        payload: errorMessage,
+      });
+
+      return;
+    }
+
+    if (typeof element === "object") {
+      diagramElements.current.push(element as DiagramElement);
+
+      handleExecutePlugin({
+        diagramElements: diagramElements.current,
+        diagramId: diagramId.current,
+      });
+    }
+  };
+  const handleError = (err: unknown) => {
+    if (err instanceof Error) {
+      if (err.name === "AbortError") {
+        console.log("Fetch aborted");
+      } else {
+        console.error({ err });
+      }
+    }
+  };
+
   const handleGetCompletionsStream = useCallback(async () => {
-    const diagramId = generateTimeBasedUUID();
+    diagramId.current = generateTimeBasedUUID();
     abortControllerRef.current = new AbortController();
     errorMessage = "";
-    dispatch({
-      type: "SET_ERROR",
-      payload: "",
-    });
+    dispatch({ type: "SET_ERROR", payload: "" });
+    dispatch({ type: "SET_IS_LOADING", payload: true });
 
-    dispatch({
-      type: "SET_IS_LOADING",
-      payload: true,
-    });
     try {
-      const diagramElements: DiagramElement[] = [];
       for await (const element of fetchStream({
-        input: naturalInput,
+        diagramDescription: naturalInput,
         licenseKey,
         model,
         signal: abortControllerRef.current.signal,
       })) {
-        if (element === null) {
-          console.log("set loading false");
-          dispatch({
-            type: "SET_IS_LOADING",
-            payload: false,
-          });
-        }
-
-        if (typeof element === "string") {
-          errorMessage += element;
-          dispatch({
-            type: "SET_ERROR",
-            payload: errorMessage,
-          });
-        }
-
-        console.log(typeof element);
-
-        if (typeof element === "object") {
-          diagramElements.push(element as DiagramElement);
-
-          handleExecutePlugin({
-            diagramElements,
-            diagramId,
-          });
-        }
+        handleStreamElement(element);
       }
     } catch (err) {
-      if (err instanceof Error) {
-        if (err.name === "AbortError") {
-          console.log("Fetch aborted");
-        } else {
-          console.error({ err });
-        }
-      }
+      handleError(err);
+    } finally {
+      diagramElements.current = [];
     }
   }, [naturalInput, licenseKey, error]);
 
@@ -95,6 +119,7 @@ export function NaturalInputView() {
       diagramElements: DiagramElement[];
       diagramId: string;
     }) {
+      console.log(diagramId);
       const positionsObject = await createDiagram({
         parsedOutput: diagramElements,
         orientation,
@@ -126,7 +151,6 @@ export function NaturalInputView() {
         (event.key === "Enter" && event.ctrlKey) ||
         (event.key === "Enter" && event.metaKey)
       ) {
-        console.log("handle key down");
         handleGetCompletionsStream();
       }
     };
