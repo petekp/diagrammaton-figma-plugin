@@ -1,11 +1,9 @@
-import { z } from "zod";
-
 import processStepsFromStream from "./processJson";
 import { DiagramElement } from "./types";
 import { getBaseUrl } from "./util";
 import debug from "./debug";
 
-const debugValue: z.infer<typeof DiagramElement>[] = [
+const debugValue: DiagramElement[] = [
   {
     from: { id: "start", label: "Start", shape: "ROUNDED_RECTANGLE" },
     link: {
@@ -216,31 +214,30 @@ const debugValue: z.infer<typeof DiagramElement>[] = [
 
 export type GPTModels = "gpt3" | "gpt4";
 
-const MessageElement = z.object({
-  type: z.literal("message"),
-  data: z.string(),
-});
+type MessageElement = {
+  type: "message";
+  data: string;
+};
 
-const NodeElement = z.object({
-  type: z.literal("node"),
-  data: z.array(DiagramElement),
-});
+type NodeElement = {
+  type: "node";
+  data: DiagramElement[];
+};
 
-const EndElement = z.object({
-  type: z.literal("end"),
-});
+type EndElement = {
+  type: "end";
+};
 
-const ErrorElement = z.object({
-  type: z.literal("error"),
-  data: z.string(),
-});
+type ErrorElement = {
+  type: "error";
+  data: string;
+};
 
-export const StreamElement = z.union([
-  MessageElement,
-  NodeElement,
-  EndElement,
-  ErrorElement,
-]);
+export type StreamElement =
+  | MessageElement
+  | NodeElement
+  | EndElement
+  | ErrorElement;
 
 const streamingUrl = `${getBaseUrl()}/api/gptStreaming`;
 
@@ -271,7 +268,7 @@ async function fetchDiagramData({
 
 async function* processResponse(
   response: Response
-): AsyncGenerator<z.infer<typeof StreamElement>> {
+): AsyncGenerator<StreamElement> {
   if (!response.ok) {
     const err = await response.json();
     yield { type: "error", data: err.message as string };
@@ -310,7 +307,7 @@ export async function* fetchStream(params: {
   model: GPTModels;
   diagramDescription: string;
   signal: AbortSignal;
-}): AsyncGenerator<z.infer<typeof StreamElement>> {
+}): AsyncGenerator<StreamElement> {
   if (debug.enabled && debug.stubDiagram) {
     for (const data of debugValue) {
       yield { type: "node", data: [data] };

@@ -1,7 +1,4 @@
 import { h } from "preact";
-import { pluginContext } from "./PluginContext";
-import { useCallback, useEffect, useRef } from "preact/hooks";
-import { z } from "zod";
 import {
   Button,
   Container,
@@ -10,38 +7,32 @@ import {
   VerticalSpace,
   Columns,
 } from "@create-figma-plugin/ui";
+import { pluginContext } from "./PluginContext";
 import { emit } from "@create-figma-plugin/utilities";
+import { useCallback, useEffect, useRef } from "preact/hooks";
 
-import { StreamElement, fetchStream } from "../fetchDiagramData";
-import { AutoSizeTextInput } from "./AutoSizeTextInput";
-import { ExecutePlugin, DiagramElement } from "../types";
-import { createDiagram } from "../createDiagramClient";
 import styles from "./styles.css";
 import { generateTimeBasedUUID } from "../util";
+import { createDiagram } from "../createDiagramClient";
+import { AutoSizeTextInput } from "./AutoSizeTextInput";
+import { ExecutePlugin, DiagramElement } from "../types";
+import { StreamElement, fetchStream } from "../fetchDiagramData";
 
 export function NaturalInputView() {
   const {
     state: { naturalInput, licenseKey, model, orientation, error, isLoading },
     dispatch,
+    clearErrors,
   } = pluginContext();
 
   let errorMessage = error;
   const diagramId = useRef(generateTimeBasedUUID());
-  const diagramNodes = useRef<z.infer<typeof DiagramElement>[]>([]);
-
+  const diagramNodes = useRef<DiagramElement[]>([]);
   const abortControllerRef = useRef(new AbortController());
 
-  const handleStreamElement = (element: z.infer<typeof StreamElement>) => {
+  const handleStreamElement = (element: StreamElement) => {
     switch (element.type) {
       case "end":
-        dispatch({
-          type: "SET_ERROR",
-          payload: "",
-        });
-        dispatch({
-          type: "SET_IS_LOADING",
-          payload: false,
-        });
         break;
       case "message":
         errorMessage += element.data;
@@ -60,7 +51,6 @@ export function NaturalInputView() {
           payload: false,
         });
         break;
-
       case "node":
         if (element.data) {
           diagramNodes.current = diagramNodes.current.concat(element.data);
@@ -70,6 +60,8 @@ export function NaturalInputView() {
             diagramNodes: diagramNodes.current,
             diagramId: diagramId.current,
           });
+        } else {
+          throw new Error("Error drawing diagram.");
         }
         break;
     }
@@ -78,7 +70,7 @@ export function NaturalInputView() {
   const handleError = (err: unknown) => {
     if (err instanceof Error) {
       if (err.name === "AbortError") {
-        console.log("Fetch aborted");
+        console.log("Stream aborted.");
       } else {
         console.error({ err });
       }
@@ -89,7 +81,7 @@ export function NaturalInputView() {
     diagramId.current = generateTimeBasedUUID();
     abortControllerRef.current = new AbortController();
     errorMessage = "";
-    dispatch({ type: "SET_ERROR", payload: "" });
+    clearErrors();
     dispatch({ type: "SET_IS_LOADING", payload: true });
 
     try {
@@ -114,7 +106,7 @@ export function NaturalInputView() {
       diagramNodes,
       diagramId,
     }: {
-      diagramNodes: z.infer<typeof DiagramElement>[];
+      diagramNodes: DiagramElement[];
       diagramId: string;
     }) {
       console.log(diagramId);
@@ -137,6 +129,7 @@ export function NaturalInputView() {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
+
     dispatch({
       type: "SET_IS_LOADING",
       payload: false,
@@ -177,7 +170,7 @@ export function NaturalInputView() {
             lineHeight: 1.3,
             flex: 1,
           }}
-          placeholder="Generate a diagram of..."
+          placeholder="I want a diagram of..."
           grow={false}
           spellCheck={false}
           variant="border"
@@ -185,18 +178,14 @@ export function NaturalInputView() {
           onValueInput={(val: string) => {
             dispatch({ type: "SET_NATURAL_INPUT", payload: val });
           }}
-          onFocusCapture={() => {
-            dispatch({ type: "SET_ERROR", payload: "" });
-          }}
+          onFocusCapture={clearErrors}
         />
 
         {error && (
           <div className={styles.warningBanner}>
             <IconWarning32 />
             <div className={styles.warningText}>{error}</div>
-            <IconCross32
-              onClick={() => dispatch({ type: "SET_ERROR", payload: "" })}
-            />
+            <IconCross32 onClick={clearErrors} />
           </div>
         )}
         <Columns space="extraSmall">

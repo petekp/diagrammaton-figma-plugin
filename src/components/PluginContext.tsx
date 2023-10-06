@@ -18,6 +18,7 @@ import { useRef } from "react";
 type PluginContextType = {
   state: PluginState;
   dispatch: React.Dispatch<Action>;
+  clearErrors: () => void;
 };
 
 const PluginContext = createContext<PluginContextType | undefined>(undefined);
@@ -129,8 +130,10 @@ export const PluginContextProvider = ({
     dispatch({ type: "SET_NUM_NODES_SELECTED", payload: num })
   );
 
+  const clearErrors = () => dispatch({ type: "SET_ERROR", payload: "" });
+
   return (
-    <PluginContext.Provider value={{ state, dispatch }}>
+    <PluginContext.Provider value={{ state, dispatch, clearErrors }}>
       {children}
     </PluginContext.Provider>
   );
