@@ -17,6 +17,7 @@ import { createDiagram } from "../createDiagramClient";
 import { AutoSizeTextInput } from "./AutoSizeTextInput";
 import { ExecutePlugin, DiagramElement } from "../types";
 import { StreamElement, fetchStream } from "../fetchDiagramData";
+import debug from "../debug";
 
 export function NaturalInputView() {
   const {
@@ -52,6 +53,7 @@ export function NaturalInputView() {
         });
         break;
       case "node":
+        if (debug.enabled) console.log(element.data);
         if (element.data) {
           diagramNodes.current = diagramNodes.current.concat(element.data);
         }
@@ -109,7 +111,7 @@ export function NaturalInputView() {
       diagramNodes: DiagramElement[];
       diagramId: string;
     }) {
-      console.log(diagramId);
+      if (debug.enabled) console.log(diagramId);
       const positionsObject = await createDiagram({
         parsedOutput: diagramNodes,
         orientation,

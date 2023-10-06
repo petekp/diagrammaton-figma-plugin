@@ -23,6 +23,7 @@ import { verifyLicenseKey } from "../verifyLicenseKey";
 import StarArrows from "./StarArrows";
 import { getBaseUrl } from "../util";
 import { useEffect } from "react";
+import debug from "../debug";
 
 const approxDiamondAnimLength = 2;
 
@@ -174,7 +175,7 @@ function SignIn() {
       return;
     }
 
-    console.log("Verifying key");
+    if (debug.enabled) console.log("Verifying key");
 
     dispatch({ type: "SET_IS_LOADING", payload: true });
 
@@ -182,7 +183,7 @@ function SignIn() {
       licenseKey: licenseKeyInputValue,
     });
 
-    console.log("Key verified");
+    if (debug.enabled) console.log("Key verified");
 
     dispatch({ type: "SET_IS_LOADING", payload: false });
 

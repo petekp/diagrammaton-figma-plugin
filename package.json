@@ -22,7 +22,8 @@
     "toggleDebugOff": "node ./util/toggleDebug false",
     "toggleDebugOn": "node ./util/toggleDebug true",
     "build": "npm run toggleDebugOff; NODE_ENV=production build-figma-plugin --typecheck --minify; npm run createZip",
-    "watch": "npm run toggleDebugOn; NODE_ENV=development build-figma-plugin --typecheck --watch"
+    "watch": "npm run toggleDebugOn; NODE_ENV=development build-figma-plugin --typecheck --watch",
+    "watch-prod": "npm run toggleDebugOff; NODE_ENV=production build-figma-plugin --typecheck --minify --watch"
   },
   "figma-plugin": {
     "editorType": [

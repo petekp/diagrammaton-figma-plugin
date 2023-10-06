@@ -13,7 +13,6 @@ export type PersistedState = {
   isNewUser: boolean;
   isSignInVisible: boolean;
   feedback: string;
-  syntaxInput: string;
   orientation: string;
 };
 
