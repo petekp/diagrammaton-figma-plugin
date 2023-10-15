@@ -31,6 +31,10 @@ export function FeedbackView() {
   } = pluginContext();
 
   const handleSendFeedback = useCallback(async () => {
+    if (!feedback) {
+      return;
+    }
+
     if (!licenseKey) {
       dispatch({ type: "SET_SHOW_REQUIRED", payload: true });
       dispatch({
@@ -89,7 +93,7 @@ export function FeedbackView() {
             lineHeight: 1.3,
             flex: 1,
           }}
-          placeholder="How could we improve?"
+          placeholder="How could we improve? ☺️"
           grow={false}
           spellCheck={false}
           variant="border"

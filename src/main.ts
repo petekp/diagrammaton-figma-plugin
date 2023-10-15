@@ -12,7 +12,6 @@ import {
   ExecutePlugin,
   GetPersistedState,
   HandleError,
-  SetLoading,
   SetSelectedNodesCount,
   SetUILoaded,
   PersistedState,
@@ -20,7 +19,6 @@ import {
 } from "./types";
 
 import { drawDiagram } from "./createDiagramServer";
-import { generateTimeBasedUUID } from "./util";
 
 const SETTINGS_KEY = "figjam-diagrammaton-plugin";
 

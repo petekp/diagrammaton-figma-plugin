@@ -5,7 +5,7 @@ declare const styles: {
   readonly "warningBanner": string;
   readonly "warningText": string;
   readonly "closeIcon": string;
-  readonly "blurContainer": string;
+  readonly "overlayContainer": string;
   readonly "fullScreen": string;
   readonly "logoType": string;
   readonly "description": string;

@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 
 function LoadingSettingsOverlay() {
   return (
-    <div className={styles.blurContainer}>
+    <div className={styles.overlayContainer}>
       <MiddleAlign>
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}

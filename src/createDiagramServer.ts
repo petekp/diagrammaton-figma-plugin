@@ -55,11 +55,10 @@ const createNode = async ({
   return figmaNode;
 };
 
-const deleteNodes = async (diagramId: string) => {
-  const allNodes = figma.currentPage.findAll();
-  const nodesToDelete = allNodes.filter(
-    (node) => node.getPluginData("diagramId") === diagramId
-  );
+const deleteDiagramById = async (diagramId: string) => {
+  const nodesToDelete = figma.currentPage
+    .findAll()
+    .filter((node) => node.getPluginData("diagramId") === diagramId);
 
   for (const node of nodesToDelete) {
     node.remove();
@@ -104,14 +103,14 @@ const createLink = async ({
 
 export const drawDiagram = async ({
   diagram,
-  stream,
   positionsObject,
   diagramId,
+  stream,
 }: {
   diagram: DiagramElement[];
-  stream?: boolean;
   positionsObject: { [key: string]: Position };
   diagramId: string;
+  stream?: boolean;
 }): Promise<void> => {
   const positions = new Map(Object.entries(positionsObject));
   const nodeShapes: { [id: string]: ShapeWithTextNode } = {};
@@ -123,7 +122,7 @@ export const drawDiagram = async ({
   let backlinkCounter = 0;
 
   if (stream) {
-    await deleteNodes(diagramId);
+    await deleteDiagramById(diagramId);
   }
 
   for (const { from, link, to } of diagram) {
@@ -183,12 +182,44 @@ export const drawDiagram = async ({
 
   links.forEach((link) => figma.currentPage.appendChild(link));
 
+  const bufferNode = figma.createRectangle();
+  bufferNode.opacity = 0;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+
+  for (const position of Object.values(positionsObject)) {
+    const potentialMaxX = position.x + DEFAULT_NODE_WIDTH;
+    const potentialMaxY = position.y + DEFAULT_NODE_HEIGHT;
+
+    if (potentialMaxX > maxX) {
+      maxX = potentialMaxX;
+    }
+
+    if (potentialMaxY > maxY) {
+      maxY = potentialMaxY;
+    }
+  }
+
+  const diagramWidth = maxX;
+  const diagramHeight = maxY;
+
+  const diagramMidHeight = diagramHeight / 2;
+
+  bufferNode.y = diagramMidHeight;
+
   Object.values(nodeShapes).forEach((node, i) => {
     setNodeProperties({ node, index: i, diagramData: diagram, diagramId });
-
     figma.currentPage.appendChild(node);
     node.visible = true;
   });
+  bufferNode.resize(diagramWidth * 1.5, diagramHeight);
+
+  const firstNode = Object.values(nodeShapes)[0];
+
+  bufferNode.x = firstNode.x;
+
+  figma.viewport.scrollAndZoomIntoView([bufferNode]);
+  bufferNode.remove();
 };
 
 const setNodeProperties = ({

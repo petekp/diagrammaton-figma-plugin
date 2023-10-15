@@ -1,16 +1,27 @@
 import { Tabs, TabsOption } from "@create-figma-plugin/ui";
-import { Fragment, h, JSX } from "preact";
+import { AnimatePresence, motion } from "framer-motion";
+import { h, JSX } from "preact";
 
+import LoadingSettingsOverlay from "./LoadingSettingsOverlay";
 import { pluginContext } from "./PluginContext";
 import { SettingsView } from "./SettingsView";
 import { GenerateView } from "./GenerateView";
-import { PrimaryTab } from "../types";
 import { FeedbackView } from "./FeedbackView";
-import SignIn from "./SignIn";
-import LoadingSettingsOverlay from "./LoadingSettingsOverlay";
+import { PrimaryTab } from "../types";
 import styles from "./styles.css";
+import SignIn from "./SignIn";
 import debug from "../debug";
-import { AnimatePresence, motion } from "framer-motion";
+
+const variants = {
+  hidden: { opacity: 0, delay: 0.5 },
+  visible: {
+    opacity: 1,
+  },
+  exit: {
+    opacity: 0,
+    transition: { delay: 0.7 },
+  },
+};
 
 export function PrimaryTabs() {
   const {
@@ -19,8 +30,10 @@ export function PrimaryTabs() {
   } = pluginContext();
 
   function handleChange(event: JSX.TargetedEvent<HTMLInputElement>) {
-    const newValue = event.currentTarget.value as PrimaryTab;
-    dispatch({ type: "SET_CURRENT_PRIMARY_TAB", payload: newValue });
+    dispatch({
+      type: "SET_CURRENT_PRIMARY_TAB",
+      payload: event.currentTarget.value as PrimaryTab,
+    });
   }
 
   const tabOptions: Array<TabsOption> = [
@@ -38,69 +51,56 @@ export function PrimaryTabs() {
     },
   ];
 
-  const variants = {
-    hidden: { opacity: 0, delay: 0.5 },
-    visible: {
-      opacity: 1,
-    },
-    exit: {
-      opacity: 0,
-      transition: { delay: 0.7 },
-    },
-  };
-
   const showLoading = debug.enabled
     ? debug.isLoadingSettings
     : isPersistedStateLoading;
 
+  const showTabs = !isNewUser && !showLoading;
+
   return (
-    <Fragment>
-      <AnimatePresence>
-        {showLoading && (
-          <motion.div
-            className={styles.fullScreen}
-            style={{ zIndex: 100 }}
-            initial={{ opacity: 1 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            pm
-          >
-            <LoadingSettingsOverlay />
-          </motion.div>
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
-        {isNewUser && (
-          <motion.div
-            className={styles.fullScreen}
-            style={{ zIndex: 50 }}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            variants={variants}
-          >
-            <SignIn />
-          </motion.div>
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
-        {!isNewUser && !isPersistedStateLoading && (
-          <motion.div
-            className={styles.fullScreen}
-            style={{ zIndex: 25 }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <Tabs
-              onChange={handleChange}
-              options={tabOptions}
-              value={currentPrimaryTab}
-              style={{ display: "flex", flexDirection: "column" }}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </Fragment>
+    <AnimatePresence>
+      {showLoading ? (
+        <motion.div
+          key="loading"
+          className={styles.fullScreen}
+          style={{ zIndex: 100 }}
+          initial="visible"
+          animate="visible"
+          exit="exit"
+          variants={variants}
+        >
+          <LoadingSettingsOverlay />
+        </motion.div>
+      ) : isNewUser ? (
+        <motion.div
+          key="sign-in"
+          className={styles.fullScreen}
+          style={{ zIndex: 50 }}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+          variants={variants}
+        >
+          <SignIn />
+        </motion.div>
+      ) : showTabs ? (
+        <motion.div
+          key="primary-tabs"
+          className={styles.fullScreen}
+          style={{ zIndex: 25 }}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+          variants={variants}
+        >
+          <Tabs
+            onChange={handleChange}
+            options={tabOptions}
+            value={currentPrimaryTab}
+            style={{ display: "flex", flexDirection: "column" }}
+          />
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
   );
 }

@@ -24,60 +24,68 @@ import StarArrows from "./StarArrows";
 import { getBaseUrl } from "../util";
 import { useEffect } from "react";
 import debug from "../debug";
+import DiamondAnimation from "./DiamondBg";
 
-const approxDiamondAnimLength = 2;
+const restDelta = 0.005;
+const DIAMONDS_NUM = 60;
 
-const diamondAnimation: AnimationProps = {
-  initial: {
-    scale: 0.5,
-    rotate: 45,
+const arrowsDelay = 0.5;
+const arrowsDamping = 30;
+const arrowsStiffness = 90;
 
-    opacity: 0,
-  },
-  animate: {
-    opacity: 1,
+const diamondDelay = 0.5;
 
-    scale: 1,
-    rotate: 45,
+const logoDelay = diamondDelay + 0.13;
+const logoDamping = 13;
+const logoStiffness = 110;
 
-    transition: { type: "spring", damping: 50, stiffness: 80 },
-  },
-};
+const containerDelay = logoDelay + 2.4;
+const containerDamping = 40;
+const containerStiffness = 160;
+
+const lettersDelay = containerDelay + 0.3;
+
+const descriptionDelay = lettersDelay + 1;
+const descriptionDamping = 20;
+const descriptionStiffness = 60;
+
+const signInDelay = descriptionDelay + 0.4;
+const signInDamping = 20;
+const signInStiffness = 60;
+
+const footerDelay = signInDelay + 2;
 
 const arrowsAnimation: AnimationProps = {
   initial: {
     opacity: 0,
-
-    transform: {
-      scale: 0.85,
-    },
+    scale: 0.2,
   },
   animate: {
-    opacity: 0.5,
-
-    transform: { scale: 1 },
-    transition: { type: "spring", damping: 50, stiffness: 80 },
+    opacity: 0.32,
+    scale: 1,
+    transition: {
+      type: "spring",
+      damping: arrowsDamping,
+      stiffness: arrowsStiffness,
+      restDelta: restDelta,
+      delay: arrowsDelay,
+    },
   },
 };
 
-const logoAnimation: AnimationProps = {
-  initial: {
-    opacity: 0,
-
-    scale: 0.9,
-    y: 10,
-  },
-  animate: {
-    opacity: 1,
-
-    y: 0,
-    scale: 1,
-
-    transition: {
-      type: "spring",
-      damping: 20,
-      stiffness: 40,
-      delay: 1.3,
+const containerAnimation: AnimationProps = {
+  initial: "centered",
+  animate: "raised",
+  variants: {
+    centered: { y: 68 },
+    raised: {
+      y: -20,
+      transition: {
+        type: "spring",
+        damping: containerDamping,
+        stiffness: containerStiffness,
+        delay: containerDelay,
+      },
     },
   },
 };
@@ -93,9 +101,24 @@ const staggerAnimation: AnimationProps = {
         type: "spring",
         damping: 50,
         stiffness: 50,
+        delayChildren: lettersDelay,
         staggerChildren: 0.05,
-        delayChildren: 1,
       },
+    },
+  },
+};
+
+const logoVariants = {
+  hidden: { opacity: 0, scale: 1.6 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: {
+      type: "spring",
+      damping: logoDamping,
+      stiffness: logoStiffness,
+      delay: logoDelay,
+      restDelta: restDelta,
     },
   },
 };
@@ -104,51 +127,36 @@ const letterAnimation: AnimationProps = {
   initial: { opacity: 0 },
   animate: {
     opacity: 1,
-    transition: { type: "spring", damping: 40, stiffness: 150 },
+    transition: { type: "spring", damping: 30, stiffness: 170 },
   },
 };
 
-const descriptionAnimation: AnimationProps = {
-  initial: { opacity: 0 },
-  animate: {
+const descriptionVariants = {
+  hidden: { opacity: 0, y: -20 },
+  visible: {
     opacity: 1,
-
     y: 0,
-
     transition: {
-      delay: approxDiamondAnimLength,
       type: "spring",
-      damping: 20,
-      stiffness: 100,
+      damping: descriptionDamping,
+      stiffness: descriptionStiffness,
+      delay: descriptionDelay,
+      restDelta: restDelta,
     },
   },
 };
 
-const containerAnimation: AnimationProps = {
-  initial: { y: -4 },
-
-  animate: {
-    y: -35,
-    transition: {
-      delay: approxDiamondAnimLength + 2,
-      type: "spring",
-      damping: 16,
-      stiffness: 160,
-    },
-  },
-};
-const signInAnimation: AnimationProps = {
-  initial: { opacity: 0, y: -20 },
-  animate: {
+const signInVariants = {
+  hidden: { opacity: 0, y: -20 },
+  visible: {
     opacity: 1,
-
-    y: -10,
-
+    y: 0,
     transition: {
-      delay: approxDiamondAnimLength + 2.07,
       type: "spring",
-      damping: 16,
-      stiffness: 160,
+      damping: signInDamping,
+      stiffness: signInStiffness,
+      delay: signInDelay,
+      restDelta: restDelta,
     },
   },
 };
@@ -157,16 +165,11 @@ const licenseKeyLength = 18;
 
 function SignIn() {
   const {
-    state: {
-      isNewUser,
-
-      error,
-
-      isLoading,
-    },
+    state: { isNewUser, error, isLoading },
     dispatch,
   } = pluginContext();
   const [lastVerifiedKey, setLastVerifiedKey] = useState("");
+  const [eyeHeight, setEyeHeight] = useState(500);
 
   const [licenseKeyInputValue, setLicenseKeyInputValue] = useState("");
 
@@ -203,6 +206,25 @@ function SignIn() {
   const lengthHit = licenseKeyInputValue.length === licenseKeyLength;
 
   useEffect(() => {
+    const toggleEyeHeight = () => {
+      setEyeHeight(1);
+      void new Promise((resolve) => setTimeout(resolve, 200)).then(() => {
+        setEyeHeight(50);
+      });
+    };
+
+    toggleEyeHeight();
+
+    const intervalId = setInterval(() => {
+      void toggleEyeHeight();
+    }, Math.random() * 2000 + 5000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, []);
+
+  useEffect(() => {
     if (lengthHit && licenseKeyInputValue !== lastVerifiedKey) {
       verifyKey();
     }
@@ -231,6 +253,10 @@ function SignIn() {
           password={true}
           disabled={lengthHit || !isNewUser}
           value={licenseKeyInputValue}
+          style={{
+            backdropFilter: "blur(10px)",
+            background: "rgba(255,255,255,0.6",
+          }}
           onValueInput={(val: string) => {
             setLicenseKeyInputValue(val);
           }}
@@ -257,14 +283,16 @@ function SignIn() {
   );
 
   return (
-    <div className={styles.blurContainer}>
-      <MiddleAlign>
+    <div className={styles.overlayContainer}>
+      <MiddleAlign style={{ zIndex: 999 }}>
         <motion.div {...containerAnimation}>
           <motion.div
-            {...logoAnimation}
+            variants={logoVariants}
+            initial="hidden"
+            animate="visible"
             style={{ display: "flex", justifyContent: "center" }}
           >
-            <Logo size={64} />
+            <Logo isDarkMode={false} eyeHeight={eyeHeight} />
           </motion.div>
           <VerticalSpace space="extraLarge" />
           <div className={styles.logoType}>
@@ -281,12 +309,19 @@ function SignIn() {
               ))}
             </motion.div>
           </div>
-          <motion.div {...descriptionAnimation} className={styles.description}>
+          <motion.div
+            variants={descriptionVariants}
+            initial="hidden"
+            animate="visible"
+            className={styles.description}
+          >
             AI powered diagrams for FigJam
           </motion.div>
         </motion.div>
         <motion.div
-          {...signInAnimation}
+          variants={signInVariants}
+          initial="hidden"
+          animate="visible"
           onAnimationStart={() => {
             setTimeout(() => {
               document.querySelector("input")?.focus();
@@ -310,23 +345,7 @@ function SignIn() {
       >
         <StarArrows />
       </motion.div>
-      <motion.div
-        {...diamondAnimation}
-        style={{
-          borderRadius: "0.25rem",
-          position: "fixed",
-          height: "380px",
-          left: "calc(50% - 190px)",
-          top: "calc(50% - 190px)",
-          width: "380px",
-          transformOrigin: "center",
-          transform: "rotate(45deg)",
-          border: "1px solid #d1d5db",
-          background:
-            "radial-gradient(circle, rgba(255, 255, 255, 0.8) 30%, rgba(255, 255, 255, 0.4) 100%)",
-          zIndex: -1,
-        }}
-      />
+      <DiamondAnimation numDiamonds={DIAMONDS_NUM} />
     </div>
   );
 }
