@@ -26,8 +26,6 @@ export default function Logo({
       });
     };
 
-    toggleEyeHeight();
-
     const intervalId = setInterval(() => {
       void toggleEyeHeight();
     }, Math.random() * 2000 + 5000);

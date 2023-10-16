@@ -10,6 +10,9 @@ declare const styles: {
   readonly "logoType": string;
   readonly "description": string;
   readonly "fullWidth": string;
+  readonly "suggestionContainer": string;
+  readonly "suggestionScrollView": string;
+  readonly "suggestionBlock": string;
 };
 export = styles;
 

@@ -18,6 +18,7 @@ import { AutoSizeTextInput } from "./AutoSizeTextInput";
 import { ExecutePlugin, DiagramElement } from "../types";
 import { StreamElement, fetchStream } from "../fetchDiagramData";
 import debug from "../debug";
+import { useMotionValue, motion, useSpring } from "framer-motion";
 
 export function NaturalInputView() {
   const {
@@ -182,6 +183,7 @@ export function NaturalInputView() {
           }}
           onFocusCapture={clearErrors}
         />
+        <Suggestions />
 
         {error && (
           <div className={styles.warningBanner}>
@@ -216,4 +218,138 @@ export function NaturalInputView() {
       <VerticalSpace space="small" />
     </Container>
   );
+}
+
+const Suggestions = () => {
+  const container = useRef<HTMLDivElement>(null);
+
+  const x = useSpring(0);
+  const springX = useSpring(x, { stiffness: 120, damping: 30 });
+
+  useEffect(() => {
+    let scrollInterval: NodeJS.Timeout | null = null;
+    const rect = container.current?.getBoundingClientRect();
+
+    const calculateMaxScrollWidth = () => {
+      let totalWidth = 0;
+      if (container.current) {
+        Array.from(container.current.firstElementChild.children).forEach(
+          (child) => {
+            totalWidth += child.getBoundingClientRect().width + 3;
+          }
+        );
+      }
+
+      console.log(totalWidth, container.current?.clientWidth);
+      return totalWidth - container.current?.clientWidth;
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!rect || !container.current) return;
+
+      const xPosition = e.clientX - rect.left;
+      const yPosition = e.clientY - rect.top;
+      const width = rect.right - rect.left;
+
+      if (scrollInterval) {
+        clearInterval(scrollInterval);
+      }
+
+      const isMouseWithinBounds =
+        yPosition >= 10 && yPosition <= rect.height - 10;
+      if (!isMouseWithinBounds) return;
+
+      const isMouseNearLeftEdge = xPosition < width * 0.2;
+      const isMouseNearRightEdge = xPosition > width * 0.8;
+      const scrollSpeed = isMouseNearLeftEdge
+        ? 1 - xPosition / (width * 0.2)
+        : isMouseNearRightEdge
+        ? (xPosition - width * 0.8) / (width * 0.2)
+        : 0;
+
+      console.log(calculateMaxScrollWidth());
+
+      if (isMouseNearLeftEdge || isMouseNearRightEdge) {
+        scrollInterval = setInterval(() => {
+          const maxScrollWidth = calculateMaxScrollWidth();
+
+          // Adjust scroll amount by scrollSpeed
+          const scrollAmount = 40 * scrollSpeed;
+
+          if (isMouseNearLeftEdge && x.get() < maxScrollWidth) {
+            const newX = Math.min(x.get() + scrollAmount, 0);
+            x.set(newX);
+          }
+
+          if (isMouseNearRightEdge && x.get() <= 0) {
+            const newX = Math.max(x.get() - scrollAmount, -maxScrollWidth);
+            x.set(newX);
+          }
+        }, 10);
+      }
+    };
+
+    const debouncedHandleMouseMove = debounce(handleMouseMove, 5);
+
+    if (container.current) {
+      container.current.addEventListener("mousemove", debouncedHandleMouseMove);
+    }
+
+    return () => {
+      if (scrollInterval) {
+        clearInterval(scrollInterval);
+      }
+      if (container.current) {
+        container.current.removeEventListener(
+          "mousemove",
+          debouncedHandleMouseMove
+        );
+      }
+    };
+  }, [container.current]);
+
+  return (
+    <div ref={container} className={styles.suggestionContainer}>
+      <motion.div
+        style={{ x: springX }}
+        className={styles.suggestionScrollView}
+      >
+        <motion.div
+          whileHover={{
+            y: -5,
+          }}
+          className={styles.suggestionBlock}
+        >
+          A basic auth flow
+        </motion.div>
+        <motion.div whileHover={{ y: -5 }} className={styles.suggestionBlock}>
+          Design system change management stuff and other things haha
+        </motion.div>
+        <motion.div whileHover={{ y: -5 }} className={styles.suggestionBlock}>
+          A state diagram of an HTML button
+        </motion.div>
+        <motion.div whileHover={{ y: -5 }} className={styles.suggestionBlock}>
+          Test suggestion 4
+        </motion.div>
+        <motion.div whileHover={{ y: -5 }} className={styles.suggestionBlock}>
+          Test suggestion 4
+        </motion.div>
+        <motion.div whileHover={{ y: -5 }} className={styles.suggestionBlock}>
+          Test suggestion 4
+        </motion.div>
+        <motion.div whileHover={{ y: -5 }} className={styles.suggestionBlock}>
+          Test suggestion 4
+        </motion.div>
+      </motion.div>
+    </div>
+  );
+};
+
+// Define a simple debounce function
+function debounce(func: (...args: any[]) => void, wait: number) {
+  let timeout: NodeJS.Timeout | null = null;
+  return function (...args: any[]) {
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), wait);
+  };
 }
