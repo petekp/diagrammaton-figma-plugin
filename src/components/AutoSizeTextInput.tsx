@@ -27,6 +27,7 @@ export const AutoSizeTextInput = (
         ...(props.style as {}),
         padding: "12px 16px",
         fontSize: `${fontSize}px`,
+        cursor: "text",
       }}
     />
   );

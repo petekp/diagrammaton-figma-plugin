@@ -22,6 +22,7 @@ import { pluginContext } from "./PluginContext";
 import { GPTModels } from "../fetchDiagramData";
 import { RELEASE_VERSION } from "../constants";
 import { getBaseUrl } from "../util";
+import Logo from "./Logo";
 
 export function SettingsView() {
   const {
@@ -73,6 +74,7 @@ export function SettingsView() {
           dispatch({ type: "SET_SHOW_REQUIRED", payload: false });
           dispatch({ type: "SET_ERROR", payload: "" });
         }}
+        style={{ cursor: "text" }}
       />
     </Columns>
   );
@@ -124,7 +126,7 @@ export function SettingsView() {
           <Bold>Model</Bold>{" "}
         </Text>
         <Text>
-          <Muted>GPT 4 is better but slower/pricier</Muted>
+          <Muted>GPT 4 is usually better but slower and pricier</Muted>
         </Text>
       </Stack>
       <div style={{ float: "right" }}>
@@ -169,7 +171,17 @@ export function SettingsView() {
           padding: 16,
         }}
       >
-        <Muted>{RELEASE_VERSION}</Muted>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 8,
+            alignItems: "center",
+          }}
+        >
+          <Logo size={24} />
+          <Muted>{RELEASE_VERSION}</Muted>
+        </div>
       </div>
     </Container>
   );

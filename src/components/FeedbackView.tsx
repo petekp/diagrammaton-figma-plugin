@@ -93,7 +93,7 @@ export function FeedbackView() {
             lineHeight: 1.3,
             flex: 1,
           }}
-          placeholder="How could we improve? ☺️"
+          placeholder="How can we improve? ☺️"
           grow={false}
           spellCheck={false}
           variant="border"

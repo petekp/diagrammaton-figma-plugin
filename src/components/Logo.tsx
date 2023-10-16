@@ -3,11 +3,13 @@ import { animate, motion, useMotionValue } from "framer-motion";
 import { useEffect } from "preact/hooks";
 
 export default function Logo({
+  size = 60,
   eyeHeight,
   isDarkMode,
 }: {
-  eyeHeight: number;
-  isDarkMode: boolean;
+  size?: number;
+  eyeHeight?: number;
+  isDarkMode?: boolean;
 }) {
   const svgHeight = 143;
   const maskHeight = useMotionValue(eyeHeight);
@@ -34,8 +36,8 @@ export default function Logo({
 
   return (
     <svg
-      width="60"
-      height="60"
+      width={size}
+      height={size}
       viewBox="0 0 143 143"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
