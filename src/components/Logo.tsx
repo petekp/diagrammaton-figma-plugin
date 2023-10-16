@@ -1,19 +1,41 @@
 import { h } from "preact";
 import { animate, motion, useMotionValue } from "framer-motion";
 import { useEffect } from "preact/hooks";
+import { useState } from "react";
 
 export default function Logo({
   size = 60,
-  eyeHeight,
+
   isDarkMode,
 }: {
   size?: number;
-  eyeHeight?: number;
+
   isDarkMode?: boolean;
 }) {
+  const [eyeHeight, setEyeHeight] = useState(500);
+
   const svgHeight = 143;
   const maskHeight = useMotionValue(eyeHeight);
   const maskY = useMotionValue((svgHeight - eyeHeight) / 2);
+
+  useEffect(() => {
+    const toggleEyeHeight = () => {
+      setEyeHeight(1);
+      void new Promise((resolve) => setTimeout(resolve, 200)).then(() => {
+        setEyeHeight(50);
+      });
+    };
+
+    toggleEyeHeight();
+
+    const intervalId = setInterval(() => {
+      void toggleEyeHeight();
+    }, Math.random() * 2000 + 5000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, []);
 
   const gradient = isDarkMode
     ? `translate(0 10) rotate(0) scale(300)`

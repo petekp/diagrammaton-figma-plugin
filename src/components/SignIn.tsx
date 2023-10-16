@@ -169,7 +169,6 @@ function SignIn() {
     dispatch,
   } = pluginContext();
   const [lastVerifiedKey, setLastVerifiedKey] = useState("");
-  const [eyeHeight, setEyeHeight] = useState(500);
 
   const [licenseKeyInputValue, setLicenseKeyInputValue] = useState("");
 
@@ -204,25 +203,6 @@ function SignIn() {
   };
 
   const lengthHit = licenseKeyInputValue.length === licenseKeyLength;
-
-  useEffect(() => {
-    const toggleEyeHeight = () => {
-      setEyeHeight(1);
-      void new Promise((resolve) => setTimeout(resolve, 200)).then(() => {
-        setEyeHeight(50);
-      });
-    };
-
-    toggleEyeHeight();
-
-    const intervalId = setInterval(() => {
-      void toggleEyeHeight();
-    }, Math.random() * 2000 + 5000);
-
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, []);
 
   useEffect(() => {
     if (lengthHit && licenseKeyInputValue !== lastVerifiedKey) {
@@ -292,7 +272,7 @@ function SignIn() {
             animate="visible"
             style={{ display: "flex", justifyContent: "center" }}
           >
-            <Logo isDarkMode={false} eyeHeight={eyeHeight} />
+            <Logo isDarkMode={false} />
           </motion.div>
           <VerticalSpace space="extraLarge" />
           <div className={styles.logoType}>

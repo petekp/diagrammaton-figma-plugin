@@ -114,6 +114,7 @@ export const drawDiagram = async ({
 }): Promise<void> => {
   const positions = new Map(Object.entries(positionsObject));
   const nodeShapes: { [id: string]: ShapeWithTextNode } = {};
+  const nodeIds: Map<ShapeWithTextNode, string> = new Map();
   const links: SceneNode[] = [];
   const linkMap: Map<string, boolean> = new Map();
   const magnetMap: Map<string, { [key in MagnetDirection]: boolean }> =
@@ -134,7 +135,10 @@ export const drawDiagram = async ({
           return;
         }
 
-        nodeShapes[node.id] = await createNode({ node, position });
+        const figmaNode = await createNode({ node, position });
+        nodeShapes[node.id] = figmaNode;
+        nodeIds.set(figmaNode, node.id); // Store the node ID in nodeIds
+
         magnetMap.set(node.id, {
           TOP: false,
           RIGHT: false,
@@ -184,39 +188,32 @@ export const drawDiagram = async ({
 
   const bufferNode = figma.createRectangle();
   bufferNode.opacity = 0;
-  let maxX = -Infinity;
-  let maxY = -Infinity;
 
-  for (const position of Object.values(positionsObject)) {
-    const potentialMaxX = position.x + DEFAULT_NODE_WIDTH;
-    const potentialMaxY = position.y + DEFAULT_NODE_HEIGHT;
-
-    if (potentialMaxX > maxX) {
-      maxX = potentialMaxX;
-    }
-
-    if (potentialMaxY > maxY) {
-      maxY = potentialMaxY;
-    }
-  }
-
+  const { maxX, maxY } = getMaxXY(positionsObject);
   const diagramWidth = maxX;
   const diagramHeight = maxY;
-
-  const diagramMidHeight = diagramHeight / 2;
-
-  bufferNode.y = diagramMidHeight;
+  const { x: newDiagramX, y: newDiagramY } = getEmptySpaceCoordinates();
 
   Object.values(nodeShapes).forEach((node, i) => {
     setNodeProperties({ node, index: i, diagramData: diagram, diagramId });
     figma.currentPage.appendChild(node);
+
+    const nodeId = nodeIds.get(node)!;
+    const originalPosition = positionsObject[nodeId];
+
+    console.log(nodeId, originalPosition); // Debugging line
+
+    if (originalPosition) {
+      node.x = originalPosition.x + newDiagramX;
+      node.y = originalPosition.y + newDiagramY;
+    }
+
     node.visible = true;
   });
+
   bufferNode.resize(diagramWidth * 1.5, diagramHeight);
-
-  const firstNode = Object.values(nodeShapes)[0];
-
-  bufferNode.x = firstNode.x;
+  bufferNode.x = newDiagramX;
+  bufferNode.y = newDiagramY;
 
   figma.viewport.scrollAndZoomIntoView([bufferNode]);
   bufferNode.remove();
@@ -250,3 +247,40 @@ const setNodeProperties = ({
     node.setPluginData("diagramId", diagramId);
   }
 };
+
+function getMaxXY(positionsObject: { [key: string]: Position }) {
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+
+  for (const position of Object.values(positionsObject)) {
+    const potentialMaxX = position.x + DEFAULT_NODE_WIDTH;
+    const potentialMaxY = position.y + DEFAULT_NODE_HEIGHT;
+
+    if (potentialMaxX > maxX) {
+      maxX = potentialMaxX;
+    }
+
+    if (potentialMaxY > maxY) {
+      maxY = potentialMaxY;
+    }
+  }
+
+  return { maxX, maxY };
+}
+
+function getEmptySpaceCoordinates() {
+  const existingNodes = figma.currentPage.findAll();
+  let maxY = 0;
+
+  for (const node of existingNodes) {
+    const box = node.absoluteBoundingBox;
+    if (box) {
+      maxY = Math.max(maxY, box.y + box.height);
+    }
+  }
+
+  const offset = 100; // Change this to the desired offset
+  const newDiagramY = maxY + offset;
+
+  return { x: 0, y: newDiagramY };
+}
