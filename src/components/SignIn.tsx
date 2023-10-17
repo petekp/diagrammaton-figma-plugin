@@ -1,6 +1,7 @@
 import { h } from "preact";
 import {
   Banner,
+  IconArrowRight16,
   IconLockLocked32,
   IconLockUnlocked32,
   IconWarning32,
@@ -222,7 +223,7 @@ function SignIn() {
         >
           <Text>Paste your license key</Text>
           <Link fullWidth href={getBaseUrl()} target="_blank">
-            Need a key?
+            Get a key
           </Link>
         </div>
 

@@ -24,13 +24,13 @@ const validShapes: ShapeWithTextNode["shapeType"][] = [
 
 const useServerMagnet = false;
 
-const createNode = async ({
+const createNode = ({
   node,
   position,
 }: {
   node: Node;
   position: Position;
-}): Promise<ShapeWithTextNode> => {
+}): ShapeWithTextNode => {
   const figmaNode = figma.createShapeWithText();
   figmaNode.visible = false;
 
@@ -43,7 +43,6 @@ const createNode = async ({
   ];
 
   if (node.label) {
-    await figma.loadFontAsync({ family: "Inter", style: "Medium" });
     figmaNode.text.characters = node.label || "";
   }
 
@@ -55,7 +54,7 @@ const createNode = async ({
   return figmaNode;
 };
 
-const deleteDiagramById = async (diagramId: string) => {
+const deleteDiagramById = (diagramId: string) => {
   const nodesToDelete = figma.currentPage
     .findAll()
     .filter((node) => node.getPluginData("diagramId") === diagramId);
@@ -65,7 +64,7 @@ const deleteDiagramById = async (diagramId: string) => {
   }
 };
 
-const createLink = async ({
+const createLink = ({
   from,
   to,
   link,
@@ -82,7 +81,7 @@ const createLink = async ({
   toMagnet: MagnetDirection;
   isBidirectional?: boolean;
   diagramData: string;
-}): Promise<ConnectorNode> => {
+}): ConnectorNode => {
   const connector = figma.createConnector();
 
   connector.setPluginData("diagramId", diagramId);
@@ -92,7 +91,6 @@ const createLink = async ({
   connector.connectorEnd = { endpointNodeId: to.id, magnet: toMagnet };
 
   if (link.label) {
-    await figma.loadFontAsync({ family: "Inter", style: "Medium" });
     connector.text.characters = link.label || "";
     connector.textBackground.fills = [
       { type: "SOLID", color: { r: 1, g: 1, b: 1 }, opacity: 0.2 },
@@ -101,32 +99,29 @@ const createLink = async ({
   return connector;
 };
 
-export const drawDiagram = async ({
-  diagram,
-  positionsObject,
-  diagramId,
-  stream,
-}: {
-  diagram: DiagramElement[];
-  positionsObject: { [key: string]: Position };
-  diagramId: string;
-  stream?: boolean;
-}): Promise<void> => {
+const prepareData = (positionsObject: Record<string, Position>) => {
   const positions = new Map(Object.entries(positionsObject));
-  const nodeShapes: { [id: string]: ShapeWithTextNode } = {};
+  const nodeShapes: Record<string, ShapeWithTextNode> = {};
   const nodeIds: Map<ShapeWithTextNode, string> = new Map();
   const links: SceneNode[] = [];
   const linkMap: Map<string, boolean> = new Map();
-  const magnetMap: Map<string, { [key in MagnetDirection]: boolean }> =
-    new Map();
+  const magnetMap: Map<string, Record<MagnetDirection, boolean>> = new Map();
 
-  let backlinkCounter = 0;
+  return { positions, nodeShapes, nodeIds, links, linkMap, magnetMap };
+};
 
-  if (stream) {
-    await deleteDiagramById(diagramId);
-  }
+const deleteExistingDiagram = (diagramId: string) => {
+  deleteDiagramById(diagramId);
+};
 
-  for (const { from, link, to } of diagram) {
+const createDiagramNodes = (
+  diagram: DiagramElement[],
+  positions: Map<string, Position>,
+  nodeShapes: { [id: string]: ShapeWithTextNode },
+  nodeIds: Map<ShapeWithTextNode, string>,
+  magnetMap: Map<string, { [key in MagnetDirection]: boolean }>
+) => {
+  for (const { from, to } of diagram) {
     for (const node of [from, to]) {
       if (!nodeShapes[node.id]) {
         const position = positions.get(node.id);
@@ -135,7 +130,7 @@ export const drawDiagram = async ({
           return;
         }
 
-        const figmaNode = await createNode({ node, position });
+        const figmaNode = createNode({ node, position });
         nodeShapes[node.id] = figmaNode;
         nodeIds.set(figmaNode, node.id); // Store the node ID in nodeIds
 
@@ -147,7 +142,20 @@ export const drawDiagram = async ({
         });
       }
     }
+  }
+};
 
+const createDiagramLinks = (
+  diagram: DiagramElement[],
+  nodeShapes: { [id: string]: ShapeWithTextNode },
+  links: SceneNode[],
+  linkMap: Map<string, boolean>,
+  magnetMap: Map<string, { [key in MagnetDirection]: boolean }>,
+  diagramId: string
+) => {
+  let backlinkCounter = 0;
+
+  for (const { from, link, to } of diagram) {
     if (nodeShapes[from.id] && nodeShapes[to.id]) {
       linkMap.set(`${from.id}-${to.id}`, true);
       const isBidirectional = linkMap.has(`${to.id}-${from.id}`);
@@ -171,7 +179,7 @@ export const drawDiagram = async ({
       }
 
       links.push(
-        await createLink({
+        createLink({
           from: nodeShapes[from.id],
           to: nodeShapes[to.id],
           link,
@@ -183,15 +191,15 @@ export const drawDiagram = async ({
       );
     }
   }
+};
 
-  links.forEach((link) => figma.currentPage.appendChild(link));
-
-  const bufferNode = figma.createRectangle();
-  bufferNode.opacity = 0;
-
-  const { maxX, maxY } = getMaxXY(positionsObject);
-  const diagramWidth = maxX;
-  const diagramHeight = maxY;
+const positionNodes = (
+  nodeShapes: { [id: string]: ShapeWithTextNode },
+  positionsObject: { [key: string]: Position },
+  diagram: DiagramElement[],
+  diagramId: string,
+  nodeIds: Map<ShapeWithTextNode, string>
+) => {
   const { x: newDiagramX, y: newDiagramY } = getEmptySpaceCoordinates();
 
   Object.values(nodeShapes).forEach((node, i) => {
@@ -210,6 +218,18 @@ export const drawDiagram = async ({
 
     node.visible = true;
   });
+};
+
+const createAndPositionBufferNode = (positionsObject: {
+  [key: string]: Position;
+}) => {
+  const bufferNode = figma.createRectangle();
+  bufferNode.opacity = 0;
+
+  const { maxX, maxY } = getMaxXY(positionsObject);
+  const diagramWidth = maxX;
+  const diagramHeight = maxY;
+  const { x: newDiagramX, y: newDiagramY } = getEmptySpaceCoordinates();
 
   bufferNode.resize(diagramWidth * 1.5, diagramHeight);
   bufferNode.x = newDiagramX;
@@ -217,6 +237,42 @@ export const drawDiagram = async ({
 
   figma.viewport.scrollAndZoomIntoView([bufferNode]);
   bufferNode.remove();
+
+  return { bufferNode, newDiagramX, newDiagramY };
+};
+
+const addLinksToDiagram = (links: SceneNode[]) => {
+  links.forEach((link) => {
+    link.visible = false;
+    figma.currentPage.appendChild(link);
+    link.visible = true;
+  });
+};
+
+export const drawDiagram = async ({
+  diagram,
+  positionsObject,
+  diagramId,
+  stream,
+}: {
+  diagram: DiagramElement[];
+  positionsObject: { [key: string]: Position };
+  diagramId: string;
+  stream?: boolean;
+}): Promise<void> => {
+  await figma.loadFontAsync({ family: "Inter", style: "Medium" });
+
+  const { positions, nodeShapes, nodeIds, links, linkMap, magnetMap } =
+    prepareData(positionsObject);
+
+  if (stream) deleteExistingDiagram(diagramId);
+
+  createDiagramNodes(diagram, positions, nodeShapes, nodeIds, magnetMap);
+  createDiagramLinks(diagram, nodeShapes, links, linkMap, magnetMap, diagramId);
+  positionNodes(nodeShapes, positionsObject, diagram, diagramId, nodeIds);
+  createAndPositionBufferNode(positionsObject);
+  addLinksToDiagram(links);
+  centerViewportOnDiagram(nodeShapes);
 };
 
 const setNodeProperties = ({
@@ -249,8 +305,8 @@ const setNodeProperties = ({
 };
 
 function getMaxXY(positionsObject: { [key: string]: Position }) {
-  let maxX = -Infinity;
-  let maxY = -Infinity;
+  let maxX = 0;
+  let maxY = 0;
 
   for (const position of Object.values(positionsObject)) {
     const potentialMaxX = position.x + DEFAULT_NODE_WIDTH;
@@ -279,8 +335,44 @@ function getEmptySpaceCoordinates() {
     }
   }
 
-  const offset = 100; // Change this to the desired offset
-  const newDiagramY = maxY + offset;
+  const viewportCenterY = figma.viewport.center.y;
+  const newDiagramY = Math.max(maxY, viewportCenterY);
 
   return { x: 0, y: newDiagramY };
 }
+
+const centerViewportOnDiagram = (nodeShapes: {
+  [id: string]: ShapeWithTextNode;
+}) => {
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+
+  Object.values(nodeShapes).forEach((node) => {
+    const box = node.absoluteBoundingBox;
+    if (!box) return;
+    minX = Math.min(minX, box.x);
+    minY = Math.min(minY, box.y);
+    maxX = Math.max(maxX, box.x + box.width);
+    maxY = Math.max(maxY, box.y + box.height);
+  });
+
+  const viewportWidth = figma.viewport.bounds.width;
+  const padding = viewportWidth / 4; // Padding is a third of the viewport width
+
+  const tempNode = figma.createRectangle();
+  tempNode.x = minX;
+  tempNode.y = minY;
+  tempNode.resize(maxX - minX + padding, maxY - minY); // Add padding to the width
+
+  const bufferNode = figma.createRectangle();
+  bufferNode.x = maxX + padding; // Position the buffer node to the right of the diagram
+  bufferNode.y = minY;
+  bufferNode.resize(padding, maxY - minY); // The width of the buffer node is the desired padding
+  bufferNode.opacity = 0; // Make the buffer node invisible
+
+  figma.viewport.scrollAndZoomIntoView([tempNode, bufferNode]);
+  tempNode.remove();
+  bufferNode.remove();
+};
