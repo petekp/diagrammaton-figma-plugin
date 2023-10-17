@@ -38,7 +38,6 @@
 
 .warningBanner {
   display: flex;
-  word-break: break-word;
   z-index: 1;
   background-color: var(--figma-color-bg-warning);
   padding: var(--space-extra-small);
@@ -51,7 +50,7 @@
 }
 
 .warningText {
-  flex: 1;
+  width: 100%;
   padding: var(--space-extra-small);
 }
 
@@ -126,7 +125,6 @@
 }
 .suggestionBlock {
   border-radius: 6px;
-  border: 1px solid var(--figma-color-border);
   background-color: white;
   color: var(--figma-color-text-paragraph);
   padding: var(--space-extra-small);
@@ -142,7 +140,6 @@
 
 .suggestionInstructionsBlock {
   display: flex;
-  align-items: flex-start;
   flex-direction: column;
   padding: var(--space-extra-small);
   height: 60px;

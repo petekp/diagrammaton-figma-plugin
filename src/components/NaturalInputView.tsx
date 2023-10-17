@@ -9,6 +9,9 @@ import {
   IconArrowRight16,
   IconArrowRightCircle32,
   Link,
+  Stack,
+  Text,
+  Bold,
 } from "@create-figma-plugin/ui";
 import { pluginContext } from "./PluginContext";
 import { emit } from "@create-figma-plugin/utilities";
@@ -213,7 +216,9 @@ export function NaturalInputView() {
               className={styles.warningBanner}
             >
               <IconWarning32 />
-              <div className={styles.warningText}>{error}</div>
+              <motion.div layout className={styles.warningText}>
+                {error}
+              </motion.div>
               <IconCross32 onClick={clearErrors} />
             </motion.div>
           )}
@@ -265,23 +270,24 @@ const Suggestions = ({ onClick }: { onClick: () => void }) => {
     }
   };
 
+  const calculateMaxScrollWidth = () => {
+    let totalWidth = 0;
+    if (container.current && container.current.firstElementChild) {
+      Array.from(container.current.firstElementChild.children).forEach(
+        (child) => {
+          totalWidth += child.getBoundingClientRect().width + 3;
+        }
+      );
+    }
+
+    return totalWidth - container.current.clientWidth;
+  };
+
   useEffect(() => {
+    if (!container.current) return;
+
     let scrollInterval: NodeJS.Timeout | null = null;
-    const rect = container.current?.getBoundingClientRect();
-
-    const calculateMaxScrollWidth = () => {
-      let totalWidth = 0;
-      if (container.current) {
-        Array.from(container.current.firstElementChild.children).forEach(
-          (child) => {
-            totalWidth += child.getBoundingClientRect().width + 3;
-          }
-        );
-      }
-
-      console.log(totalWidth, container.current?.clientWidth);
-      return totalWidth - container.current?.clientWidth;
-    };
+    const rect = container.current.getBoundingClientRect();
 
     const handleMouseMove = (e: MouseEvent) => {
       if (!rect || !container.current) return;
@@ -305,8 +311,6 @@ const Suggestions = ({ onClick }: { onClick: () => void }) => {
         : isMouseNearRightEdge
         ? (xPosition - width * 0.7) / (width * 0.18)
         : 0;
-
-      console.log(calculateMaxScrollWidth());
 
       if (isMouseNearLeftEdge || isMouseNearRightEdge) {
         scrollInterval = setInterval(() => {
@@ -349,14 +353,63 @@ const Suggestions = ({ onClick }: { onClick: () => void }) => {
 
   const sharedProps = {
     whileHover: {
-      y: -4,
+      y: -2,
       backgroundColor: "var(--figma-color-bg-primary)",
 
       boxShadow:
-        "0px 4px 0px rgba(0, 0, 0, 0.1), inset 0 0 0 0.5px rgba(0,0,0,0.2)",
-      transition: { type: "spring", damping: 20, stiffness: 300 },
+        "0px 2px 0px var(--figma-color-bg-brand), inset 0 0 0 0.75px var(--figma-color-bg-brand)",
     },
   };
+
+  useEffect(() => {
+    const containerElement = container.current;
+    const scrollViewElement = containerElement?.firstElementChild;
+    if (!containerElement) return;
+
+    let lastFocusOffset = 0;
+
+    const handleFocus = (e: FocusEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.classList.contains(styles.suggestionBlock)) {
+        const rect = target.getBoundingClientRect();
+        const parentRect = containerElement.getBoundingClientRect();
+        const scrollViewRect = scrollViewElement.getBoundingClientRect();
+
+        // Determine the direction of tabbing
+        const isTabbingForwards = rect.left >= lastFocusOffset;
+        lastFocusOffset = rect.left;
+
+        // Calculate the desired scroll position to center the focused element
+        const desiredScrollLeft =
+          rect.left -
+          scrollViewRect.left +
+          rect.width / 2 -
+          parentRect.width / 2;
+
+        // Adjust the scroll position
+        if (desiredScrollLeft < 0) {
+          x.set(0);
+        } else {
+          x.set(-desiredScrollLeft);
+        }
+      }
+    };
+
+    const suggestionBlocks = containerElement.querySelectorAll(
+      `.${styles.suggestionBlock}`
+    );
+
+    suggestionBlocks.forEach((block) => {
+      block.addEventListener("focus", handleFocus);
+    });
+
+    return () => {
+      // Clean up the event listeners
+      suggestionBlocks.forEach((block) => {
+        block.removeEventListener("focus", handleFocus);
+      });
+    };
+  }, [container.current]);
 
   return (
     <div ref={container} className={styles.suggestionContainer}>
@@ -366,56 +419,123 @@ const Suggestions = ({ onClick }: { onClick: () => void }) => {
         layoutScroll
       >
         <motion.div className={styles.suggestionInstructionsBlock}>
-          Examples <IconArrowRight16 />
-          <Link href="">Hide</Link>
+          <Stack space="small">
+            <Text>
+              <Bold>Examples</Bold>
+            </Text>
+            <Text>
+              <Link tabIndex={0}>Hide</Link>
+            </Text>
+          </Stack>
         </motion.div>
         <motion.div
           {...sharedProps}
+          tabIndex={0}
+          style={{
+            boxShadow: "inset 0 0 0 0.75px rgba(0,0,0,0.2)",
+            backgroundColor: "var(--figma-color-bg-secondary)",
+          }}
           className={styles.suggestionBlock}
           onClick={handleClick}
         >
           A basic auth flow
         </motion.div>
-        <motion.div {...sharedProps} className={styles.suggestionBlock}>
+        <motion.div
+          tabIndex={0}
+          {...sharedProps}
+          className={styles.suggestionBlock}
+        >
           Design system change management stuff and other things haha
         </motion.div>
-        <motion.div {...sharedProps} className={styles.suggestionBlock}>
+        <motion.div
+          tabIndex={0}
+          {...sharedProps}
+          className={styles.suggestionBlock}
+        >
           A state diagram of an HTML button
         </motion.div>
-        <motion.div {...sharedProps} className={styles.suggestionBlock}>
+        <motion.div
+          tabIndex={0}
+          {...sharedProps}
+          className={styles.suggestionBlock}
+        >
           Test suggestion 4
         </motion.div>
-        <motion.div {...sharedProps} className={styles.suggestionBlock}>
+        <motion.div
+          tabIndex={0}
+          {...sharedProps}
+          className={styles.suggestionBlock}
+        >
           Test suggestion 4
         </motion.div>
-        <motion.div {...sharedProps} className={styles.suggestionBlock}>
+        <motion.div
+          tabIndex={0}
+          {...sharedProps}
+          className={styles.suggestionBlock}
+        >
           Test suggestion 4
         </motion.div>
-        <motion.div {...sharedProps} className={styles.suggestionBlock}>
+        <motion.div
+          tabIndex={0}
+          {...sharedProps}
+          className={styles.suggestionBlock}
+        >
           Test suggestion 4
         </motion.div>
-        <motion.div {...sharedProps} className={styles.suggestionBlock}>
+        <motion.div
+          tabIndex={0}
+          {...sharedProps}
+          className={styles.suggestionBlock}
+        >
           Test suggestion 4
         </motion.div>
-        <motion.div {...sharedProps} className={styles.suggestionBlock}>
+        <motion.div
+          tabIndex={0}
+          {...sharedProps}
+          className={styles.suggestionBlock}
+        >
           Test suggestion 4
         </motion.div>
-        <motion.div {...sharedProps} className={styles.suggestionBlock}>
+        <motion.div
+          tabIndex={0}
+          {...sharedProps}
+          className={styles.suggestionBlock}
+        >
           Test suggestion 4
         </motion.div>
-        <motion.div {...sharedProps} className={styles.suggestionBlock}>
+        <motion.div
+          tabIndex={0}
+          {...sharedProps}
+          className={styles.suggestionBlock}
+        >
           Test suggestion 4
         </motion.div>
-        <motion.div {...sharedProps} className={styles.suggestionBlock}>
+        <motion.div
+          tabIndex={0}
+          {...sharedProps}
+          className={styles.suggestionBlock}
+        >
           Test suggestion 4
         </motion.div>
-        <motion.div {...sharedProps} className={styles.suggestionBlock}>
+        <motion.div
+          tabIndex={0}
+          {...sharedProps}
+          className={styles.suggestionBlock}
+        >
           Test suggestion 4
         </motion.div>
-        <motion.div {...sharedProps} className={styles.suggestionBlock}>
+        <motion.div
+          tabIndex={0}
+          {...sharedProps}
+          className={styles.suggestionBlock}
+        >
           Test suggestion 4
         </motion.div>
-        <motion.div {...sharedProps} className={styles.suggestionBlock}>
+        <motion.div
+          tabIndex={0}
+          {...sharedProps}
+          className={styles.suggestionBlock}
+        >
           Test suggestion 4
         </motion.div>
       </motion.div>
