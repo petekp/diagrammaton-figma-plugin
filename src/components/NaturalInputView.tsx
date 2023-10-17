@@ -6,6 +6,9 @@ import {
   IconCross32,
   VerticalSpace,
   Columns,
+  IconArrowRight16,
+  IconArrowRightCircle32,
+  Link,
 } from "@create-figma-plugin/ui";
 import { pluginContext } from "./PluginContext";
 import { emit } from "@create-figma-plugin/utilities";
@@ -18,7 +21,22 @@ import { AutoSizeTextInput } from "./AutoSizeTextInput";
 import { ExecutePlugin, DiagramElement } from "../types";
 import { StreamElement, fetchStream } from "../fetchDiagramData";
 import debug from "../debug";
-import { useMotionValue, motion, useSpring } from "framer-motion";
+import { motion, useSpring, AnimatePresence } from "framer-motion";
+
+const variants = {
+  hidden: { opacity: 0, scale: 0.95, y: 10 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.95,
+    y: 10,
+  },
+  transition: { type: "spring", damping: 20, stiffness: 300 },
+};
 
 export function NaturalInputView() {
   const {
@@ -183,15 +201,23 @@ export function NaturalInputView() {
           }}
           onFocusCapture={clearErrors}
         />
-        <Suggestions />
-
-        {error && (
-          <div className={styles.warningBanner}>
-            <IconWarning32 />
-            <div className={styles.warningText}>{error}</div>
-            <IconCross32 onClick={clearErrors} />
-          </div>
-        )}
+        <Suggestions onClick={handleGetCompletionsStream} />
+        <AnimatePresence>
+          {error && (
+            <motion.div
+              layout
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              variants={variants}
+              className={styles.warningBanner}
+            >
+              <IconWarning32 />
+              <div className={styles.warningText}>{error}</div>
+              <IconCross32 onClick={clearErrors} />
+            </motion.div>
+          )}
+        </AnimatePresence>
         <Columns space="extraSmall">
           {isLoading ? (
             <Button
@@ -220,11 +246,24 @@ export function NaturalInputView() {
   );
 }
 
-const Suggestions = () => {
+const Suggestions = ({ onClick }: { onClick: () => void }) => {
   const container = useRef<HTMLDivElement>(null);
+
+  const { dispatch } = pluginContext();
 
   const x = useSpring(0);
   const springX = useSpring(x, { stiffness: 120, damping: 30 });
+
+  const handleClick = async (e: MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.classList.contains(styles.suggestionBlock)) {
+      await dispatch({
+        type: "SET_NATURAL_INPUT",
+        payload: "A basic auth flow",
+      });
+      onClick();
+    }
+  };
 
   useEffect(() => {
     let scrollInterval: NodeJS.Timeout | null = null;
@@ -262,9 +301,9 @@ const Suggestions = () => {
       const isMouseNearLeftEdge = xPosition < width * 0.2;
       const isMouseNearRightEdge = xPosition > width * 0.8;
       const scrollSpeed = isMouseNearLeftEdge
-        ? 1 - xPosition / (width * 0.2)
+        ? 1 - xPosition / (width * 0.18)
         : isMouseNearRightEdge
-        ? (xPosition - width * 0.8) / (width * 0.2)
+        ? (xPosition - width * 0.7) / (width * 0.18)
         : 0;
 
       console.log(calculateMaxScrollWidth());
@@ -308,36 +347,75 @@ const Suggestions = () => {
     };
   }, [container.current]);
 
+  const sharedProps = {
+    whileHover: {
+      y: -4,
+      backgroundColor: "var(--figma-color-bg-primary)",
+
+      boxShadow:
+        "0px 4px 0px rgba(0, 0, 0, 0.1), inset 0 0 0 0.5px rgba(0,0,0,0.2)",
+      transition: { type: "spring", damping: 20, stiffness: 300 },
+    },
+  };
+
   return (
     <div ref={container} className={styles.suggestionContainer}>
       <motion.div
         style={{ x: springX }}
         className={styles.suggestionScrollView}
+        layoutScroll
       >
+        <motion.div className={styles.suggestionInstructionsBlock}>
+          Examples <IconArrowRight16 />
+          <Link href="">Hide</Link>
+        </motion.div>
         <motion.div
-          whileHover={{
-            y: -5,
-          }}
+          {...sharedProps}
           className={styles.suggestionBlock}
+          onClick={handleClick}
         >
           A basic auth flow
         </motion.div>
-        <motion.div whileHover={{ y: -5 }} className={styles.suggestionBlock}>
+        <motion.div {...sharedProps} className={styles.suggestionBlock}>
           Design system change management stuff and other things haha
         </motion.div>
-        <motion.div whileHover={{ y: -5 }} className={styles.suggestionBlock}>
+        <motion.div {...sharedProps} className={styles.suggestionBlock}>
           A state diagram of an HTML button
         </motion.div>
-        <motion.div whileHover={{ y: -5 }} className={styles.suggestionBlock}>
+        <motion.div {...sharedProps} className={styles.suggestionBlock}>
           Test suggestion 4
         </motion.div>
-        <motion.div whileHover={{ y: -5 }} className={styles.suggestionBlock}>
+        <motion.div {...sharedProps} className={styles.suggestionBlock}>
           Test suggestion 4
         </motion.div>
-        <motion.div whileHover={{ y: -5 }} className={styles.suggestionBlock}>
+        <motion.div {...sharedProps} className={styles.suggestionBlock}>
           Test suggestion 4
         </motion.div>
-        <motion.div whileHover={{ y: -5 }} className={styles.suggestionBlock}>
+        <motion.div {...sharedProps} className={styles.suggestionBlock}>
+          Test suggestion 4
+        </motion.div>
+        <motion.div {...sharedProps} className={styles.suggestionBlock}>
+          Test suggestion 4
+        </motion.div>
+        <motion.div {...sharedProps} className={styles.suggestionBlock}>
+          Test suggestion 4
+        </motion.div>
+        <motion.div {...sharedProps} className={styles.suggestionBlock}>
+          Test suggestion 4
+        </motion.div>
+        <motion.div {...sharedProps} className={styles.suggestionBlock}>
+          Test suggestion 4
+        </motion.div>
+        <motion.div {...sharedProps} className={styles.suggestionBlock}>
+          Test suggestion 4
+        </motion.div>
+        <motion.div {...sharedProps} className={styles.suggestionBlock}>
+          Test suggestion 4
+        </motion.div>
+        <motion.div {...sharedProps} className={styles.suggestionBlock}>
+          Test suggestion 4
+        </motion.div>
+        <motion.div {...sharedProps} className={styles.suggestionBlock}>
           Test suggestion 4
         </motion.div>
       </motion.div>

@@ -39,10 +39,15 @@
 .warningBanner {
   display: flex;
   word-break: break-word;
-  overflow: hidden;
   z-index: 1;
   background-color: var(--figma-color-bg-warning);
   padding: var(--space-extra-small);
+  position: absolute;
+  bottom: 60px;
+  left: 20px;
+  width: 90%;
+  border-radius: 10px;
+  z-index: 999;
 }
 
 .warningText {
@@ -121,7 +126,8 @@
 }
 .suggestionBlock {
   border-radius: 6px;
-  background-color: var(--figma-color-bg-secondary);
+  border: 1px solid var(--figma-color-border);
+  background-color: white;
   color: var(--figma-color-text-paragraph);
   padding: var(--space-extra-small);
   display: flex;
@@ -129,7 +135,16 @@
   white-space: normal;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-width: 150px;
-  max-width: 150px;
-  height: 64px;
+  min-width: 140px;
+  max-width: 140px;
+  height: 66px;
+}
+
+.suggestionInstructionsBlock {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  padding: var(--space-extra-small);
+  height: 60px;
+  width: 80px;
 }

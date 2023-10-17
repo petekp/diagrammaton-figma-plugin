@@ -13,6 +13,7 @@ declare const styles: {
   readonly "suggestionContainer": string;
   readonly "suggestionScrollView": string;
   readonly "suggestionBlock": string;
+  readonly "suggestionInstructionsBlock": string;
 };
 export = styles;
 
