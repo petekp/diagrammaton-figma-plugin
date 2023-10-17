@@ -201,8 +201,6 @@ export const drawDiagram = async ({
     const nodeId = nodeIds.get(node)!;
     const originalPosition = positionsObject[nodeId];
 
-    console.log(nodeId, originalPosition); // Debugging line
-
     if (originalPosition) {
       node.x = originalPosition.x + newDiagramX;
       node.y = originalPosition.y + newDiagramY;

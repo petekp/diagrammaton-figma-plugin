@@ -17,6 +17,7 @@ import {
   Divider,
   Columns,
   IconLockLocked16,
+  Toggle,
 } from "@create-figma-plugin/ui";
 import { pluginContext } from "./PluginContext";
 import { GPTModels } from "../fetchDiagramData";
@@ -34,6 +35,7 @@ export function SettingsView() {
       showRequired,
 
       orientation,
+      showSuggestions,
     },
     dispatch,
   } = pluginContext();
@@ -149,6 +151,30 @@ export function SettingsView() {
       </div>
     </Columns>
   );
+
+  const showSuggestionsRow = (
+    <Columns space="small">
+      <Stack space="small">
+        <Text>
+          <Bold>Suggestions</Bold>{" "}
+        </Text>
+        <Text>
+          <Muted>See a set of example prompts</Muted>
+        </Text>
+      </Stack>
+      <div style={{ float: "right" }}>
+        <Toggle
+          value={showSuggestions}
+          onValueChange={(val: boolean) => {
+            dispatch({ type: "SET_SHOW_SUGGESTIONS", payload: val });
+          }}
+        >
+          {}
+        </Toggle>
+      </div>
+    </Columns>
+  );
+
   return (
     <Container space="small">
       <VerticalSpace space="medium" />
@@ -158,6 +184,8 @@ export function SettingsView() {
         {orientationSelection}
         <Divider />
         {licenseKeyInput}
+        <Divider />
+        {showSuggestionsRow}
         <Divider />
       </Stack>
       <div

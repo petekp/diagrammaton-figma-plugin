@@ -18,7 +18,7 @@ import { emit } from "@create-figma-plugin/utilities";
 import { useCallback, useEffect, useRef } from "preact/hooks";
 
 import styles from "./styles.css";
-import { generateTimeBasedUUID } from "../util";
+import { debounce, generateTimeBasedUUID } from "../util";
 import { createDiagram } from "../createDiagramClient";
 import { AutoSizeTextInput } from "./AutoSizeTextInput";
 import { ExecutePlugin, DiagramElement } from "../types";
@@ -27,26 +27,33 @@ import debug from "../debug";
 import { motion, useSpring, AnimatePresence } from "framer-motion";
 
 const variants = {
-  hidden: { opacity: 0, scale: 0.95, y: 10 },
+  hidden: { opacity: 0, y: 15 },
   visible: {
     opacity: 1,
-    scale: 1,
     y: 0,
   },
   exit: {
     opacity: 0,
-    scale: 0.95,
-    y: 10,
+    scale: 0.92,
   },
-  transition: { type: "spring", damping: 20, stiffness: 300 },
 };
 
 export function NaturalInputView() {
   const {
-    state: { naturalInput, licenseKey, model, orientation, error, isLoading },
+    state: {
+      naturalInput,
+      licenseKey,
+      model,
+      orientation,
+      error,
+      isLoading,
+      showSuggestions,
+    },
     dispatch,
     clearErrors,
   } = pluginContext();
+
+  console.log(showSuggestions);
 
   let errorMessage = error;
   const diagramId = useRef(generateTimeBasedUUID());
@@ -101,29 +108,32 @@ export function NaturalInputView() {
     }
   };
 
-  const handleGetCompletionsStream = useCallback(async () => {
-    diagramId.current = generateTimeBasedUUID();
-    abortControllerRef.current = new AbortController();
-    errorMessage = "";
-    clearErrors();
-    dispatch({ type: "SET_IS_LOADING", payload: true });
+  const handleGetCompletionsStream = useCallback(
+    async (input: string) => {
+      diagramId.current = generateTimeBasedUUID();
+      abortControllerRef.current = new AbortController();
+      errorMessage = "";
+      clearErrors();
+      dispatch({ type: "SET_IS_LOADING", payload: true });
 
-    try {
-      for await (const element of fetchStream({
-        diagramDescription: naturalInput,
-        licenseKey,
-        model,
-        signal: abortControllerRef.current.signal,
-      })) {
-        handleStreamElement(element);
+      try {
+        for await (const element of fetchStream({
+          diagramDescription: input,
+          licenseKey,
+          model,
+          signal: abortControllerRef.current.signal,
+        })) {
+          handleStreamElement(element);
+        }
+      } catch (err) {
+        handleError(err);
+      } finally {
+        diagramNodes.current = [];
+        dispatch({ type: "SET_IS_LOADING", payload: false });
       }
-    } catch (err) {
-      handleError(err);
-    } finally {
-      diagramNodes.current = [];
-      dispatch({ type: "SET_IS_LOADING", payload: false });
-    }
-  }, [naturalInput, licenseKey, error]);
+    },
+    [licenseKey, error]
+  );
 
   const handleExecutePlugin = useCallback(
     async function ({
@@ -166,7 +176,7 @@ export function NaturalInputView() {
         (event.key === "Enter" && event.ctrlKey) ||
         (event.key === "Enter" && event.metaKey)
       ) {
-        handleGetCompletionsStream();
+        handleGetCompletionsStream(naturalInput);
       }
     };
 
@@ -175,7 +185,7 @@ export function NaturalInputView() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [handleGetCompletionsStream]);
+  }, [handleGetCompletionsStream, naturalInput]);
 
   const isWindows = navigator.userAgent.indexOf("Win") != -1;
 
@@ -204,21 +214,25 @@ export function NaturalInputView() {
           }}
           onFocusCapture={clearErrors}
         />
-        <Suggestions onClick={handleGetCompletionsStream} />
+        <AnimatePresence>
+          {showSuggestions && (
+            <motion.div layout variants={variants}>
+              <Suggestions onClick={handleGetCompletionsStream} />
+            </motion.div>
+          )}
+        </AnimatePresence>
         <AnimatePresence>
           {error && (
             <motion.div
-              layout
               initial="hidden"
               animate="visible"
               exit="exit"
               variants={variants}
+              transition={{ type: "spring", damping: 10, stiffness: 120 }}
               className={styles.warningBanner}
             >
               <IconWarning32 />
-              <motion.div layout className={styles.warningText}>
-                {error}
-              </motion.div>
+              <motion.div className={styles.warningText}>{error}</motion.div>
               <IconCross32 onClick={clearErrors} />
             </motion.div>
           )}
@@ -240,7 +254,7 @@ export function NaturalInputView() {
             fullWidth
             disabled={isLoading}
             className={styles.fullWidth}
-            onClick={handleGetCompletionsStream}
+            onClick={() => handleGetCompletionsStream(naturalInput)}
           >
             Generate &nbsp; {isWindows ? "Ctrl" : "⌘"} + ⏎
           </Button>
@@ -251,33 +265,38 @@ export function NaturalInputView() {
   );
 }
 
-const Suggestions = ({ onClick }: { onClick: () => void }) => {
+const Suggestions = ({ onClick }: { onClick: (input: string) => void }) => {
   const container = useRef<HTMLDivElement>(null);
 
-  const { dispatch } = pluginContext();
+  const {
+    dispatch,
+    state: { isLoading, showSuggestions },
+  } = pluginContext();
 
   const x = useSpring(0);
   const springX = useSpring(x, { stiffness: 120, damping: 30 });
 
-  const handleClick = async (e: MouseEvent) => {
-    const target = e.target as HTMLElement;
-    if (target.classList.contains(styles.suggestionBlock)) {
-      await dispatch({
-        type: "SET_NATURAL_INPUT",
-        payload: "A basic auth flow",
-      });
-      onClick();
-    }
+  const handleClick = async (suggestion: string) => {
+    await dispatch({
+      type: "SET_NATURAL_INPUT",
+      payload: suggestion,
+    });
+    onClick(suggestion);
   };
 
   const calculateMaxScrollWidth = () => {
     let totalWidth = 0;
+
     if (container.current && container.current.firstElementChild) {
       Array.from(container.current.firstElementChild.children).forEach(
         (child) => {
           totalWidth += child.getBoundingClientRect().width + 3;
         }
       );
+    }
+
+    if (!container.current) {
+      return 0;
     }
 
     return totalWidth - container.current.clientWidth;
@@ -351,16 +370,6 @@ const Suggestions = ({ onClick }: { onClick: () => void }) => {
     };
   }, [container.current]);
 
-  const sharedProps = {
-    whileHover: {
-      y: -2,
-      backgroundColor: "var(--figma-color-bg-primary)",
-
-      boxShadow:
-        "0px 2px 0px var(--figma-color-bg-brand), inset 0 0 0 0.75px var(--figma-color-bg-brand)",
-    },
-  };
-
   useEffect(() => {
     const containerElement = container.current;
     const scrollViewElement = containerElement?.firstElementChild;
@@ -368,12 +377,12 @@ const Suggestions = ({ onClick }: { onClick: () => void }) => {
 
     let lastFocusOffset = 0;
 
-    const handleFocus = (e: FocusEvent) => {
+    const handleFocus = (e: Event) => {
       const target = e.target as HTMLElement;
       if (target.classList.contains(styles.suggestionBlock)) {
         const rect = target.getBoundingClientRect();
         const parentRect = containerElement.getBoundingClientRect();
-        const scrollViewRect = scrollViewElement.getBoundingClientRect();
+        const scrollViewRect = scrollViewElement!.getBoundingClientRect();
 
         // Determine the direction of tabbing
         const isTabbingForwards = rect.left >= lastFocusOffset;
@@ -412,7 +421,7 @@ const Suggestions = ({ onClick }: { onClick: () => void }) => {
   }, [container.current]);
 
   return (
-    <div ref={container} className={styles.suggestionContainer}>
+    <motion.div layout ref={container} className={styles.suggestionContainer}>
       <motion.div
         style={{ x: springX }}
         className={styles.suggestionScrollView}
@@ -424,130 +433,79 @@ const Suggestions = ({ onClick }: { onClick: () => void }) => {
               <Bold>Examples</Bold>
             </Text>
             <Text>
-              <Link tabIndex={0}>Hide</Link>
+              <Link
+                href="#"
+                onClick={() =>
+                  dispatch({
+                    type: "SET_SHOW_SUGGESTIONS",
+                    payload: !showSuggestions,
+                  })
+                }
+                tabIndex={0}
+              >
+                Hide
+              </Link>
             </Text>
           </Stack>
         </motion.div>
-        <motion.div
-          {...sharedProps}
-          tabIndex={0}
-          style={{
-            boxShadow: "inset 0 0 0 0.75px rgba(0,0,0,0.2)",
-            backgroundColor: "var(--figma-color-bg-secondary)",
-          }}
-          className={styles.suggestionBlock}
-          onClick={handleClick}
-        >
-          A basic auth flow
-        </motion.div>
-        <motion.div
-          tabIndex={0}
-          {...sharedProps}
-          className={styles.suggestionBlock}
-        >
-          Design system change management stuff and other things haha
-        </motion.div>
-        <motion.div
-          tabIndex={0}
-          {...sharedProps}
-          className={styles.suggestionBlock}
-        >
-          A state diagram of an HTML button
-        </motion.div>
-        <motion.div
-          tabIndex={0}
-          {...sharedProps}
-          className={styles.suggestionBlock}
-        >
-          Test suggestion 4
-        </motion.div>
-        <motion.div
-          tabIndex={0}
-          {...sharedProps}
-          className={styles.suggestionBlock}
-        >
-          Test suggestion 4
-        </motion.div>
-        <motion.div
-          tabIndex={0}
-          {...sharedProps}
-          className={styles.suggestionBlock}
-        >
-          Test suggestion 4
-        </motion.div>
-        <motion.div
-          tabIndex={0}
-          {...sharedProps}
-          className={styles.suggestionBlock}
-        >
-          Test suggestion 4
-        </motion.div>
-        <motion.div
-          tabIndex={0}
-          {...sharedProps}
-          className={styles.suggestionBlock}
-        >
-          Test suggestion 4
-        </motion.div>
-        <motion.div
-          tabIndex={0}
-          {...sharedProps}
-          className={styles.suggestionBlock}
-        >
-          Test suggestion 4
-        </motion.div>
-        <motion.div
-          tabIndex={0}
-          {...sharedProps}
-          className={styles.suggestionBlock}
-        >
-          Test suggestion 4
-        </motion.div>
-        <motion.div
-          tabIndex={0}
-          {...sharedProps}
-          className={styles.suggestionBlock}
-        >
-          Test suggestion 4
-        </motion.div>
-        <motion.div
-          tabIndex={0}
-          {...sharedProps}
-          className={styles.suggestionBlock}
-        >
-          Test suggestion 4
-        </motion.div>
-        <motion.div
-          tabIndex={0}
-          {...sharedProps}
-          className={styles.suggestionBlock}
-        >
-          Test suggestion 4
-        </motion.div>
-        <motion.div
-          tabIndex={0}
-          {...sharedProps}
-          className={styles.suggestionBlock}
-        >
-          Test suggestion 4
-        </motion.div>
-        <motion.div
-          tabIndex={0}
-          {...sharedProps}
-          className={styles.suggestionBlock}
-        >
-          Test suggestion 4
-        </motion.div>
+        {suggestions.map((suggestion) => (
+          <motion.div
+            tabIndex={0}
+            className={styles.suggestionBlock}
+            onClick={isLoading ? () => {} : () => handleClick(suggestion)}
+            animate={isLoading ? "loading" : "default"}
+            variants={{
+              loading: {
+                opacity: 0.8,
+                borderColor: "var(--figma-color-border)",
+                backgroundColor: "var(--figma-color-bg-primary)",
+                boxShadow: "0px 0px 0px var(--figma-color-bg-brand)",
+                color: "var(--figma-color-text-secondary)",
+              },
+              default: {
+                borderColor: "var(--figma-color-border)",
+                backgroundColor: "var(--figma-color-bg-primary)",
+                boxShadow: "0px 0px 0px var(--figma-color-bg-brand)",
+                color: "var(--figma-color-text)",
+              },
+              hover: {
+                y: -2,
+                borderColor: "var(--figma-color-bg-brand)",
+                backgroundColor: "var(--figma-color-bg-primary)",
+                boxShadow: "0px 2px 0px var(--figma-color-bg-brand)",
+                color: "var(--figma-color-bg-brand)",
+              },
+              focus: {
+                y: -2,
+                outline: "none",
+                borderColor: "var(--figma-color-bg-brand)",
+                backgroundColor: "var(--figma-color-bg-primary)",
+                boxShadow: "0px 2px 0px var(--figma-color-bg-brand)",
+                color: "var(--figma-color-bg-brand)",
+              },
+              tap: {
+                y: 0,
+                borderColor: "var(--figma-color-bg-brand)",
+                backgroundColor: "var(--figma-color-bg-primary)",
+                boxShadow: "0px 2px 0px var(--figma-color-bg-brand)",
+                color: "var(--figma-color-bg-brand)",
+              },
+            }}
+            whileHover={isLoading ? "loading" : "hover"}
+            whileFocus={isLoading ? "loading" : "focus"}
+            whileTap={isLoading ? "loading" : "tap"}
+          >
+            {suggestion}
+          </motion.div>
+        ))}
       </motion.div>
-    </div>
+    </motion.div>
   );
 };
 
-// Define a simple debounce function
-function debounce(func: (...args: any[]) => void, wait: number) {
-  let timeout: NodeJS.Timeout | null = null;
-  return function (...args: any[]) {
-    if (timeout) clearTimeout(timeout);
-    timeout = setTimeout(() => func.apply(this, args), wait);
-  };
-}
+const suggestions = [
+  "A basic auth flow",
+  "A state diagram of an HTML button",
+  "Test suggestion 3",
+  "Test suggestion 4",
+];
