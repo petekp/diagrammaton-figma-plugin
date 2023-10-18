@@ -17,6 +17,7 @@ import {
   Divider,
   Columns,
   IconLockLocked16,
+  Toggle,
 } from "@create-figma-plugin/ui";
 import { pluginContext } from "./PluginContext";
 import { GPTModels } from "../fetchDiagramData";
@@ -26,15 +27,7 @@ import Logo from "./Logo";
 
 export function SettingsView() {
   const {
-    state: {
-      model,
-
-      licenseKey,
-
-      showRequired,
-
-      orientation,
-    },
+    state: { model, licenseKey, showRequired, orientation, showSuggestions },
     dispatch,
   } = pluginContext();
 
@@ -149,6 +142,30 @@ export function SettingsView() {
       </div>
     </Columns>
   );
+
+  const showSuggestionsRow = (
+    <Columns space="small">
+      <Stack space="small">
+        <Text>
+          <Bold>Examples</Bold>{" "}
+        </Text>
+        <Text>
+          <Muted>Show example prompts in the Generate tab</Muted>
+        </Text>
+      </Stack>
+      <div style={{ float: "right" }}>
+        <Toggle
+          value={showSuggestions}
+          onValueChange={(val: boolean) => {
+            dispatch({ type: "SET_SHOW_SUGGESTIONS", payload: val });
+          }}
+        >
+          {}
+        </Toggle>
+      </div>
+    </Columns>
+  );
+
   return (
     <Container space="small">
       <VerticalSpace space="medium" />
@@ -158,6 +175,8 @@ export function SettingsView() {
         {orientationSelection}
         <Divider />
         {licenseKeyInput}
+        <Divider />
+        {showSuggestionsRow}
         <Divider />
       </Stack>
       <div
@@ -174,12 +193,12 @@ export function SettingsView() {
         <div
           style={{
             display: "flex",
-            flexDirection: "column",
+            flexDirection: "row",
             gap: 8,
             alignItems: "center",
           }}
         >
-          <Logo size={24} />
+          <Logo size={16} />
           <Muted>{RELEASE_VERSION}</Muted>
         </div>
       </div>

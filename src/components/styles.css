@@ -1,10 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Lexend+Exa:wght@700&display=swap&text=DIAGRAMMATON');
+@import url("https://fonts.googleapis.com/css2?family=Lexend+Exa:wght@700&display=swap&text=DIAGRAMMATON");
 
 :root {
   --color-saturation: 100%;
   --color-lightness: 82.5%;
 }
-
 
 .outerContainer {
   position: relative;
@@ -13,14 +12,14 @@
   display: flex;
   flex-direction: column;
 
-  & > *:not([class*='tabs']) {
+  & > *:not([class*="tabs"]) {
     display: flex;
     flex-direction: column;
-    flex: 1
+    flex: 1;
   }
 }
 
-[class*='textboxMultiline'] {
+[class*="textboxMultiline"] {
   display: flex;
   flex: 1;
 }
@@ -39,15 +38,19 @@
 
 .warningBanner {
   display: flex;
-  word-break: break-word;
-  overflow: hidden;
   z-index: 1;
   background-color: var(--figma-color-bg-warning);
   padding: var(--space-extra-small);
+  position: absolute;
+  bottom: 50px;
+  left: 12px;
+  width: calc(100% - 24px);
+  border-radius: var(--radius-small);
+  z-index: 999;
 }
 
 .warningText {
-  flex: 1;
+  width: 100%;
   padding: var(--space-extra-small);
 }
 
@@ -81,19 +84,18 @@
   height: 100%;
   z-index: 100;
 
-  &>*:not([class*='tabs']) {
-      display: flex;
-      flex-direction: column;
-      flex: 1
-    }
+  & > *:not([class*="tabs"]) {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
 }
 
-
 .logoType {
-  letter-spacing: .3rem;
+  letter-spacing: 0.3rem;
   font-size: 1.3rem;
   line-height: 2rem;
-  font-family: 'Lexend Exa', sans-serif;
+  font-family: "Lexend Exa", sans-serif;
   margin-bottom: 5px;
 }
 
@@ -106,4 +108,41 @@
 .fullWidth {
   flex: 1;
   width: 100%;
+}
+
+.suggestionContainer {
+  width: calc(100% - var(--space-extra-large));
+  z-index: 99;
+}
+
+.suggestionScrollView {
+  display: flex;
+  gap: 6px;
+}
+
+.suggestionScrollView::-webkit-scrollbar {
+  display: none;
+}
+.suggestionBlock {
+  border-radius: 6px;
+  outline: none;
+  background-color: white;
+  color: var(--figma-color-text-paragraph);
+  padding: var(--space-extra-small);
+  display: flex;
+  padding: var(--space-extra-small);
+  white-space: normal;
+  overflow: hidden;
+  border: 1px solid var(--figma-color-border);
+  text-overflow: ellipsis;
+  min-width: 140px;
+  max-width: 140px;
+  height: 66px;
+}
+
+.suggestionInstructionsBlock {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-small) var(--space-extra-small) 0 0;
+  height: 60px;
 }

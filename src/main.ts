@@ -32,6 +32,7 @@ export const defaultSettings: PersistedState = {
   model: "gpt3",
   naturalInput: "",
   orientation: "LR",
+  showSuggestions: true,
 };
 
 export default function () {

@@ -1,5 +1,13 @@
 import { BASE_URL_DEV, BASE_URL_PROD } from "../constants";
 
+export function isDevEnv() {
+  return process.env.NODE_ENV === "development";
+}
+
+export function getBaseUrl() {
+  return isDevEnv() ? BASE_URL_DEV : BASE_URL_PROD;
+}
+
 export function generateTimeBasedUUID() {
   const time = Date.now();
   const uuid = "x2xxyxxz".replace(/[xy]/g, (c) => {
@@ -9,10 +17,10 @@ export function generateTimeBasedUUID() {
   return uuid;
 }
 
-export function isDevEnv() {
-  return process.env.NODE_ENV === "development";
-}
-
-export function getBaseUrl() {
-  return isDevEnv() ? BASE_URL_DEV : BASE_URL_PROD;
+export function debounce(func: (...args: any[]) => void, wait: number) {
+  let timeout: NodeJS.Timeout | null = null;
+  return function (...args: any[]) {
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
 }

@@ -14,6 +14,7 @@ export type PersistedState = {
   isSignInVisible: boolean;
   feedback: string;
   orientation: string;
+  showSuggestions: boolean;
 };
 
 export type PrimaryTab = "Generate" | "Settings";
@@ -75,6 +76,7 @@ export type PluginState = PersistedState & {
   isPersistedStateLoading: boolean;
   numNodesSelected: number;
   showRequired: boolean;
+  showSuggestions: boolean;
 };
 
 export type Action =
@@ -136,5 +138,9 @@ export type Action =
     }
   | {
       type: "SET_IS_FIGJAM";
+      payload: boolean;
+    }
+  | {
+      type: "SET_SHOW_SUGGESTIONS";
       payload: boolean;
     };

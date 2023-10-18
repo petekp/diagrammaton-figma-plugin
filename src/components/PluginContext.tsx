@@ -49,6 +49,7 @@ export const PluginContextProvider = ({
     isPersistedStateLoading: false,
     numNodesSelected: 0,
     showRequired: false,
+    showSuggestions: true,
   };
 
   once<GetPersistedState>("GET_PERSISTED_STATE", (state: PersistedState) => {
@@ -62,6 +63,10 @@ export const PluginContextProvider = ({
     });
     dispatch({ type: "SET_NATURAL_INPUT", payload: state.naturalInput });
     dispatch({ type: "SET_ORIENTATION", payload: state.orientation });
+    dispatch({
+      type: "SET_SHOW_SUGGESTIONS",
+      payload: debug.enabled ? debug.showSuggestions : state.showSuggestions,
+    });
 
     // Hide overlay once state is loaded
     dispatch({ type: "SET_IS_PERSISTED_STATE_LOADING", payload: false });
@@ -98,6 +103,8 @@ export const PluginContextProvider = ({
           return { ...state, currentPrimaryTab: payload };
         case "SET_IS_FIGJAM":
           return { ...state, isFigJam: payload };
+        case "SET_SHOW_SUGGESTIONS":
+          return { ...state, showSuggestions: payload };
         default:
           throw new Error();
       }
