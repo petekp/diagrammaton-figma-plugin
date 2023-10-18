@@ -143,7 +143,6 @@
 .suggestionInstructionsBlock {
   display: flex;
   flex-direction: column;
-  padding: var(--space-extra-small);
+  padding: var(--space-small) var(--space-extra-small) 0 0;
   height: 60px;
-  width: 80px;
 }

@@ -76,7 +76,7 @@ export type PluginState = PersistedState & {
   isPersistedStateLoading: boolean;
   numNodesSelected: number;
   showRequired: boolean;
-  showSuggestions: true;
+  showSuggestions: boolean;
 };
 
 export type Action =

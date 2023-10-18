@@ -1,4 +1,4 @@
-import { h } from "preact";
+import { Fragment, h } from "preact";
 import {
   Button,
   Container,
@@ -26,7 +26,25 @@ import { StreamElement, fetchStream } from "../fetchDiagramData";
 import debug from "../debug";
 import { motion, useSpring, AnimatePresence } from "framer-motion";
 
-const variants = {
+const suggestionVariants = {
+  hidden: { opacity: 0, height: 0 },
+  visible: {
+    opacity: 1,
+    height: "auto",
+  },
+  exit: {
+    opacity: 0,
+    y: -22,
+    height: 0,
+  },
+  transition: {
+    type: "spring",
+    damping: 10,
+    stiffness: 120,
+  },
+};
+
+const errorVariants = {
   hidden: { opacity: 0, y: 15 },
   visible: {
     opacity: 1,
@@ -110,6 +128,12 @@ export function NaturalInputView() {
 
   const handleGetCompletionsStream = useCallback(
     async (input: string) => {
+      if (!input) {
+        return dispatch({
+          type: "SET_ERROR",
+          payload: "Please enter a description.",
+        });
+      }
       diagramId.current = generateTimeBasedUUID();
       abortControllerRef.current = new AbortController();
       errorMessage = "";
@@ -195,9 +219,7 @@ export function NaturalInputView() {
       style={{ display: "flex", flexDirection: "column", flex: 1 }}
     >
       <VerticalSpace space="small" />
-      <div
-        style={{ display: "flex", flexDirection: "column", gap: 10, flex: 1 }}
-      >
+      <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
         <AutoSizeTextInput
           disabled={isLoading}
           style={{
@@ -216,19 +238,29 @@ export function NaturalInputView() {
         />
         <AnimatePresence>
           {showSuggestions && (
-            <motion.div layout variants={variants}>
-              <Suggestions onClick={handleGetCompletionsStream} />
-            </motion.div>
+            <Fragment>
+              <motion.div
+                id="suggestions"
+                layout
+                variants={suggestionVariants}
+                initial="visible"
+                animate="visible"
+                exit="exit"
+              >
+                <VerticalSpace space="small" />
+                <Suggestions onClick={handleGetCompletionsStream} />
+              </motion.div>
+            </Fragment>
           )}
-        </AnimatePresence>
-        <AnimatePresence>
           {error && (
             <motion.div
+              id="error"
+              layout
               initial="hidden"
               animate="visible"
               exit="exit"
-              variants={variants}
-              transition={{ type: "spring", damping: 10, stiffness: 120 }}
+              variants={errorVariants}
+              transition={{ type: "spring", damping: 20, stiffness: 200 }}
               className={styles.warningBanner}
             >
               <IconWarning32 />
@@ -237,6 +269,9 @@ export function NaturalInputView() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        <VerticalSpace space="small" />
+
         <Columns space="extraSmall">
           {isLoading ? (
             <Button
@@ -309,7 +344,7 @@ const Suggestions = ({ onClick }: { onClick: (input: string) => void }) => {
     const rect = container.current.getBoundingClientRect();
 
     const handleMouseMove = (e: MouseEvent) => {
-      if (!rect || !container.current) return;
+      if (!rect || !container.current || isLoading) return;
 
       const xPosition = e.clientX - rect.left;
       const yPosition = e.clientY - rect.top;
@@ -353,8 +388,29 @@ const Suggestions = ({ onClick }: { onClick: (input: string) => void }) => {
 
     const debouncedHandleMouseMove = debounce(handleMouseMove, 5);
 
+    const handleScroll = (e: WheelEvent) => {
+      if (isLoading) return;
+
+      e.preventDefault();
+      const maxScrollWidth = calculateMaxScrollWidth();
+
+      // Adjust scroll amount by wheel delta
+      const scrollAmount = Math.abs(e.deltaX) + Math.abs(e.deltaY * 20); // Multiply deltaY by 10
+
+      if (e.deltaX < 0 && x.get() < maxScrollWidth) {
+        const newX = Math.min(x.get() + scrollAmount, 0);
+        x.set(newX);
+      }
+
+      if (e.deltaX > 0 && x.get() <= 0) {
+        const newX = Math.max(x.get() - scrollAmount, -maxScrollWidth);
+        x.set(newX);
+      }
+    };
+
     if (container.current) {
       container.current.addEventListener("mousemove", debouncedHandleMouseMove);
+      container.current.addEventListener("wheel", handleScroll);
     }
 
     return () => {
@@ -366,9 +422,10 @@ const Suggestions = ({ onClick }: { onClick: (input: string) => void }) => {
           "mousemove",
           debouncedHandleMouseMove
         );
+        container.current.removeEventListener("wheel", handleScroll);
       }
     };
-  }, [container.current]);
+  }, [container.current, isLoading]);
 
   useEffect(() => {
     const containerElement = container.current;
@@ -423,11 +480,12 @@ const Suggestions = ({ onClick }: { onClick: (input: string) => void }) => {
   return (
     <motion.div layout ref={container} className={styles.suggestionContainer}>
       <motion.div
+        layout
         style={{ x: springX }}
         className={styles.suggestionScrollView}
         layoutScroll
       >
-        <motion.div className={styles.suggestionInstructionsBlock}>
+        <motion.div layout className={styles.suggestionInstructionsBlock}>
           <Stack space="small">
             <Text>
               <Bold>Examples</Bold>
@@ -450,6 +508,7 @@ const Suggestions = ({ onClick }: { onClick: (input: string) => void }) => {
         </motion.div>
         {suggestions.map((suggestion) => (
           <motion.div
+            layout
             tabIndex={0}
             className={styles.suggestionBlock}
             onClick={isLoading ? () => {} : () => handleClick(suggestion)}
@@ -504,8 +563,9 @@ const Suggestions = ({ onClick }: { onClick: (input: string) => void }) => {
 };
 
 const suggestions = [
-  "A basic auth flow",
+  "A mobile app signup flow",
+  "Onboarding for a meditation app",
+  "Form validation for a login screen",
   "A state diagram of an HTML button",
-  "Test suggestion 3",
-  "Test suggestion 4",
+  "An skippable 5-step app walkthrough",
 ];

@@ -27,16 +27,7 @@ import Logo from "./Logo";
 
 export function SettingsView() {
   const {
-    state: {
-      model,
-
-      licenseKey,
-
-      showRequired,
-
-      orientation,
-      showSuggestions,
-    },
+    state: { model, licenseKey, showRequired, orientation, showSuggestions },
     dispatch,
   } = pluginContext();
 
@@ -156,10 +147,10 @@ export function SettingsView() {
     <Columns space="small">
       <Stack space="small">
         <Text>
-          <Bold>Suggestions</Bold>{" "}
+          <Bold>Examples</Bold>{" "}
         </Text>
         <Text>
-          <Muted>See a set of example prompts</Muted>
+          <Muted>Show example prompts in the Generate tab</Muted>
         </Text>
       </Stack>
       <div style={{ float: "right" }}>
@@ -202,12 +193,12 @@ export function SettingsView() {
         <div
           style={{
             display: "flex",
-            flexDirection: "column",
+            flexDirection: "row",
             gap: 8,
             alignItems: "center",
           }}
         >
-          <Logo size={24} />
+          <Logo size={16} />
           <Muted>{RELEASE_VERSION}</Muted>
         </div>
       </div>
