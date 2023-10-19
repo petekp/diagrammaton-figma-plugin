@@ -71,8 +71,6 @@ export function NaturalInputView() {
     clearErrors,
   } = pluginContext();
 
-  console.log(showSuggestions);
-
   let errorMessage = error;
   const diagramId = useRef(generateTimeBasedUUID());
   const diagramNodes = useRef<DiagramElement[]>([]);
