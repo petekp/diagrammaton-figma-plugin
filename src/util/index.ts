@@ -1,11 +1,19 @@
-import { BASE_URL_DEV, BASE_URL_PROD } from "../constants";
+import { BASE_URL_DEV, BASE_URL_PROD, BASE_URL_STAGING } from "../constants";
 
 export function isDevEnv() {
   return process.env.NODE_ENV === "development";
 }
 
+export function isStagingEnv() {
+  return process.env.NODE_ENV === "staging";
+}
+
 export function getBaseUrl() {
-  return isDevEnv() ? BASE_URL_DEV : BASE_URL_PROD;
+  return isDevEnv()
+    ? BASE_URL_DEV
+    : isStagingEnv()
+    ? BASE_URL_STAGING
+    : BASE_URL_PROD;
 }
 
 export function generateTimeBasedUUID() {

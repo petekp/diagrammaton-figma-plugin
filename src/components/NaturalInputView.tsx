@@ -6,8 +6,6 @@ import {
   IconCross32,
   VerticalSpace,
   Columns,
-  IconArrowRight16,
-  IconArrowRightCircle32,
   Link,
   Stack,
   Text,
@@ -484,7 +482,7 @@ const Suggestions = ({ onClick }: { onClick: (input: string) => void }) => {
         layoutScroll
       >
         <motion.div layout className={styles.suggestionInstructionsBlock}>
-          <Stack space="small">
+          <Stack space="extraSmall">
             <Text>
               <Bold>Examples</Bold>
             </Text>
@@ -511,7 +509,15 @@ const Suggestions = ({ onClick }: { onClick: (input: string) => void }) => {
             className={styles.suggestionBlock}
             onClick={isLoading ? () => {} : () => handleClick(suggestion)}
             animate={isLoading ? "loading" : "default"}
+            initial="default"
             variants={{
+              default: {
+                outline: "none",
+                borderColor: "var(--figma-color-border)",
+                backgroundColor: "var(--figma-color-bg-primary)",
+                boxShadow: "0px 0px 0px var(--figma-color-bg-brand)",
+                color: "var(--figma-color-text)",
+              },
               loading: {
                 opacity: 0.8,
                 borderColor: "var(--figma-color-border)",
@@ -519,12 +525,7 @@ const Suggestions = ({ onClick }: { onClick: (input: string) => void }) => {
                 boxShadow: "0px 0px 0px var(--figma-color-bg-brand)",
                 color: "var(--figma-color-text-secondary)",
               },
-              default: {
-                borderColor: "var(--figma-color-border)",
-                backgroundColor: "var(--figma-color-bg-primary)",
-                boxShadow: "0px 0px 0px var(--figma-color-bg-brand)",
-                color: "var(--figma-color-text)",
-              },
+
               hover: {
                 y: -2,
                 borderColor: "var(--figma-color-bg-brand)",
@@ -534,7 +535,6 @@ const Suggestions = ({ onClick }: { onClick: (input: string) => void }) => {
               },
               focus: {
                 y: -2,
-                outline: "none",
                 borderColor: "var(--figma-color-bg-brand)",
                 backgroundColor: "var(--figma-color-bg-primary)",
                 boxShadow: "0px 2px 0px var(--figma-color-bg-brand)",
@@ -565,5 +565,5 @@ const suggestions = [
   "Onboarding for a meditation app",
   "Form validation for a login screen",
   "A state diagram of an HTML button",
-  "An skippable 5-step app walkthrough",
+  "A skippable 5-step app walkthrough",
 ];

@@ -24,7 +24,8 @@
     "build": "npm run toggleDebugOff; NODE_ENV=production build-figma-plugin --typecheck --minify; npm run createZip",
     "watch": "npm run toggleDebugOn; NODE_ENV=development build-figma-plugin --typecheck --watch",
     "watch-staging": "npm run toggleDebugOff; NODE_ENV=staging build-figma-plugin --typecheck --watch",
-    "watch-prod": "npm run toggleDebugOff; NODE_ENV=production build-figma-plugin --typecheck --minify --watch"
+    "watch-prod": "npm run toggleDebugOff; NODE_ENV=production build-figma-plugin --typecheck --minify --watch",
+    "printEnv": "echo $NODE_ENV"
   },
   "figma-plugin": {
     "editorType": [
@@ -36,8 +37,9 @@
     "ui": "src/ui.tsx",
     "networkAccess": {
       "allowedDomains": [
-        "https://figma-plugins-pete.vercel.app",
         "https://www.diagrammaton.com",
+        "https://figma-plugins-pete.vercel.app",
+        "https://figma-plugins-git-staging-team-pete.vercel.app",
         "https://fonts.googleapis.com",
         "https://fonts.gstatic.com",
         "http://localhost:3000"

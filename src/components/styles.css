@@ -42,7 +42,7 @@
   background-color: var(--figma-color-bg-warning);
   padding: var(--space-extra-small);
   position: absolute;
-  bottom: 50px;
+  bottom: 54px;
   left: 12px;
   width: calc(100% - 24px);
   border-radius: var(--radius-small);
