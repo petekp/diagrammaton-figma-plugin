@@ -242,14 +242,12 @@ export type StreamElement =
 const streamingUrl = `${getBaseUrl()}/api/gptStreaming`;
 
 async function fetchDiagramData({
-  licenseKey,
-  model,
-  diagramDescription,
+  action,
+  data,
   signal,
 }: {
-  licenseKey: string;
-  model: GPTModels;
-  diagramDescription: string;
+  action: string;
+  data: any;
   signal: AbortSignal;
 }): Promise<Response> {
   return fetch(streamingUrl, {
@@ -257,12 +255,11 @@ async function fetchDiagramData({
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      diagramDescription,
-      licenseKey,
-      model,
-    }),
     signal,
+    body: JSON.stringify({
+      action,
+      data,
+    }),
   });
 }
 
@@ -270,8 +267,11 @@ async function* processResponse(
   response: Response
 ): AsyncGenerator<StreamElement> {
   if (!response.ok) {
-    const err = await response.json();
-    yield { type: "error", data: err.message as string };
+    if (response.statusText) {
+      yield { type: "error", data: response.statusText };
+    }
+
+    yield { type: "error", data: "Something unfortunate happened 😢" };
   }
 
   if (response.body) {
@@ -302,24 +302,40 @@ async function* processResponse(
   }
 }
 
-export async function* fetchStream(params: {
-  licenseKey: string;
-  model: GPTModels;
-  diagramDescription: string;
+export async function* fetchStream({
+  signal,
+  action,
+  data,
+}: {
   signal: AbortSignal;
+  action: string;
+  data: {
+    licenseKey: string;
+    model: GPTModels;
+    diagramDescription?: string;
+    instructions?: string;
+  };
 }): AsyncGenerator<StreamElement> {
+  console.log("fetchStream", { action, data });
   if (debug.enabled && debug.stubDiagram) {
-    for (const data of debugValue) {
-      yield { type: "node", data: [data] };
+    for (const debugData of debugValue) {
+      yield { type: "node", data: [debugData] };
     }
     yield { type: "end" };
   }
 
-  const response = await fetchDiagramData(params);
+  const response = await fetchDiagramData({
+    action,
+    data,
+    signal,
+  });
 
   if (debug.enabled) {
     console.info("Processing stream...");
   }
-
-  yield* processResponse(response);
+  try {
+    yield* processResponse(response);
+  } catch (err) {
+    console.error(err);
+  }
 }

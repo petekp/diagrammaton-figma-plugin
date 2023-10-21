@@ -5,23 +5,20 @@ import {
   VerticalSpace,
   Columns,
 } from "@create-figma-plugin/ui";
+import { motion } from "framer-motion";
 import { useEffect } from "preact/hooks";
-import { motion, AnimatePresence } from "framer-motion";
 
 import styles from "./styles.css";
 import { pluginContext } from "./PluginContext";
 import { AutoSizeTextInput } from "./AutoSizeTextInput";
-import Suggestions, { suggestionVariants } from "./Suggestions";
 import { usePluginExecution } from "../hooks/usePluginExecution";
 
-export function NaturalInputView() {
+export function ModifyView() {
   const {
-    state: { naturalInput, isLoading, showSuggestions, selectedDiagramNodeId },
+    state: { isLoading, modifyInput },
     dispatch,
     clearErrors,
   } = pluginContext();
-
-  const isDiagramSelected = !!selectedDiagramNodeId;
 
   const { handleStreamDiagram, handleCancel } = usePluginExecution();
 
@@ -31,7 +28,7 @@ export function NaturalInputView() {
         (event.key === "Enter" && event.ctrlKey) ||
         (event.key === "Enter" && event.metaKey)
       ) {
-        handleStreamDiagram(naturalInput);
+        handleStreamDiagram(modifyInput);
       }
     };
 
@@ -40,61 +37,39 @@ export function NaturalInputView() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [handleStreamDiagram, naturalInput]);
+  }, [handleStreamDiagram, modifyInput]);
 
   const isWindows = navigator.userAgent.indexOf("Win") != -1;
 
+  const fullHeightColumnStyles = {
+    display: "flex",
+    flexDirection: "column",
+    flex: 1,
+  };
+
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 1, x: -10 }}
+      initial={{ opacity: 0, scale: 1, x: 10 }}
       animate={{ opacity: 1, scale: 1, x: 0 }}
-      exit={{ opacity: 0, scale: 1, x: 10 }}
-      style={{ display: "flex", flexDirection: "column", flex: 1 }}
+      exit={{ opacity: 0, scale: 1, x: -10 }}
+      style={fullHeightColumnStyles}
     >
-      <Container
-        space="small"
-        style={{ display: "flex", flexDirection: "column", flex: 1 }}
-      >
+      <Container space="small" style={fullHeightColumnStyles}>
         <VerticalSpace space="small" />
-        <motion.div
-          style={{ display: "flex", flexDirection: "column", flex: 1 }}
-        >
+        <motion.div style={fullHeightColumnStyles}>
           <AutoSizeTextInput
-            autoFocus={true}
+            autoFocus={false}
             disabled={isLoading}
-            style={{
-              lineHeight: 1.3,
-              flex: 1,
-            }}
-            placeholder={
-              isDiagramSelected
-                ? "Modify this diagram by..."
-                : "Generate a diagram of..."
-            }
+            placeholder="Modify this diagram by..."
             grow={false}
             spellCheck={false}
             variant="border"
-            value={naturalInput}
+            value={modifyInput}
             onValueInput={(val: string) => {
-              dispatch({ type: "SET_NATURAL_INPUT", payload: val });
+              dispatch({ type: "SET_MODIFY_INPUT", payload: val });
             }}
             onFocusCapture={clearErrors}
           />
-          <AnimatePresence>
-            {showSuggestions && (
-              <motion.div
-                id="suggestions"
-                layout
-                variants={suggestionVariants}
-                initial="visible"
-                animate="visible"
-                exit="exit"
-              >
-                <VerticalSpace space="small" />
-                <Suggestions onClick={handleStreamDiagram} />
-              </motion.div>
-            )}
-          </AnimatePresence>
 
           <VerticalSpace space="small" />
 
@@ -115,9 +90,9 @@ export function NaturalInputView() {
               fullWidth
               disabled={isLoading}
               className={styles.fullWidth}
-              onClick={() => handleStreamDiagram(naturalInput)}
+              onClick={() => handleStreamDiagram(modifyInput)}
             >
-              Generate {isWindows ? "Ctrl" : "⌘"} + ⏎
+              Modify {isWindows ? "Ctrl" : "⌘"} + ⏎
             </Button>
           </Columns>
         </motion.div>

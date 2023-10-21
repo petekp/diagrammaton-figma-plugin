@@ -10,6 +10,7 @@ export type PersistedState = {
   customPrompt: string;
   model: GPTModels;
   naturalInput: string;
+  modifyInput: string;
   isNewUser: boolean;
   isSignInVisible: boolean;
   feedback: string;
@@ -29,8 +30,8 @@ export interface SavePersistedState extends EventHandler {
   handler: (state: PersistedState) => void;
 }
 
-export interface ExecutePlugin extends EventHandler {
-  name: "EXECUTE_PLUGIN";
+export interface DrawDiagram extends EventHandler {
+  name: "DRAW_DIAGRAM";
   handler: ({
     diagram,
     diagramId,
@@ -59,6 +60,19 @@ export interface SetSelectedNodesCount extends EventHandler {
   handler: (numNodesSelected: number) => void;
 }
 
+export interface SetSelectedNodeData extends EventHandler {
+  name: "SET_SELECTED_NODE_DATA";
+  handler: ({
+    diagramNodeId,
+    diagramId,
+    diagramData,
+  }: {
+    diagramNodeId: string;
+    diagramId: string;
+    diagramData: string;
+  }) => void;
+}
+
 export interface SetLoading extends EventHandler {
   name: "SET_LOADING";
   handler: (isLoading: boolean) => void;
@@ -77,6 +91,10 @@ export type PluginState = PersistedState & {
   numNodesSelected: number;
   showRequired: boolean;
   showSuggestions: boolean;
+  selectedDiagramId: string;
+  selectedDiagramData: string;
+  selectedDiagramNodeId: string;
+  modifyInput: string;
 };
 
 export type Action =
@@ -102,6 +120,10 @@ export type Action =
     }
   | {
       type: "SET_NATURAL_INPUT";
+      payload: string;
+    }
+  | {
+      type: "SET_MODIFY_INPUT";
       payload: string;
     }
   | {
@@ -143,4 +165,16 @@ export type Action =
   | {
       type: "SET_SHOW_SUGGESTIONS";
       payload: boolean;
+    }
+  | {
+      type: "SET_SELECTED_DIAGRAM_ID";
+      payload: string;
+    }
+  | {
+      type: "SET_SELECTED_DIAGRAM_DATA";
+      payload: string;
+    }
+  | {
+      type: "SET_SELECTED_DIAGRAM_NODE_ID";
+      payload: string;
     };

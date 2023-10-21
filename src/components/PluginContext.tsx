@@ -10,6 +10,7 @@ import {
   PluginState,
   SavePersistedState,
   SetLoading,
+  SetSelectedNodeData,
   SetSelectedNodesCount,
 } from "../types";
 import debug from "../debug";
@@ -50,6 +51,10 @@ export const PluginContextProvider = ({
     numNodesSelected: 0,
     showRequired: false,
     showSuggestions: true,
+    selectedDiagramNodeId: "",
+    selectedDiagramData: "",
+    selectedDiagramId: "",
+    modifyInput: "",
   };
 
   once<GetPersistedState>("GET_PERSISTED_STATE", (state: PersistedState) => {
@@ -62,6 +67,7 @@ export const PluginContextProvider = ({
       payload: debug.enabled ? debug.isNewUser : state.isNewUser,
     });
     dispatch({ type: "SET_NATURAL_INPUT", payload: state.naturalInput });
+    dispatch({ type: "SET_MODIFY_INPUT", payload: state.modifyInput });
     dispatch({ type: "SET_ORIENTATION", payload: state.orientation });
     dispatch({
       type: "SET_SHOW_SUGGESTIONS",
@@ -87,6 +93,8 @@ export const PluginContextProvider = ({
           return { ...state, isNewUser: payload };
         case "SET_NATURAL_INPUT":
           return { ...state, naturalInput: payload };
+        case "SET_MODIFY_INPUT":
+          return { ...state, modifyInput: payload };
         case "SET_ORIENTATION":
           return { ...state, orientation: payload };
         case "SET_IS_PERSISTED_STATE_LOADING":
@@ -105,6 +113,12 @@ export const PluginContextProvider = ({
           return { ...state, isFigJam: payload };
         case "SET_SHOW_SUGGESTIONS":
           return { ...state, showSuggestions: payload };
+        case "SET_SELECTED_DIAGRAM_NODE_ID":
+          return { ...state, selectedDiagramNodeId: payload };
+        case "SET_SELECTED_DIAGRAM_DATA":
+          return { ...state, selectedDiagramData: payload };
+        case "SET_SELECTED_DIAGRAM_ID":
+          return { ...state, selectedDiagramId: payload };
         default:
           throw new Error();
       }
@@ -132,8 +146,16 @@ export const PluginContextProvider = ({
   on<SetSelectedNodesCount>("SET_SELECTED_NODES_COUNT", (num) =>
     dispatch({ type: "SET_NUM_NODES_SELECTED", payload: num })
   );
-  on<SetSelectedNodesCount>("SET_SELECTED_NODES_COUNT", (num) =>
-    dispatch({ type: "SET_NUM_NODES_SELECTED", payload: num })
+  on<SetSelectedNodeData>(
+    "SET_SELECTED_NODE_DATA",
+    ({ diagramData, diagramId, diagramNodeId }) => {
+      dispatch({
+        type: "SET_SELECTED_DIAGRAM_NODE_ID",
+        payload: diagramNodeId,
+      });
+      dispatch({ type: "SET_SELECTED_DIAGRAM_ID", payload: diagramId });
+      dispatch({ type: "SET_SELECTED_DIAGRAM_DATA", payload: diagramData });
+    }
   );
 
   const clearErrors = () => dispatch({ type: "SET_ERROR", payload: "" });

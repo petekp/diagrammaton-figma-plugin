@@ -88,11 +88,8 @@ export function FeedbackView() {
         style={{ display: "flex", flexDirection: "column", gap: 10, flex: 1 }}
       >
         <AutoSizeTextInput
+          autoFocus={true}
           disabled={isLoading}
-          style={{
-            lineHeight: 1.3,
-            flex: 1,
-          }}
           placeholder="How can we improve? ☺️"
           grow={false}
           spellCheck={false}

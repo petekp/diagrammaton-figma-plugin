@@ -170,11 +170,9 @@ export function SettingsView() {
     <Container space="small">
       <VerticalSpace space="medium" />
       <Stack space="large">
-        {modelSelection}
-        <Divider />
-        {orientationSelection}
-        <Divider />
         {licenseKeyInput}
+        <Divider />
+        {modelSelection}
         <Divider />
         {showSuggestionsRow}
         <Divider />

@@ -1,10 +1,18 @@
-import { useState, useEffect, useRef } from "preact/hooks";
-import { TextboxMultiline, useInitialFocus } from "@create-figma-plugin/ui";
+import { useState, useEffect } from "preact/hooks";
+import { TextboxMultiline } from "@create-figma-plugin/ui";
 import { ComponentProps, h } from "preact";
+import { pluginContext } from "./PluginContext";
+import { motion } from "framer-motion";
 
-export const AutoSizeTextInput = (
-  props: ComponentProps<typeof TextboxMultiline>
-) => {
+type Props = ComponentProps<typeof TextboxMultiline> & {
+  autoFocus: boolean;
+};
+
+export const AutoSizeTextInput = (props: Props) => {
+  const {
+    state: { isLoading },
+  } = pluginContext();
+
   const [fontSize, setFontSize] = useState(20);
 
   useEffect(() => {
@@ -13,6 +21,8 @@ export const AutoSizeTextInput = (
   }, [props.value]);
 
   useEffect(() => {
+    if (!props.autoFocus) return;
+
     const textarea = document.querySelector("textarea");
     if (textarea) {
       textarea.focus();
@@ -20,15 +30,21 @@ export const AutoSizeTextInput = (
   }, []);
 
   return (
-    <TextboxMultiline
-      {...props}
-      style={{
-        flex: 1,
-        ...(props.style as {}),
-        padding: "12px 16px",
-        fontSize: `${fontSize}px`,
-        cursor: "text",
-      }}
-    />
+    <motion.div
+      initial={{ fontSize: 20 }}
+      animate={{ fontSize: fontSize }}
+      style={{ flex: 1, flexDirection: "column", display: "flex" }}
+    >
+      <TextboxMultiline
+        {...props}
+        style={{
+          flex: 1,
+          ...(props.style as {}),
+          padding: "12px 14px",
+          cursor: isLoading ? "default" : "text",
+          lineHeight: 1.3,
+        }}
+      />
+    </motion.div>
   );
 };

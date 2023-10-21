@@ -38,7 +38,7 @@ const layoutDiagram = ({
   return new Map(g.nodes().map((v) => [v, { x: g.node(v).x, y: g.node(v).y }]));
 };
 
-export const createDiagram = async ({
+export const createDiagramLayout = async ({
   parsedOutput,
   orientation = "LR",
 }: {
@@ -50,6 +50,7 @@ export const createDiagram = async ({
   layoutDiagram({ diagram: parsedOutput, orientation }).forEach(
     (value, key) => (positionsObject[key] = value)
   );
+
   return positionsObject;
 };
 

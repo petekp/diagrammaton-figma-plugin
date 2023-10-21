@@ -202,19 +202,27 @@ const positionNodes = (
 ) => {
   const { x: newDiagramX, y: newDiagramY } = getEmptySpaceCoordinates();
 
-  Object.values(nodeShapes).forEach((node, i) => {
-    setNodeProperties({ node, index: i, diagramData: diagram, diagramId });
-    figma.currentPage.appendChild(node);
+  Object.values(nodeShapes).forEach((shapeNode, i) => {
+    const diagramNodeId = nodeIds.get(shapeNode)!;
 
-    const nodeId = nodeIds.get(node)!;
-    const originalPosition = positionsObject[nodeId];
+    const nodeProperties = {
+      shapeNode,
+      index: i,
+      diagramNodeId,
+      diagramId,
+      diagramData: diagram,
+    };
 
+    setNodeProperties(nodeProperties);
+
+    const originalPosition = positionsObject[diagramNodeId];
     if (originalPosition) {
-      node.x = originalPosition.x + newDiagramX;
-      node.y = originalPosition.y + newDiagramY;
+      shapeNode.x = originalPosition.x + newDiagramX;
+      shapeNode.y = originalPosition.y + newDiagramY;
     }
 
-    node.visible = true;
+    figma.currentPage.appendChild(shapeNode);
+    shapeNode.visible = true;
   });
 };
 
@@ -274,13 +282,15 @@ export const drawDiagram = async ({
 };
 
 const setNodeProperties = ({
-  node,
   index,
+  shapeNode,
+  diagramNodeId,
   diagramId,
   diagramData,
 }: {
-  node: ShapeWithTextNode;
   index: number;
+  shapeNode: ShapeWithTextNode;
+  diagramNodeId: string;
   diagramId: string;
   diagramData?: DiagramElement[];
 }) => {
@@ -293,12 +303,13 @@ const setNodeProperties = ({
   // });
 
   if (index === 0) {
-    node.setPluginData("isRoot", "true");
+    shapeNode.setPluginData("isRoot", "true");
   }
 
   if (diagramData) {
-    node.setPluginData("diagramData", JSON.stringify(diagramData));
-    node.setPluginData("diagramId", diagramId);
+    shapeNode.setPluginData("diagramNodeId", diagramNodeId);
+    shapeNode.setPluginData("diagramId", diagramId);
+    shapeNode.setPluginData("diagramData", JSON.stringify(diagramData));
   }
 };
 

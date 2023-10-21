@@ -9,13 +9,14 @@ import {
 } from "@create-figma-plugin/utilities";
 
 import {
-  ExecutePlugin,
+  DrawDiagram,
   GetPersistedState,
   HandleError,
   SetSelectedNodesCount,
   SetUILoaded,
   PersistedState,
   SavePersistedState,
+  SetSelectedNodeData,
 } from "./types";
 
 import { drawDiagram } from "./createDiagramServer";
@@ -33,20 +34,32 @@ export const defaultSettings: PersistedState = {
   naturalInput: "",
   orientation: "LR",
   showSuggestions: true,
+  modifyInput: "",
 };
 
 export default function () {
   figma.on("selectionchange", () => {
-    emit<SetSelectedNodesCount>(
-      "SET_SELECTED_NODES_COUNT",
-      figma.currentPage.selection.length
-    );
+    // emit<SetSelectedNodesCount>(
+    //   "SET_SELECTED_NODES_COUNT",
+    //   figma.currentPage.selection.length
+    // );
 
     const firstSelectedNode = figma.currentPage.selection[0];
 
     if (firstSelectedNode) {
-      // console.log(firstSelectedNode.getPluginData("diagramData"));
-      // console.log(firstSelectedNode.getPluginData("diagramId"));
+      emit<SetSelectedNodeData>("SET_SELECTED_NODE_DATA", {
+        diagramNodeId:
+          figma.currentPage.selection[0].getPluginData("diagramNodeId"),
+        diagramData:
+          figma.currentPage.selection[0].getPluginData("diagramData"),
+        diagramId: figma.currentPage.selection[0].getPluginData("diagramId"),
+      });
+    } else {
+      emit<SetSelectedNodeData>("SET_SELECTED_NODE_DATA", {
+        diagramNodeId: "",
+        diagramData: "",
+        diagramId: "",
+      });
     }
 
     // figma.currentPage.selection.forEach((node) => {
@@ -76,7 +89,7 @@ export default function () {
     });
   });
 
-  on<ExecutePlugin>("EXECUTE_PLUGIN", async function (params) {
+  on<DrawDiagram>("DRAW_DIAGRAM", async function (params) {
     await drawDiagram(params);
   });
 
