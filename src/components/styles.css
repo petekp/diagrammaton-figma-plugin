@@ -149,7 +149,9 @@
 
 button {
   &:focus {
-    outline-offset: 2px;
+    outline-offset: 1px;
+    border-color: initial !important;
+    border-width: 0px !important;
     outline: 2px solid var(--figma-color-border-brand-strong);
   }
 }

@@ -217,8 +217,8 @@ const positionNodes = (
 
     const originalPosition = positionsObject[diagramNodeId];
     if (originalPosition) {
-      shapeNode.x = originalPosition.x + newDiagramX;
-      shapeNode.y = originalPosition.y + newDiagramY;
+      shapeNode.x = Math.round(originalPosition.x + newDiagramX);
+      shapeNode.y = Math.round(originalPosition.y + newDiagramY);
     }
 
     figma.currentPage.appendChild(shapeNode);
@@ -233,8 +233,8 @@ const createAndPositionBufferNode = (positionsObject: {
   bufferNode.opacity = 0;
 
   const { maxX, maxY } = getMaxXY(positionsObject);
-  const diagramWidth = maxX;
-  const diagramHeight = maxY;
+  const diagramWidth = Math.round(maxX);
+  const diagramHeight = Math.round(maxY);
   const { x: newDiagramX, y: newDiagramY } = getEmptySpaceCoordinates();
 
   bufferNode.resize(diagramWidth * 1.5, diagramHeight);
@@ -345,7 +345,7 @@ function getEmptySpaceCoordinates() {
   }
 
   const viewportCenterY = figma.viewport.center.y;
-  const newDiagramY = Math.max(maxY, viewportCenterY);
+  const newDiagramY = Math.round(Math.max(maxY, viewportCenterY));
 
   return { x: 0, y: newDiagramY };
 }
@@ -368,7 +368,7 @@ const centerViewportOnDiagram = (nodeShapes: {
   });
 
   const viewportWidth = figma.viewport.bounds.width;
-  const padding = viewportWidth / 4; // Padding is a third of the viewport width
+  const padding = Math.round(viewportWidth / 4); // Padding is a third of the viewport width
 
   const tempNode = figma.createRectangle();
   tempNode.x = minX;

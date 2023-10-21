@@ -1,5 +1,5 @@
 import { h } from "preact";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 
 import { ModifyView } from "./ModifyView";
 import WarningBanner from "./WarningBanner";
@@ -11,25 +11,40 @@ export function GenerateView() {
   const { selectedDiagramNodeId, error } = pluginContext().state;
   return (
     <motion.div
-      style={{ display: "flex", flexDirection: "column", flex: 1 }}
-      initial={{ opacity: 0, scale: 1, x: -10 }}
-      transition={tabTransition}
-      animate={{ opacity: 1, scale: 1, x: 0 }}
-      exit={{ opacity: 0, scale: 1, x: 10 }}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        flex: 1,
+        position: "relative",
+      }}
     >
-      {selectedDiagramNodeId ? (
-        <motion.div
-          style={{ display: "flex", flexDirection: "column", flex: 1 }}
-        >
-          <ModifyView />
-        </motion.div>
-      ) : (
-        <motion.div
-          style={{ display: "flex", flexDirection: "column", flex: 1 }}
-        >
-          <NaturalInputView />
-        </motion.div>
-      )}
+      <AnimatePresence>
+        {selectedDiagramNodeId && (
+          <motion.div
+            initial={{ opacity: 0, scale: 1.2, y: 10 }}
+            transition={tabTransition}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 1.2, y: 10 }}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              flex: 1,
+              position: "absolute",
+              width: "100%",
+              height: "100%",
+              zIndex: 99,
+              background: "white",
+            }}
+          >
+            <ModifyView />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <motion.div
+        style={{ display: "flex", flexDirection: "column", flex: 1, zIndex: 9 }}
+      >
+        <NaturalInputView />
+      </motion.div>
       {error && <WarningBanner />}
     </motion.div>
   );

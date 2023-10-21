@@ -21,7 +21,6 @@ const layoutDiagram = ({
     .setDefaultEdgeLabel(() => ({}));
 
   diagram.forEach(({ from, to }) => {
-    const labelLength = Math.max(from.label.length, to.label.length);
     g.setNode(from.id, {
       label: from.label,
       width: DEFAULT_NODE_WIDTH,

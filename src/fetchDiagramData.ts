@@ -330,11 +330,17 @@ export async function* fetchStream({
       signal,
     });
 
+    console.log({ action, data });
+
     if (debug.enabled) {
       console.info("Processing stream...");
     }
     yield* processResponse(response);
   } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") {
+      return;
+    }
+
     if (err instanceof Error && err.message) {
       yield { type: "error", data: `Server error: ${err.message}` };
     }

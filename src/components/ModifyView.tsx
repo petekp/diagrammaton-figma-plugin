@@ -12,6 +12,7 @@ import styles from "./styles.css";
 import { pluginContext } from "./PluginContext";
 import { AutoSizeTextInput } from "./AutoSizeTextInput";
 import { usePluginExecution } from "../hooks/usePluginExecution";
+import { tabTransition } from "../animations";
 
 export function ModifyView() {
   const {
