@@ -5,11 +5,18 @@ import { ModifyView } from "./ModifyView";
 import WarningBanner from "./WarningBanner";
 import { pluginContext } from "./PluginContext";
 import { NaturalInputView } from "./NaturalInputView";
+import { tabTransition } from "../animations";
 
 export function GenerateView() {
   const { selectedDiagramNodeId, error } = pluginContext().state;
   return (
-    <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+    <motion.div
+      style={{ display: "flex", flexDirection: "column", flex: 1 }}
+      initial={{ opacity: 0, scale: 1, x: -10 }}
+      transition={tabTransition}
+      animate={{ opacity: 1, scale: 1, x: 0 }}
+      exit={{ opacity: 0, scale: 1, x: 10 }}
+    >
       {selectedDiagramNodeId ? (
         <motion.div
           style={{ display: "flex", flexDirection: "column", flex: 1 }}
@@ -24,6 +31,6 @@ export function GenerateView() {
         </motion.div>
       )}
       {error && <WarningBanner />}
-    </div>
+    </motion.div>
   );
 }

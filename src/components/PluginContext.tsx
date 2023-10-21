@@ -44,6 +44,7 @@ export const PluginContextProvider = ({
   const initialState: PluginState = {
     ...defaultSettings,
     currentPrimaryTab: "Generate",
+    lastPrimaryTab: "Generate",
     error: "",
     isFigJam: false,
     isLoading: false,
@@ -108,7 +109,11 @@ export const PluginContextProvider = ({
         case "SET_SHOW_REQUIRED":
           return { ...state, showRequired: payload };
         case "SET_CURRENT_PRIMARY_TAB":
-          return { ...state, currentPrimaryTab: payload };
+          return {
+            ...state,
+            lastPrimaryTab: state.currentPrimaryTab,
+            currentPrimaryTab: payload,
+          };
         case "SET_IS_FIGJAM":
           return { ...state, isFigJam: payload };
         case "SET_SHOW_SUGGESTIONS":

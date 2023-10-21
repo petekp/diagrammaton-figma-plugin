@@ -18,7 +18,7 @@ export type PersistedState = {
   showSuggestions: boolean;
 };
 
-export type PrimaryTab = "Generate" | "Settings";
+export type PrimaryTab = "Generate" | "Settings" | "Feedback";
 
 export interface GetPersistedState extends EventHandler {
   name: "GET_PERSISTED_STATE";
@@ -85,6 +85,7 @@ export interface SetUILoaded extends EventHandler {
 
 export type PluginState = PersistedState & {
   currentPrimaryTab: PrimaryTab;
+  lastPrimaryTab: PrimaryTab;
   error: string;
   isLoading: boolean;
   isPersistedStateLoading: boolean;

@@ -45,12 +45,7 @@ export function NaturalInputView() {
   const isWindows = navigator.userAgent.indexOf("Win") != -1;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 1, x: -10 }}
-      animate={{ opacity: 1, scale: 1, x: 0 }}
-      exit={{ opacity: 0, scale: 1, x: 10 }}
-      style={{ display: "flex", flexDirection: "column", flex: 1 }}
-    >
+    <motion.div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <Container
         space="small"
         style={{ display: "flex", flexDirection: "column", flex: 1 }}

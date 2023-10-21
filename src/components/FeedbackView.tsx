@@ -9,11 +9,13 @@ import {
   Banner,
   IconCheckCircle32,
 } from "@create-figma-plugin/ui";
+import { motion } from "framer-motion";
 
 import { AutoSizeTextInput } from "./AutoSizeTextInput";
 import styles from "./styles.css";
 import { useCallback, useState } from "preact/hooks";
 import { sendFeedback } from "../sendFeedback";
+import { tabTransition } from "../animations";
 
 export function FeedbackView() {
   const [wasSuccessful, setWasSuccessful] = useState(false);
@@ -79,58 +81,66 @@ export function FeedbackView() {
   }, [feedback]);
 
   return (
-    <Container
-      space="small"
-      style={{ display: "flex", flexDirection: "column", flex: 1 }}
+    <motion.div
+      initial={{ opacity: 0, scale: 1, x: 10 }}
+      animate={{ opacity: 1, scale: 1, x: 0 }}
+      exit={{ opacity: 0, scale: 1, x: -10 }}
+      transition={tabTransition}
+      style={{ flex: 1, flexDirection: "column", display: "flex" }}
     >
-      <VerticalSpace space="small" />
-      <div
-        style={{ display: "flex", flexDirection: "column", gap: 10, flex: 1 }}
+      <Container
+        space="small"
+        style={{ display: "flex", flexDirection: "column", flex: 1 }}
       >
-        <AutoSizeTextInput
-          autoFocus={true}
-          disabled={isLoading}
-          placeholder="How can we improve? ☺️"
-          grow={false}
-          spellCheck={false}
-          variant="border"
-          value={feedback || ""}
-          onValueInput={(val: string) => {
-            dispatch({ type: "SET_FEEDBACK", payload: val });
-          }}
-          onFocusCapture={() => {
-            dispatch({ type: "SET_ERROR", payload: "" });
-
-            setWasSuccessful(false);
-          }}
-        />
-
-        {error && (
-          <div className={styles.warningBanner}>
-            <IconWarning32 />
-            <div className={styles.warningText}>{error}</div>
-            <IconCross32
-              onClick={() => dispatch({ type: "SET_ERROR", payload: "" })}
-            />
-          </div>
-        )}
-        {wasSuccessful && (
-          <Banner icon={<IconCheckCircle32 />} variant="success">
-            Feedback sent. Thank you for taking the time! 🤍
-          </Banner>
-        )}
-
-        <Button
-          loading={isLoading}
-          disabled={isLoading}
-          fullWidth
-          onClick={handleSendFeedback}
+        <VerticalSpace space="small" />
+        <div
+          style={{ display: "flex", flexDirection: "column", gap: 10, flex: 1 }}
         >
-          Share feedback
-        </Button>
-      </div>
+          <AutoSizeTextInput
+            autoFocus={true}
+            disabled={isLoading}
+            placeholder="How can we improve? ☺️"
+            grow={false}
+            spellCheck={false}
+            variant="border"
+            value={feedback || ""}
+            onValueInput={(val: string) => {
+              dispatch({ type: "SET_FEEDBACK", payload: val });
+            }}
+            onFocusCapture={() => {
+              dispatch({ type: "SET_ERROR", payload: "" });
 
-      <VerticalSpace space="small" />
-    </Container>
+              setWasSuccessful(false);
+            }}
+          />
+
+          {error && (
+            <div className={styles.warningBanner}>
+              <IconWarning32 />
+              <div className={styles.warningText}>{error}</div>
+              <IconCross32
+                onClick={() => dispatch({ type: "SET_ERROR", payload: "" })}
+              />
+            </div>
+          )}
+          {wasSuccessful && (
+            <Banner icon={<IconCheckCircle32 />} variant="success">
+              Feedback sent. Thank you for taking the time! 🤍
+            </Banner>
+          )}
+
+          <Button
+            loading={isLoading}
+            disabled={isLoading}
+            fullWidth
+            onClick={handleSendFeedback}
+          >
+            Share feedback
+          </Button>
+        </div>
+
+        <VerticalSpace space="small" />
+      </Container>
+    </motion.div>
   );
 }

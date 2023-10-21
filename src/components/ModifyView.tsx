@@ -48,12 +48,7 @@ export function ModifyView() {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 1, x: 10 }}
-      animate={{ opacity: 1, scale: 1, x: 0 }}
-      exit={{ opacity: 0, scale: 1, x: -10 }}
-      style={fullHeightColumnStyles}
-    >
+    <motion.div style={fullHeightColumnStyles}>
       <Container space="small" style={fullHeightColumnStyles}>
         <VerticalSpace space="small" />
         <motion.div style={fullHeightColumnStyles}>

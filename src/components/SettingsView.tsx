@@ -5,7 +5,6 @@ import {
   Stack,
   Text,
   Textbox,
-  TextboxMultiline,
   VerticalSpace,
   IconArrowUp16,
   IconArrowDown16,
@@ -19,17 +18,30 @@ import {
   IconLockLocked16,
   Toggle,
 } from "@create-figma-plugin/ui";
+import { motion } from "framer-motion";
+
 import { pluginContext } from "./PluginContext";
 import { GPTModels } from "../fetchDiagramData";
 import { RELEASE_VERSION } from "../constants";
 import { getBaseUrl } from "../util";
 import Logo from "./Logo";
+import { tabTransition } from "../animations";
 
 export function SettingsView() {
   const {
-    state: { model, licenseKey, showRequired, orientation, showSuggestions },
+    state: {
+      model,
+      licenseKey,
+      showRequired,
+      orientation,
+      showSuggestions,
+      currentPrimaryTab,
+      lastPrimaryTab,
+    },
     dispatch,
   } = pluginContext();
+
+  console.log(lastPrimaryTab);
 
   const licenseKeyInput = (
     <Columns space="small">
@@ -167,39 +179,55 @@ export function SettingsView() {
   );
 
   return (
-    <Container space="small">
-      <VerticalSpace space="medium" />
-      <Stack space="large">
-        {licenseKeyInput}
-        <Divider />
-        {modelSelection}
-        <Divider />
-        {showSuggestionsRow}
-        <Divider />
-      </Stack>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          width: "100%",
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          padding: 16,
-        }}
-      >
+    <motion.div
+      initial={{
+        opacity: 0,
+        scale: 1,
+        x: lastPrimaryTab === "Generate" ? 10 : -10,
+      }}
+      animate={{ opacity: 1, scale: 1, x: 0 }}
+      exit={{
+        opacity: 0,
+        scale: 1,
+        x: lastPrimaryTab === "Generate" ? -10 : 10,
+      }}
+      transition={tabTransition}
+      style={{ flex: 1, flexDirection: "column", display: "flex" }}
+    >
+      <Container space="small">
+        <VerticalSpace space="medium" />
+        <Stack space="large">
+          {licenseKeyInput}
+          <Divider />
+          {modelSelection}
+          <Divider />
+          {showSuggestionsRow}
+          <Divider />
+        </Stack>
         <div
           style={{
             display: "flex",
-            flexDirection: "row",
-            gap: 8,
-            alignItems: "center",
+            justifyContent: "center",
+            width: "100%",
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            padding: 16,
           }}
         >
-          <Logo size={16} />
-          <Muted>{RELEASE_VERSION}</Muted>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              gap: 8,
+              alignItems: "center",
+            }}
+          >
+            <Logo size={16} />
+            <Muted>{RELEASE_VERSION}</Muted>
+          </div>
         </div>
-      </div>
-    </Container>
+      </Container>
+    </motion.div>
   );
 }

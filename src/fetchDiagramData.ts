@@ -316,7 +316,6 @@ export async function* fetchStream({
     instructions?: string;
   };
 }): AsyncGenerator<StreamElement> {
-  console.log("fetchStream", { action, data });
   if (debug.enabled && debug.stubDiagram) {
     for (const debugData of debugValue) {
       yield { type: "node", data: [debugData] };
@@ -324,18 +323,22 @@ export async function* fetchStream({
     yield { type: "end" };
   }
 
-  const response = await fetchDiagramData({
-    action,
-    data,
-    signal,
-  });
-
-  if (debug.enabled) {
-    console.info("Processing stream...");
-  }
   try {
+    const response = await fetchDiagramData({
+      action,
+      data,
+      signal,
+    });
+
+    if (debug.enabled) {
+      console.info("Processing stream...");
+    }
     yield* processResponse(response);
   } catch (err) {
+    if (err instanceof Error && err.message) {
+      yield { type: "error", data: `Server error: ${err.message}` };
+    }
+
     console.error(err);
   }
 }

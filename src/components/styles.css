@@ -146,3 +146,30 @@
   padding: var(--space-small) var(--space-extra-small) 0 0;
   height: 60px;
 }
+
+button {
+  &:focus {
+    outline-offset: 2px;
+    outline: 2px solid var(--figma-color-border-brand-strong);
+  }
+}
+
+div[class*="tabs"] {
+  &:focu,
+  &:focus-within {
+    outline-offset: 2px;
+    outline: 2px solid var(--figma-color-border-brand-strong);
+  }
+
+  & > label {
+    display: flex;
+    align-items: center;
+    height: 18px;
+    border-radius: 6px;
+    margin: 4px 0px 4px 0;
+
+    &:focus {
+      outline: 2px solid var(--figma-color-border-brand-strong);
+    }
+  }
+}
