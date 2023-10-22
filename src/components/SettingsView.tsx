@@ -35,13 +35,10 @@ export function SettingsView() {
       showRequired,
       orientation,
       showSuggestions,
-      currentPrimaryTab,
       lastPrimaryTab,
     },
     dispatch,
   } = pluginContext();
-
-  console.log(lastPrimaryTab);
 
   const licenseKeyInput = (
     <Columns space="small">

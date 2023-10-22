@@ -12,7 +12,6 @@ import styles from "./styles.css";
 import { pluginContext } from "./PluginContext";
 import { AutoSizeTextInput } from "./AutoSizeTextInput";
 import { usePluginExecution } from "../hooks/usePluginExecution";
-import { tabTransition } from "../animations";
 
 export function ModifyView() {
   const {
@@ -52,19 +51,20 @@ export function ModifyView() {
     <motion.div style={fullHeightColumnStyles}>
       <Container space="small" style={fullHeightColumnStyles}>
         <VerticalSpace space="small" />
-        <motion.div style={fullHeightColumnStyles}>
+        <motion.div style={{ ...fullHeightColumnStyles, position: "relative" }}>
           <AutoSizeTextInput
             autoFocus={false}
             disabled={isLoading}
-            placeholder="Modify this diagram by..."
+            placeholder="Modify this diagram..."
             grow={false}
             spellCheck={false}
             variant="border"
-            value={modifyInput}
+            value={`${modifyInput}`}
             onValueInput={(val: string) => {
               dispatch({ type: "SET_MODIFY_INPUT", payload: val });
             }}
             onFocusCapture={clearErrors}
+            style={{ padding: "24px 16px" }}
           />
 
           <VerticalSpace space="small" />

@@ -8,9 +8,17 @@ import { NaturalInputView } from "./NaturalInputView";
 import { tabTransition } from "../animations";
 
 export function GenerateView() {
-  const { selectedDiagramNodeId, error } = pluginContext().state;
+  const { selectedDiagramNodeId, error, lastPrimaryTab, currentPrimaryTab } =
+    pluginContext().state;
+
+  const shouldAnimate = currentPrimaryTab === "Generate";
+
   return (
     <motion.div
+      initial={{ opacity: 0, scale: 1, x: -10 }}
+      animate={{ opacity: 1, scale: 1, x: 0 }}
+      exit={{ opacity: 0, scale: 1, x: 10 }}
+      transition={tabTransition}
       style={{
         display: "flex",
         flexDirection: "column",
@@ -19,12 +27,16 @@ export function GenerateView() {
       }}
     >
       <AnimatePresence>
-        {selectedDiagramNodeId && (
+        {selectedDiagramNodeId ? (
           <motion.div
-            initial={{ opacity: 0, scale: 1.2, y: 10 }}
+            initial={{
+              opacity: 0,
+            }}
             transition={tabTransition}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 1.2, y: 10 }}
+            animate={{ opacity: 1 }}
+            exit={{
+              opacity: 0,
+            }}
             style={{
               display: "flex",
               flexDirection: "column",
@@ -38,13 +50,27 @@ export function GenerateView() {
           >
             <ModifyView />
           </motion.div>
+        ) : (
+          <motion.div
+            initial={{
+              opacity: 0,
+            }}
+            transition={tabTransition}
+            animate={{ opacity: 1 }}
+            exit={{
+              opacity: 0,
+            }}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              flex: 1,
+              zIndex: 9,
+            }}
+          >
+            <NaturalInputView />
+          </motion.div>
         )}
       </AnimatePresence>
-      <motion.div
-        style={{ display: "flex", flexDirection: "column", flex: 1, zIndex: 9 }}
-      >
-        <NaturalInputView />
-      </motion.div>
       {error && <WarningBanner />}
     </motion.div>
   );
