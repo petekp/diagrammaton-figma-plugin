@@ -97,6 +97,7 @@ export function FeedbackView() {
           style={{ display: "flex", flexDirection: "column", gap: 10, flex: 1 }}
         >
           <AutoSizeTextInput
+            id="feedback"
             autoFocus={true}
             disabled={isLoading}
             placeholder="How can we improve? ☺️"

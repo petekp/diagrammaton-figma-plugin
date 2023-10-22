@@ -115,8 +115,6 @@ export function usePluginExecution() {
             },
           };
 
-      console.log({ payload });
-
       try {
         for await (const element of fetchStream({
           ...payload,

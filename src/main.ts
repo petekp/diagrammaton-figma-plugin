@@ -61,10 +61,6 @@ export default function () {
         diagramId: "",
       });
     }
-
-    // figma.currentPage.selection.forEach((node) => {
-    //   console.log(node.id);
-    // });
   });
 
   on<SavePersistedState>(

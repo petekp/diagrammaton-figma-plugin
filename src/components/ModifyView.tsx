@@ -53,6 +53,7 @@ export function ModifyView() {
         <VerticalSpace space="small" />
         <motion.div style={{ ...fullHeightColumnStyles, position: "relative" }}>
           <AutoSizeTextInput
+            id="modify"
             autoFocus={false}
             disabled={isLoading}
             placeholder="Modify this diagram..."

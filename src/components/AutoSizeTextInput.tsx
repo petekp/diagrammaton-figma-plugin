@@ -1,11 +1,13 @@
-import { useState, useEffect } from "preact/hooks";
+import { useEffect } from "preact/hooks";
 import { TextboxMultiline } from "@create-figma-plugin/ui";
 import { ComponentProps, h } from "preact";
 import { pluginContext } from "./PluginContext";
 import { motion } from "framer-motion";
+import { useDynamicFontSize } from "../hooks/useDynamicFontSize";
 
 type Props = ComponentProps<typeof TextboxMultiline> & {
   autoFocus: boolean;
+  id: string;
 };
 
 export const AutoSizeTextInput = (props: Props) => {
@@ -13,12 +15,9 @@ export const AutoSizeTextInput = (props: Props) => {
     state: { isLoading },
   } = pluginContext();
 
-  const [fontSize, setFontSize] = useState(20);
+  const fontSize = useDynamicFontSize(props.value, props.id);
 
-  useEffect(() => {
-    const newFontSize = Math.max(14, 20 - props.value.length / 80);
-    setFontSize(newFontSize);
-  }, [props.value]);
+  console.log(fontSize);
 
   useEffect(() => {
     if (!props.autoFocus) return;
@@ -31,7 +30,7 @@ export const AutoSizeTextInput = (props: Props) => {
 
   return (
     <motion.div
-      initial={{ fontSize: 20 }}
+      initial={{ fontSize: fontSize }}
       animate={{ fontSize: fontSize }}
       style={{ flex: 1, flexDirection: "column", display: "flex" }}
     >

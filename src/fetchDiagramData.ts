@@ -310,10 +310,10 @@ export async function* fetchStream({
   signal: AbortSignal;
   action: string;
   data: {
-    licenseKey: string;
-    model: GPTModels;
     diagramDescription?: string;
     instructions?: string;
+    licenseKey: string;
+    model: GPTModels;
   };
 }): AsyncGenerator<StreamElement> {
   if (debug.enabled && debug.stubDiagram) {
@@ -329,8 +329,6 @@ export async function* fetchStream({
       data,
       signal,
     });
-
-    console.log({ action, data });
 
     if (debug.enabled) {
       console.info("Processing stream...");

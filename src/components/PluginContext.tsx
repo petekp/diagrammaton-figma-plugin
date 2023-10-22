@@ -68,7 +68,7 @@ export const PluginContextProvider = ({
       payload: debug.enabled ? debug.isNewUser : state.isNewUser,
     });
     dispatch({ type: "SET_NATURAL_INPUT", payload: state.naturalInput });
-    dispatch({ type: "SET_MODIFY_INPUT", payload: state.modifyInput });
+    // dispatch({ type: "SET_MODIFY_INPUT", payload: state.modifyInput });
     dispatch({ type: "SET_ORIENTATION", payload: state.orientation });
     dispatch({
       type: "SET_SHOW_SUGGESTIONS",

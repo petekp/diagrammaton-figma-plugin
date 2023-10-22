@@ -56,6 +56,7 @@ export function NaturalInputView() {
           style={{ display: "flex", flexDirection: "column", flex: 1 }}
         >
           <AutoSizeTextInput
+            id="generate"
             autoFocus={false}
             disabled={isLoading}
             style={{
