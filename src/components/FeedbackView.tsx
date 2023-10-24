@@ -1,10 +1,7 @@
 import { h } from "preact";
-import { pluginContext } from "./PluginContext";
 import {
   VerticalSpace,
   Container,
-  IconWarning32,
-  IconCross32,
   Button,
   Banner,
   IconCheckCircle32,
@@ -12,8 +9,8 @@ import {
 import { motion } from "framer-motion";
 
 import { AutoSizeTextInput } from "./AutoSizeTextInput";
-import styles from "./styles.css";
 import { useCallback, useState } from "preact/hooks";
+import { pluginContext } from "./PluginContext";
 import { sendFeedback } from "../sendFeedback";
 import { tabTransition } from "../animations";
 
@@ -21,7 +18,7 @@ export function FeedbackView() {
   const [wasSuccessful, setWasSuccessful] = useState(false);
 
   const {
-    state: { feedback, isLoading, error, licenseKey },
+    state: { feedback, isLoading, licenseKey },
     dispatch,
   } = pluginContext();
 
@@ -93,7 +90,7 @@ export function FeedbackView() {
             id="feedback"
             autoFocus={false}
             disabled={isLoading}
-            placeholder="How can we improve? ☺️"
+            placeholder="What can we improve? ☺️"
             grow={false}
             spellCheck={false}
             variant="border"
@@ -107,16 +104,6 @@ export function FeedbackView() {
               setWasSuccessful(false);
             }}
           />
-
-          {error && (
-            <div className={styles.warningBanner}>
-              <IconWarning32 />
-              <div className={styles.warningText}>{error}</div>
-              <IconCross32
-                onClick={() => dispatch({ type: "SET_ERROR", payload: "" })}
-              />
-            </div>
-          )}
           {wasSuccessful && (
             <Banner icon={<IconCheckCircle32 />} variant="success">
               Feedback sent. Thank you for taking the time! 🤍

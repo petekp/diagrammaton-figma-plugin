@@ -1,10 +1,8 @@
 import { h } from "preact";
 import {
   Banner,
-  IconArrowRight16,
   IconLockLocked32,
   IconLockUnlocked32,
-  IconWarning32,
   Link,
   LoadingIndicator,
   MiddleAlign,
@@ -26,6 +24,7 @@ import { getBaseUrl } from "../util";
 import { useEffect } from "react";
 import debug from "../debug";
 import DiamondAnimation from "./DiamondBg";
+import WarningBanner from "./WarningBanner";
 
 const restDelta = 0.005;
 const DIAMONDS_NUM = 60;
@@ -53,8 +52,6 @@ const descriptionStiffness = 60;
 const signInDelay = descriptionDelay + 0.4;
 const signInDamping = 20;
 const signInStiffness = 60;
-
-const footerDelay = signInDelay + 2;
 
 const arrowsAnimation: AnimationProps = {
   initial: {
@@ -166,7 +163,7 @@ const licenseKeyLength = 18;
 
 function SignIn() {
   const {
-    state: { isNewUser, error, isLoading },
+    state: { isNewUser, isLoading },
     dispatch,
   } = pluginContext();
   const [lastVerifiedKey, setLastVerifiedKey] = useState("");
@@ -254,11 +251,6 @@ function SignIn() {
             dispatch({ type: "SET_ERROR", payload: "" });
           }}
         />
-        {error && (
-          <Banner icon={<IconWarning32 />} variant="warning">
-            {error}
-          </Banner>
-        )}
       </Stack>
     </Stack>
   );

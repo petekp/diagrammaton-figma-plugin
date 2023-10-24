@@ -14,6 +14,7 @@ declare const styles: {
   readonly "suggestionScrollView": string;
   readonly "suggestionBlock": string;
   readonly "suggestionInstructionsBlock": string;
+  readonly "modify": string;
 };
 export = styles;
 

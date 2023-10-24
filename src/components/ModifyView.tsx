@@ -68,7 +68,7 @@ export function ModifyView() {
             style={{ padding: "24px 16px" }}
           />
 
-          <VerticalSpace space="small" />
+          <VerticalSpace space="extraSmall" />
 
           <Columns space="extraSmall">
             {isLoading ? (

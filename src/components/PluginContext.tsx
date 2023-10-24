@@ -76,7 +76,7 @@ export const PluginContextProvider = ({
     dispatch({ type: "SET_ORIENTATION", payload: state.orientation });
     dispatch({
       type: "SET_SHOW_SUGGESTIONS",
-      payload: debug.enabled ? debug.showSuggestions : state.showSuggestions,
+      payload: state.showSuggestions,
     });
     dispatch({
       type: "SET_TEXTAREA_FONT_SIZE_BY_ID",

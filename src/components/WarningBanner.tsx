@@ -1,9 +1,10 @@
 import { h } from "preact";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { IconCross32, IconWarning32 } from "@create-figma-plugin/ui";
 
 import styles from "./styles.css";
 import { pluginContext } from "./PluginContext";
+import { CSSProperties } from "preact/compat";
 
 const errorVariants = {
   hidden: { opacity: 0, y: 15 },
@@ -13,31 +14,36 @@ const errorVariants = {
   },
   exit: {
     opacity: 0,
-    scale: 0.92,
+    y: 0,
   },
 };
 
-function WarningBanner() {
+function WarningBanner({ style = {} }: { style?: CSSProperties }) {
   const {
-    state: { error },
+    state: { error, isNewUser },
     clearErrors,
   } = pluginContext();
 
   return (
-    <motion.div
-      id="error"
-      layout
-      initial="hidden"
-      animate="visible"
-      exit="exit"
-      variants={errorVariants}
-      transition={{ type: "spring", damping: 20, stiffness: 200 }}
-      className={styles.warningBanner}
-    >
-      <IconWarning32 />
-      <motion.div className={styles.warningText}>{error}</motion.div>
-      <IconCross32 onClick={clearErrors} />
-    </motion.div>
+    <AnimatePresence>
+      {error ? (
+        <motion.div
+          id="error"
+          layout
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+          variants={errorVariants}
+          transition={{ type: "spring", damping: 20, stiffness: 300 }}
+          className={styles.warningBanner}
+          style={isNewUser ? { bottom: 16 } : {}}
+        >
+          <IconWarning32 />
+          <motion.div className={styles.warningText}>{error}</motion.div>
+          <IconCross32 onClick={clearErrors} />
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
   );
 }
 

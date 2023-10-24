@@ -25,7 +25,7 @@ const variants = {
 
 export function PrimaryTabs() {
   const {
-    state: { currentPrimaryTab, isNewUser, isPersistedStateLoading },
+    state: { currentPrimaryTab, isNewUser, isPersistedStateLoading, error },
     dispatch,
   } = pluginContext();
 

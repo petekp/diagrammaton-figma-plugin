@@ -2,16 +2,12 @@ import { h } from "preact";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { ModifyView } from "./ModifyView";
-import WarningBanner from "./WarningBanner";
 import { pluginContext } from "./PluginContext";
 import { NaturalInputView } from "./NaturalInputView";
 import { tabTransition } from "../animations";
 
 export function GenerateView() {
-  const { selectedDiagramNodeId, error, lastPrimaryTab, currentPrimaryTab } =
-    pluginContext().state;
-
-  const shouldAnimate = currentPrimaryTab === "Generate";
+  const { selectedDiagramNodeId, error } = pluginContext().state;
 
   return (
     <motion.div
@@ -71,7 +67,6 @@ export function GenerateView() {
           </motion.div>
         )}
       </AnimatePresence>
-      {error && <WarningBanner />}
     </motion.div>
   );
 }

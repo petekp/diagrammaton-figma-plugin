@@ -41,7 +41,7 @@ export function SettingsView() {
   } = pluginContext();
 
   const licenseKeyInput = (
-    <Columns space="small">
+    <Columns space="extraLarge">
       <Stack space="small">
         <Text>
           <Bold>License key</Bold>{" "}
@@ -76,7 +76,7 @@ export function SettingsView() {
           dispatch({ type: "SET_SHOW_REQUIRED", payload: false });
           dispatch({ type: "SET_ERROR", payload: "" });
         }}
-        style={{ cursor: "text" }}
+        style={{ cursor: "text", flexGrow: 0, flexShrink: 1, display: "flex" }}
       />
     </Columns>
   );

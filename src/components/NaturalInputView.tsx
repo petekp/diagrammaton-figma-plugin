@@ -13,7 +13,6 @@ import { pluginContext } from "./PluginContext";
 import { AutoSizeTextInput } from "./AutoSizeTextInput";
 import Suggestions, { suggestionVariants } from "./Suggestions";
 import { usePluginExecution } from "../hooks/usePluginExecution";
-import { tabTransition } from "../animations";
 
 export function NaturalInputView() {
   const {
@@ -93,7 +92,7 @@ export function NaturalInputView() {
             )}
           </AnimatePresence>
 
-          <VerticalSpace space="small" />
+          <VerticalSpace space="extraSmall" />
 
           <Columns space="extraSmall">
             {isLoading ? (

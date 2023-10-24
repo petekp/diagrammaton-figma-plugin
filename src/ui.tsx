@@ -9,9 +9,11 @@ import { PrimaryTabs } from "./components/PrimaryTabs";
 
 import { PersistedState, SetUILoaded } from "./types";
 import styles from "./components/styles.css";
+import WarningBanner from "./components/WarningBanner";
 
 function Plugin({ defaultSettings }: { defaultSettings: PersistedState }) {
   const [rendered, setRendered] = useState(false);
+
   useEffect(() => {
     if (!rendered) {
       emit<SetUILoaded>("SET_UI_LOADED");
@@ -23,6 +25,7 @@ function Plugin({ defaultSettings }: { defaultSettings: PersistedState }) {
     <PluginContextProvider defaultSettings={defaultSettings}>
       <div className={styles.outerContainer}>
         <PrimaryTabs />
+        <WarningBanner />
       </div>
     </PluginContextProvider>
   );

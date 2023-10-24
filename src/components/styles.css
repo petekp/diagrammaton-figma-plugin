@@ -12,7 +12,7 @@
   display: flex;
   flex-direction: column;
 
-  & > *:not([class*="tabs"]) {
+  & > *:not([class*="tabs"], [class*="warning"]) {
     display: flex;
     flex-direction: column;
     flex: 1;
@@ -38,11 +38,12 @@
 
 .warningBanner {
   display: flex;
+  flex-direction: row;
   z-index: 1;
   background-color: var(--figma-color-bg-warning);
   padding: var(--space-extra-small);
   position: absolute;
-  bottom: 54px;
+  bottom: 52px;
   left: 12px;
   width: calc(100% - 24px);
   border-radius: var(--radius-small);
@@ -84,7 +85,7 @@
   height: 100%;
   z-index: 100;
 
-  & > *:not([class*="tabs"]) {
+  & > *[class*="children"] {
     display: flex;
     flex-direction: column;
     flex: 1;
@@ -154,4 +155,8 @@ button {
     border-width: 0px !important;
     outline: 2px solid var(--figma-color-border-brand-strong);
   }
+}
+
+textarea#modify {
+  border: 2px solid red;
 }
