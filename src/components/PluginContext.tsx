@@ -56,6 +56,10 @@ export const PluginContextProvider = ({
     selectedDiagramData: "",
     selectedDiagramId: "",
     modifyInput: "",
+    textareaFontSizeById: {
+      generate: 20,
+      modify: 20,
+    },
   };
 
   once<GetPersistedState>("GET_PERSISTED_STATE", (state: PersistedState) => {
@@ -74,8 +78,11 @@ export const PluginContextProvider = ({
       type: "SET_SHOW_SUGGESTIONS",
       payload: debug.enabled ? debug.showSuggestions : state.showSuggestions,
     });
+    dispatch({
+      type: "SET_TEXTAREA_FONT_SIZE_BY_ID",
+      payload: state.textareaFontSizeById,
+    });
 
-    // Hide overlay once state is loaded
     dispatch({ type: "SET_IS_PERSISTED_STATE_LOADING", payload: false });
   });
 
@@ -124,6 +131,14 @@ export const PluginContextProvider = ({
           return { ...state, selectedDiagramData: payload };
         case "SET_SELECTED_DIAGRAM_ID":
           return { ...state, selectedDiagramId: payload };
+        case "SET_TEXTAREA_FONT_SIZE_BY_ID":
+          return {
+            ...state,
+            textareaFontSizeById: {
+              ...state.textareaFontSizeById,
+              ...payload,
+            },
+          };
         default:
           throw new Error();
       }

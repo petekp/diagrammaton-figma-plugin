@@ -21,14 +21,7 @@ export function FeedbackView() {
   const [wasSuccessful, setWasSuccessful] = useState(false);
 
   const {
-    state: {
-      feedback,
-
-      isLoading,
-      error,
-
-      licenseKey,
-    },
+    state: { feedback, isLoading, error, licenseKey },
     dispatch,
   } = pluginContext();
 
@@ -98,7 +91,7 @@ export function FeedbackView() {
         >
           <AutoSizeTextInput
             id="feedback"
-            autoFocus={true}
+            autoFocus={false}
             disabled={isLoading}
             placeholder="How can we improve? ☺️"
             grow={false}

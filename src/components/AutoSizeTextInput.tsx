@@ -17,8 +17,6 @@ export const AutoSizeTextInput = (props: Props) => {
 
   const fontSize = useDynamicFontSize(props.value, props.id);
 
-  console.log(fontSize);
-
   useEffect(() => {
     if (!props.autoFocus) return;
 

@@ -1,16 +1,19 @@
-import { useState, useEffect, useLayoutEffect } from "preact/hooks";
-
-let globalFontSizes = {} as Record<string, number>;
+import { useEffect } from "preact/hooks";
+import { pluginContext } from "../components/PluginContext";
 
 export const useDynamicFontSize = (value: string, id: string) => {
-  const [fontSize, setFontSize] = useState(globalFontSizes[id] || 20);
+  const {
+    state: { textareaFontSizeById },
+    dispatch,
+  } = pluginContext();
+  const fontSize = textareaFontSizeById[id] || 20;
 
-  console.log(globalFontSizes);
-
-  useLayoutEffect(() => {
+  useEffect(() => {
     const newFontSize = Math.max(14, 20 - value.length / 80);
-    setFontSize(newFontSize);
-    globalFontSizes[id] = newFontSize;
+    dispatch({
+      type: "SET_TEXTAREA_FONT_SIZE_BY_ID",
+      payload: { [id]: newFontSize },
+    });
   }, [value]);
 
   return fontSize;

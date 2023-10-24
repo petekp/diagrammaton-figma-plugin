@@ -29,7 +29,7 @@ const Suggestions = ({ onClick }: { onClick: (input: string) => void }) => {
 
   const {
     dispatch,
-    state: { isLoading, showSuggestions },
+    state: { isLoading, showSuggestions, error },
   } = pluginContext();
 
   const x = useSpring(0);
@@ -68,7 +68,7 @@ const Suggestions = ({ onClick }: { onClick: (input: string) => void }) => {
     const rect = container.current.getBoundingClientRect();
 
     const handleMouseMove = (e: MouseEvent) => {
-      if (!rect || !container.current || isLoading) return;
+      if (!rect || !container.current || isLoading || error) return;
 
       const xPosition = e.clientX - rect.left;
       const yPosition = e.clientY - rect.top;
@@ -113,7 +113,7 @@ const Suggestions = ({ onClick }: { onClick: (input: string) => void }) => {
     const debouncedHandleMouseMove = debounce(handleMouseMove, 5);
 
     const handleScroll = (e: WheelEvent) => {
-      if (isLoading) return;
+      if (isLoading || error) return;
 
       e.preventDefault();
       const maxScrollWidth = calculateMaxScrollWidth();
@@ -149,7 +149,7 @@ const Suggestions = ({ onClick }: { onClick: (input: string) => void }) => {
         container.current.removeEventListener("wheel", handleScroll);
       }
     };
-  }, [container.current, isLoading]);
+  }, [container.current, isLoading, error]);
 
   useEffect(() => {
     const containerElement = container.current;
@@ -235,8 +235,10 @@ const Suggestions = ({ onClick }: { onClick: (input: string) => void }) => {
             layout
             tabIndex={0}
             className={styles.suggestionBlock}
-            onClick={isLoading ? () => {} : () => handleClick(suggestion)}
-            animate={isLoading ? "loading" : "default"}
+            onClick={
+              isLoading || error ? () => {} : () => handleClick(suggestion)
+            }
+            animate={isLoading || error ? "loading" : "default"}
             initial="default"
             variants={{
               default: {
@@ -276,9 +278,9 @@ const Suggestions = ({ onClick }: { onClick: (input: string) => void }) => {
                 color: "var(--figma-color-bg-brand)",
               },
             }}
-            whileHover={isLoading ? "loading" : "hover"}
-            whileFocus={isLoading ? "loading" : "focus"}
-            whileTap={isLoading ? "loading" : "tap"}
+            whileHover={isLoading || error ? "loading" : "hover"}
+            whileFocus={isLoading || error ? "loading" : "focus"}
+            whileTap={isLoading || error ? "loading" : "tap"}
           >
             {suggestion}
           </motion.div>

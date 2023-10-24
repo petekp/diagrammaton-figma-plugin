@@ -16,6 +16,7 @@ export type PersistedState = {
   feedback: string;
   orientation: string;
   showSuggestions: boolean;
+  textareaFontSizeById: Record<string, number>;
 };
 
 export type PrimaryTab = "Generate" | "Settings" | "Feedback";
@@ -96,6 +97,7 @@ export type PluginState = PersistedState & {
   selectedDiagramData: string;
   selectedDiagramNodeId: string;
   modifyInput: string;
+  textareaFontSizeById: Record<string, number>;
 };
 
 export type Action =
@@ -178,4 +180,8 @@ export type Action =
   | {
       type: "SET_SELECTED_DIAGRAM_NODE_ID";
       payload: string;
+    }
+  | {
+      type: "SET_TEXTAREA_FONT_SIZE_BY_ID";
+      payload: Record<string, number>;
     };

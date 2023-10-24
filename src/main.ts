@@ -35,6 +35,7 @@ export const defaultSettings: PersistedState = {
   orientation: "LR",
   showSuggestions: true,
   modifyInput: "",
+  textareaFontSizeById: {},
 };
 
 export default function () {
@@ -61,6 +62,19 @@ export default function () {
         diagramId: "",
       });
     }
+  });
+
+  on("REQUEST_FONT_SIZE", (id) => {
+    loadSettingsAsync("globalFontSizes").then((globalFontSizes) => {
+      emit("RECEIVE_FONT_SIZE", globalFontSizes[id]);
+    });
+  });
+
+  on("FONT_SIZE_CHANGED", async ({ id, newFontSize }) => {
+    const globalFontSizes =
+      (await figma.clientStorage.getAsync("globalFontSizes")) || {};
+    globalFontSizes[id] = newFontSize;
+    await figma.clientStorage.setAsync("globalFontSizes", globalFontSizes);
   });
 
   on<SavePersistedState>(
