@@ -1,5 +1,5 @@
 export default {
-  enabled: true,
+  enabled: false,
   isNewUser: false,
   stubDiagram: false,
   isLoadingSettings: false,
