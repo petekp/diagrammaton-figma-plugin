@@ -1,5 +1,5 @@
-# Figma plugin boilerplate
+# Diagrammaton
 
-Light modification of [`create-figma-plugin`](https://github.com/yuanqing/create-figma-plugin) to streamline my personal Figma plugin projects.
+Diagrammaton is a FigJam plugin that generates diagrams from natural language inputs.
 
-Includes boilerplate for a simple UI with text input and a button, as well as common types & event handlers related to executing the plugin, loading states, saving settings, and error handling.
+This repo is the entire client-side plugin. Auth and diagram generation happens on the [diagrammaton.com](https://github.com/petekp/diagrammaton.com) backend.
