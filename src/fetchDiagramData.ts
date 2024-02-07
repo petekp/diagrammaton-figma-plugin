@@ -264,19 +264,29 @@ async function fetchDiagramData({
 }
 
 async function* processResponse(
-  response: Response
+  response: Response,
+  signal: AbortSignal
 ): AsyncGenerator<StreamElement> {
   if (!response.ok) {
-    if (response.statusText) {
-      yield { type: "error", data: response.statusText };
+    try {
+      const errorResponse = await response.json();
+      if (errorResponse && errorResponse.message) {
+        yield { type: "error", data: errorResponse.message };
+      } else {
+        yield { type: "error", data: "Something unfortunate happened 😢" };
+      }
+    } catch (error) {
+      console.error("Error reading response:", error);
+      yield { type: "error", data: "Something unfortunate happened 😢" };
     }
-
-    yield { type: "error", data: "Something unfortunate happened 😢" };
+    return; // Ensure we don't proceed further in case of an error
   }
 
   if (response.body) {
     try {
       for await (const output of processStepsFromStream(response.body)) {
+        if (signal.aborted) return;
+
         if (typeof output === null) {
           yield { type: "end" };
           break;
@@ -295,6 +305,8 @@ async function* processResponse(
         yield output;
       }
     } catch (err) {
+      if (signal.aborted) return;
+
       throw new Error(`Error processing stream: ${err}`);
     }
   } else {
@@ -333,7 +345,7 @@ export async function* fetchStream({
     if (debug.enabled) {
       console.info("Processing stream...");
     }
-    yield* processResponse(response);
+    yield* processResponse(response, signal);
   } catch (err) {
     if (err instanceof DOMException && err.name === "AbortError") {
       return;
@@ -341,6 +353,9 @@ export async function* fetchStream({
 
     if (err instanceof Error && err.message) {
       yield { type: "error", data: `Server error: ${err.message}` };
+    } else {
+      // Generic error handling if the error does not have a message
+      yield { type: "error", data: "An unexpected error occurred" };
     }
 
     console.error(err);
