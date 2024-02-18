@@ -22,7 +22,7 @@ const validShapes: ShapeWithTextNode["shapeType"][] = [
   "ENG_FOLDER",
 ];
 
-const useServerMagnet = false;
+const USE_SERVER_MAGNET = false;
 
 const createNode = ({
   node,
@@ -38,9 +38,7 @@ const createNode = ({
     ? node.shape
     : "ROUNDED_RECTANGLE";
 
-  figmaNode.fills = [
-    { type: "SOLID", color: { r: 0.59, g: 0.278, b: 1 }, opacity: 1 },
-  ];
+  setNodeColors({ node, figmaNode });
 
   if (node.label) {
     figmaNode.text.characters = node.label || "";
@@ -52,6 +50,84 @@ const createNode = ({
   figmaNode.y = position.y;
 
   return figmaNode;
+};
+
+const setNodeColors = ({
+  node,
+  figmaNode,
+}: {
+  node: Node;
+  figmaNode: ShapeWithTextNode;
+}) => {
+  if (
+    /error|invalid|fail|incomplete|reject|denied|unsuccessful|fault|loss|decline|defeat|cancel|terminate/i.test(
+      node.label
+    )
+  ) {
+    figmaNode.fills = [
+      {
+        type: "SOLID",
+        color: { r: 241 / 255, g: 71 / 255, b: 34 / 255 },
+        opacity: 0.1,
+      },
+    ];
+
+    figmaNode.text.fills = [
+      {
+        type: "SOLID",
+        color: { r: 41 / 255, g: 12 / 255, b: 7 / 255 },
+        opacity: 1,
+      },
+    ];
+
+    figmaNode.strokes = [
+      {
+        type: "SOLID",
+        color: { r: 241 / 255, g: 71 / 255, b: 34 / 255 },
+        opacity: 1,
+      },
+    ];
+  } else if (
+    /success|succeed|complete|win|validated|pass|approved|correct|achieved|accepted|confirmed|secure|verified|verify|accomplish|fulfill/i.test(
+      node.label
+    )
+  ) {
+    figmaNode.fills = [
+      {
+        type: "SOLID",
+        color: { r: 20 / 255, g: 174 / 255, b: 92 / 255 },
+        opacity: 0.1,
+      },
+    ];
+
+    figmaNode.text.fills = [
+      {
+        type: "SOLID",
+        color: { r: 10 / 255, g: 38 / 255, b: 21 / 255 },
+        opacity: 1,
+      },
+    ];
+
+    figmaNode.strokes = [
+      {
+        type: "SOLID",
+        color: { r: 20 / 255, g: 174 / 255, b: 92 / 255 },
+        opacity: 1,
+      },
+    ];
+  } else {
+    figmaNode.fills = [
+      { type: "SOLID", color: { r: 0.59, g: 0.278, b: 1 }, opacity: 0.05 },
+    ];
+
+    figmaNode.text.fills = [
+      { type: "SOLID", color: { r: 0, g: 0, b: 0 }, opacity: 1 },
+    ];
+
+    figmaNode.strokes = [
+      { type: "SOLID", color: { r: 0.59, g: 0.278, b: 1 }, opacity: 1 },
+    ];
+  }
 };
 
 const deleteDiagramById = (diagramId: string) => {
@@ -114,13 +190,19 @@ const deleteExistingDiagram = (diagramId: string) => {
   deleteDiagramById(diagramId);
 };
 
-const createDiagramNodes = (
-  diagram: DiagramElement[],
-  positions: Map<string, Position>,
-  nodeShapes: { [id: string]: ShapeWithTextNode },
-  nodeIds: Map<ShapeWithTextNode, string>,
-  magnetMap: Map<string, { [key in MagnetDirection]: boolean }>
-) => {
+const createDiagramNodes = ({
+  diagram,
+  positions,
+  nodeShapes,
+  nodeIds,
+  magnetMap,
+}: {
+  diagram: DiagramElement[];
+  positions: Map<string, Position>;
+  nodeShapes: { [id: string]: ShapeWithTextNode };
+  nodeIds: Map<ShapeWithTextNode, string>;
+  magnetMap: Map<string, { [key in MagnetDirection]: boolean }>;
+}) => {
   for (const { from, to } of diagram) {
     for (const node of [from, to]) {
       if (!nodeShapes[node.id]) {
@@ -132,7 +214,7 @@ const createDiagramNodes = (
 
         const figmaNode = createNode({ node, position });
         nodeShapes[node.id] = figmaNode;
-        nodeIds.set(figmaNode, node.id); // Store the node ID in nodeIds
+        nodeIds.set(figmaNode, node.id);
 
         magnetMap.set(node.id, {
           TOP: false,
@@ -145,14 +227,21 @@ const createDiagramNodes = (
   }
 };
 
-const createDiagramLinks = (
-  diagram: DiagramElement[],
-  nodeShapes: { [id: string]: ShapeWithTextNode },
-  links: SceneNode[],
-  linkMap: Map<string, boolean>,
-  magnetMap: Map<string, { [key in MagnetDirection]: boolean }>,
-  diagramId: string
-) => {
+const createDiagramLinks = ({
+  diagram,
+  nodeShapes,
+  links,
+  linkMap,
+  magnetMap,
+  diagramId,
+}: {
+  diagram: DiagramElement[];
+  nodeShapes: { [id: string]: ShapeWithTextNode };
+  links: SceneNode[];
+  linkMap: Map<string, boolean>;
+  magnetMap: Map<string, { [key in MagnetDirection]: boolean }>;
+  diagramId: string;
+}) => {
   let backlinkCounter = 0;
 
   for (const { from, link, to } of diagram) {
@@ -163,7 +252,7 @@ const createDiagramLinks = (
       let fromMagnet: MagnetDirection;
       let toMagnet: MagnetDirection = "LEFT";
 
-      if (useServerMagnet) {
+      if (USE_SERVER_MAGNET) {
         fromMagnet = link.fromMagnet || "RIGHT";
         toMagnet = link.toMagnet || "LEFT";
       } else {
@@ -193,13 +282,19 @@ const createDiagramLinks = (
   }
 };
 
-const positionNodes = (
-  nodeShapes: { [id: string]: ShapeWithTextNode },
-  positionsObject: { [key: string]: Position },
-  diagram: DiagramElement[],
-  diagramId: string,
-  nodeIds: Map<ShapeWithTextNode, string>
-) => {
+const positionNodes = ({
+  nodeShapes,
+  positionsObject,
+  diagram,
+  diagramId,
+  nodeIds,
+}: {
+  nodeShapes: { [id: string]: ShapeWithTextNode };
+  positionsObject: { [key: string]: Position };
+  diagram: DiagramElement[];
+  diagramId: string;
+  nodeIds: Map<ShapeWithTextNode, string>;
+}) => {
   const { x: newDiagramX, y: newDiagramY } = getEmptySpaceCoordinates();
 
   Object.values(nodeShapes).forEach((shapeNode, i) => {
@@ -271,11 +366,19 @@ export const drawDiagram = async ({
   const { positions, nodeShapes, nodeIds, links, linkMap, magnetMap } =
     prepareData(positionsObject);
 
+  // Re-draw the diagram on each pass if we're streaming
   if (stream) deleteExistingDiagram(diagramId);
 
-  createDiagramNodes(diagram, positions, nodeShapes, nodeIds, magnetMap);
-  createDiagramLinks(diagram, nodeShapes, links, linkMap, magnetMap, diagramId);
-  positionNodes(nodeShapes, positionsObject, diagram, diagramId, nodeIds);
+  createDiagramNodes({ diagram, positions, nodeShapes, nodeIds, magnetMap });
+  createDiagramLinks({
+    diagram,
+    nodeShapes,
+    links,
+    linkMap,
+    magnetMap,
+    diagramId,
+  });
+  positionNodes({ nodeShapes, positionsObject, diagram, diagramId, nodeIds });
   createAndPositionBufferNode(positionsObject);
   addLinksToDiagram(links);
   centerViewportOnDiagram(nodeShapes);
@@ -368,20 +471,21 @@ const centerViewportOnDiagram = (nodeShapes: {
   });
 
   const viewportWidth = figma.viewport.bounds.width;
-  const padding = Math.round(viewportWidth / 4); // Padding is a third of the viewport width
+  const padding = Math.round(viewportWidth / 4);
 
   const tempNode = figma.createRectangle();
   tempNode.x = minX;
   tempNode.y = minY;
-  tempNode.resize(maxX - minX + padding, maxY - minY); // Add padding to the width
+  tempNode.resize(maxX - minX + padding, maxY - minY);
 
   const bufferNode = figma.createRectangle();
-  bufferNode.x = maxX + padding; // Position the buffer node to the right of the diagram
+  bufferNode.x = maxX + padding;
   bufferNode.y = minY;
-  bufferNode.resize(padding, maxY - minY); // The width of the buffer node is the desired padding
-  bufferNode.opacity = 0; // Make the buffer node invisible
+  bufferNode.resize(padding, maxY - minY);
+  bufferNode.opacity = 0;
 
   figma.viewport.scrollAndZoomIntoView([tempNode, bufferNode]);
+
   tempNode.remove();
   bufferNode.remove();
 };
