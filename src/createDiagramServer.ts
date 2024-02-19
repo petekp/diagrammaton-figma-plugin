@@ -6,6 +6,7 @@ import {
   NodeLink,
   MagnetDirection,
 } from "./types";
+import nodeStyles from "./nodeStyles";
 
 const validShapes: ShapeWithTextNode["shapeType"][] = [
   "SQUARE",
@@ -22,7 +23,7 @@ const validShapes: ShapeWithTextNode["shapeType"][] = [
   "ENG_FOLDER",
 ];
 
-const USE_SERVER_MAGNET = false;
+const USE_SERVER_MAGNET = true;
 
 const createNode = ({
   node,
@@ -64,69 +65,26 @@ const setNodeColors = ({
       node.label
     )
   ) {
-    figmaNode.fills = [
-      {
-        type: "SOLID",
-        color: { r: 241 / 255, g: 71 / 255, b: 34 / 255 },
-        opacity: 0.1,
-      },
-    ];
-
-    figmaNode.text.fills = [
-      {
-        type: "SOLID",
-        color: { r: 41 / 255, g: 12 / 255, b: 7 / 255 },
-        opacity: 1,
-      },
-    ];
-
-    figmaNode.strokes = [
-      {
-        type: "SOLID",
-        color: { r: 241 / 255, g: 71 / 255, b: 34 / 255 },
-        opacity: 1,
-      },
-    ];
+    figmaNode.fills = nodeStyles.negative.fill;
+    figmaNode.text.fills = nodeStyles.negative.text;
+    figmaNode.strokes = nodeStyles.negative.stroke;
   } else if (
-    /success|succeed|complete|win|validated|pass|approved|correct|achieved|accepted|confirmed|secure|verified|verify|accomplish|fulfill/i.test(
+    /success|succeed|validated|passed|approved|confirmed|achieved|accepted|secured|verified/i.test(
       node.label
-    )
+    ) &&
+    !/\?/.test(node.label)
   ) {
-    figmaNode.fills = [
-      {
-        type: "SOLID",
-        color: { r: 20 / 255, g: 174 / 255, b: 92 / 255 },
-        opacity: 0.1,
-      },
-    ];
-
-    figmaNode.text.fills = [
-      {
-        type: "SOLID",
-        color: { r: 10 / 255, g: 38 / 255, b: 21 / 255 },
-        opacity: 1,
-      },
-    ];
-
-    figmaNode.strokes = [
-      {
-        type: "SOLID",
-        color: { r: 20 / 255, g: 174 / 255, b: 92 / 255 },
-        opacity: 1,
-      },
-    ];
+    figmaNode.fills = nodeStyles.positive.fill;
+    figmaNode.text.fills = nodeStyles.positive.text;
+    figmaNode.strokes = nodeStyles.positive.stroke;
+  } else if (/\?/i.test(node.label) || node.shape === "DIAMOND") {
+    figmaNode.fills = nodeStyles.decision.fill;
+    figmaNode.text.fills = nodeStyles.decision.text;
+    figmaNode.strokes = nodeStyles.decision.stroke;
   } else {
-    figmaNode.fills = [
-      { type: "SOLID", color: { r: 0.59, g: 0.278, b: 1 }, opacity: 0.05 },
-    ];
-
-    figmaNode.text.fills = [
-      { type: "SOLID", color: { r: 0, g: 0, b: 0 }, opacity: 1 },
-    ];
-
-    figmaNode.strokes = [
-      { type: "SOLID", color: { r: 0.59, g: 0.278, b: 1 }, opacity: 1 },
-    ];
+    figmaNode.fills = nodeStyles.default.fill;
+    figmaNode.text.fills = nodeStyles.default.text;
+    figmaNode.strokes = nodeStyles.default.stroke;
   }
 };
 
@@ -151,7 +109,7 @@ const createLink = ({
 }: {
   from: SceneNode;
   to: SceneNode;
-  link: NodeLink;
+  link: NodeLink | undefined;
   diagramId: string;
   fromMagnet: MagnetDirection;
   toMagnet: MagnetDirection;
@@ -166,12 +124,22 @@ const createLink = ({
   connector.connectorStart = { endpointNodeId: from.id, magnet: fromMagnet };
   connector.connectorEnd = { endpointNodeId: to.id, magnet: toMagnet };
 
-  if (link.label) {
+  if (link?.label) {
     connector.text.characters = link.label || "";
-    connector.textBackground.fills = [
-      { type: "SOLID", color: { r: 1, g: 1, b: 1 }, opacity: 0.2 },
-    ];
+
+    if (/yes/i.test(link.label)) {
+      connector.textBackground.fills = nodeStyles.positive.fill;
+      connector.text.fills = nodeStyles.positive.text;
+    } else if (/no/i.test(link.label)) {
+      connector.textBackground.fills = nodeStyles.negative.fill;
+      connector.text.fills = nodeStyles.negative.text;
+    } else {
+      connector.textBackground.fills = [
+        { type: "SOLID", color: { r: 1, g: 1, b: 1 }, opacity: 0.2 },
+      ];
+    }
   }
+
   return connector;
 };
 
@@ -249,12 +217,14 @@ const createDiagramLinks = ({
       linkMap.set(`${from.id}-${to.id}`, true);
       const isBidirectional = linkMap.has(`${to.id}-${from.id}`);
 
-      let fromMagnet: MagnetDirection;
+      let fromMagnet: MagnetDirection = "RIGHT";
       let toMagnet: MagnetDirection = "LEFT";
 
       if (USE_SERVER_MAGNET) {
-        fromMagnet = link.fromMagnet || "RIGHT";
-        toMagnet = link.toMagnet || "LEFT";
+        if (link) {
+          fromMagnet = link.fromMagnet || "RIGHT";
+          toMagnet = link.toMagnet || "LEFT";
+        }
       } else {
         if (isBidirectional) {
           backlinkCounter += 1;

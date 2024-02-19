@@ -14,7 +14,7 @@ export type NodeLink = {
 
 export type DiagramElement = {
   from: Node;
-  link: NodeLink;
+  link: NodeLink | undefined;
   to: Node;
 };
 
