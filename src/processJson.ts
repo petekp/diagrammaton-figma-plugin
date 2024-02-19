@@ -1,8 +1,8 @@
 import debug from "./debug";
 
-const stepsBegin = '\\"steps\\": [\\n';
-const messageStringBegin = '\\"message\\": \\"';
-const messageStringEnd = '\\"\\n';
+const stepsBegin = "[";
+const messageStringBegin = '\\"message\\":\\"';
+const messageStringEnd = '\\"}"}}';
 
 async function* processParametersFromStream(
   readableStream: ReadableStream<Uint8Array>
@@ -88,7 +88,7 @@ async function* processParametersFromStream(
             const jsonObj = JSON.parse(cleanedJsonBuffer.trim());
             yield jsonObj;
           } catch (err) {
-            console.error("Failed to parse JSON:", err);
+            throw new Error("Failed to parse JSON: " + err);
           }
           jsonBuffer = "";
         }
