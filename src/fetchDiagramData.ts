@@ -307,7 +307,9 @@ async function* processResponse(
     } catch (err) {
       if (signal.aborted) return;
 
-      throw new Error(`Error processing stream: ${err}`);
+      throw new Error(
+        `Apologies, I ran into a problem while generating your diagram. Let's try again! (${err})`
+      );
     }
   } else {
     throw new Error("No response body");
@@ -352,10 +354,13 @@ export async function* fetchStream({
     }
 
     if (err instanceof Error && err.message) {
-      yield { type: "error", data: `Server error: ${err.message}` };
+      yield { type: "error", data: `${err.message}` };
     } else {
       // Generic error handling if the error does not have a message
-      yield { type: "error", data: "An unexpected error occurred" };
+      yield {
+        type: "error",
+        data: "An unforseen issue occurred. Let's try again?",
+      };
     }
 
     console.error(err);
