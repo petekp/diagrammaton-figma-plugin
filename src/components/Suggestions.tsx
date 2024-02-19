@@ -292,7 +292,7 @@ const Suggestions = ({ onClick }: { onClick: (input: string) => void }) => {
 
 const suggestions = [
   "A mobile app signup flow",
-  "Onboarding for a meditation app",
+  "Onboarding and walkthrough for a meditation app",
   "Form validation for a login screen",
   "A state diagram of an HTML button",
   "A skippable 5-step app walkthrough",
