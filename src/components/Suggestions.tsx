@@ -1,10 +1,19 @@
-import { h } from "preact";
-import { useEffect, useRef } from "preact/hooks";
-import { pluginContext } from "./PluginContext";
+import { Bold, Link, Stack, Text } from "@create-figma-plugin/ui";
 import { useSpring, motion } from "framer-motion";
+import { useEffect, useRef } from "preact/hooks";
+import { h } from "preact";
+
+import { pluginContext } from "./PluginContext";
 import { debounce } from "../util";
 import styles from "./styles.css";
-import { Bold, Link, Stack, Text } from "@create-figma-plugin/ui";
+
+const SUGGESTION_ITEMS = [
+  "A mobile app signup flow",
+  "Onboarding and walkthrough for a meditation app",
+  "Form validation for a login screen",
+  "A state diagram of an HTML button",
+  "A skippable 5-step app walkthrough",
+];
 
 export const suggestionVariants = {
   hidden: { opacity: 0, height: 0 },
@@ -21,6 +30,45 @@ export const suggestionVariants = {
     type: "spring",
     damping: 10,
     stiffness: 120,
+  },
+};
+
+const suggestionStateVariants = {
+  default: {
+    outline: "none",
+    borderColor: "var(--figma-color-border)",
+    backgroundColor: "var(--figma-color-bg-primary)",
+    boxShadow: "0px 0px 0px var(--figma-color-bg-brand)",
+    color: "var(--figma-color-text)",
+  },
+  loading: {
+    opacity: 0.8,
+    borderColor: "var(--figma-color-border)",
+    backgroundColor: "var(--figma-color-bg-primary)",
+    boxShadow: "0px 0px 0px var(--figma-color-bg-brand)",
+    color: "var(--figma-color-text-secondary)",
+  },
+
+  hover: {
+    y: -2,
+    borderColor: "var(--figma-color-bg-brand)",
+    backgroundColor: "var(--figma-color-bg-primary)",
+    boxShadow: "0px 2px 0px var(--figma-color-bg-brand)",
+    color: "var(--figma-color-bg-brand)",
+  },
+  focus: {
+    y: -2,
+    borderColor: "var(--figma-color-bg-brand)",
+    backgroundColor: "var(--figma-color-bg-primary)",
+    boxShadow: "0px 2px 0px var(--figma-color-bg-brand)",
+    color: "var(--figma-color-bg-brand)",
+  },
+  tap: {
+    y: 0,
+    borderColor: "var(--figma-color-bg-brand)",
+    backgroundColor: "var(--figma-color-bg-primary)",
+    boxShadow: "0px 2px 0px var(--figma-color-bg-brand)",
+    color: "var(--figma-color-bg-brand)",
   },
 };
 
@@ -94,7 +142,6 @@ const Suggestions = ({ onClick }: { onClick: (input: string) => void }) => {
         scrollInterval = setInterval(() => {
           const maxScrollWidth = calculateMaxScrollWidth();
 
-          // Adjust scroll amount by scrollSpeed
           const scrollAmount = 40 * scrollSpeed;
 
           if (isMouseNearLeftEdge && x.get() < maxScrollWidth) {
@@ -118,8 +165,7 @@ const Suggestions = ({ onClick }: { onClick: (input: string) => void }) => {
       e.preventDefault();
       const maxScrollWidth = calculateMaxScrollWidth();
 
-      // Adjust scroll amount by wheel delta
-      const scrollAmount = Math.abs(e.deltaX) + Math.abs(e.deltaY * 20); // Multiply deltaY by 10
+      const scrollAmount = Math.abs(e.deltaX) + Math.abs(e.deltaY * 20);
 
       if (e.deltaX < 0 && x.get() < maxScrollWidth) {
         const newX = Math.min(x.get() + scrollAmount, 0);
@@ -156,8 +202,6 @@ const Suggestions = ({ onClick }: { onClick: (input: string) => void }) => {
     const scrollViewElement = containerElement?.firstElementChild;
     if (!containerElement) return;
 
-    let lastFocusOffset = 0;
-
     const handleFocus = (e: Event) => {
       const target = e.target as HTMLElement;
       if (target.classList.contains(styles.suggestionBlock)) {
@@ -165,18 +209,12 @@ const Suggestions = ({ onClick }: { onClick: (input: string) => void }) => {
         const parentRect = containerElement.getBoundingClientRect();
         const scrollViewRect = scrollViewElement!.getBoundingClientRect();
 
-        // Determine the direction of tabbing
-        const isTabbingForwards = rect.left >= lastFocusOffset;
-        lastFocusOffset = rect.left;
-
-        // Calculate the desired scroll position to center the focused element
         const desiredScrollLeft =
           rect.left -
           scrollViewRect.left +
           rect.width / 2 -
           parentRect.width / 2;
 
-        // Adjust the scroll position
         if (desiredScrollLeft < 0) {
           x.set(0);
         } else {
@@ -194,7 +232,6 @@ const Suggestions = ({ onClick }: { onClick: (input: string) => void }) => {
     });
 
     return () => {
-      // Clean up the event listeners
       suggestionBlocks.forEach((block) => {
         block.removeEventListener("focus", handleFocus);
       });
@@ -230,7 +267,7 @@ const Suggestions = ({ onClick }: { onClick: (input: string) => void }) => {
             </Text>
           </Stack>
         </motion.div>
-        {suggestions.map((suggestion) => (
+        {SUGGESTION_ITEMS.map((suggestion) => (
           <motion.div
             layout
             tabIndex={0}
@@ -240,44 +277,7 @@ const Suggestions = ({ onClick }: { onClick: (input: string) => void }) => {
             }
             animate={isLoading || error ? "loading" : "default"}
             initial="default"
-            variants={{
-              default: {
-                outline: "none",
-                borderColor: "var(--figma-color-border)",
-                backgroundColor: "var(--figma-color-bg-primary)",
-                boxShadow: "0px 0px 0px var(--figma-color-bg-brand)",
-                color: "var(--figma-color-text)",
-              },
-              loading: {
-                opacity: 0.8,
-                borderColor: "var(--figma-color-border)",
-                backgroundColor: "var(--figma-color-bg-primary)",
-                boxShadow: "0px 0px 0px var(--figma-color-bg-brand)",
-                color: "var(--figma-color-text-secondary)",
-              },
-
-              hover: {
-                y: -2,
-                borderColor: "var(--figma-color-bg-brand)",
-                backgroundColor: "var(--figma-color-bg-primary)",
-                boxShadow: "0px 2px 0px var(--figma-color-bg-brand)",
-                color: "var(--figma-color-bg-brand)",
-              },
-              focus: {
-                y: -2,
-                borderColor: "var(--figma-color-bg-brand)",
-                backgroundColor: "var(--figma-color-bg-primary)",
-                boxShadow: "0px 2px 0px var(--figma-color-bg-brand)",
-                color: "var(--figma-color-bg-brand)",
-              },
-              tap: {
-                y: 0,
-                borderColor: "var(--figma-color-bg-brand)",
-                backgroundColor: "var(--figma-color-bg-primary)",
-                boxShadow: "0px 2px 0px var(--figma-color-bg-brand)",
-                color: "var(--figma-color-bg-brand)",
-              },
-            }}
+            variants={suggestionStateVariants}
             whileHover={isLoading || error ? "loading" : "hover"}
             whileFocus={isLoading || error ? "loading" : "focus"}
             whileTap={isLoading || error ? "loading" : "tap"}
@@ -289,13 +289,5 @@ const Suggestions = ({ onClick }: { onClick: (input: string) => void }) => {
     </motion.div>
   );
 };
-
-const suggestions = [
-  "A mobile app signup flow",
-  "Onboarding and walkthrough for a meditation app",
-  "Form validation for a login screen",
-  "A state diagram of an HTML button",
-  "A skippable 5-step app walkthrough",
-];
 
 export default Suggestions;
