@@ -4,7 +4,7 @@ import {
   Container,
   Button,
   Banner,
-  IconCheckCircle32,
+  IconCheckLarge24,
 } from "@create-figma-plugin/ui";
 import { motion } from "framer-motion";
 
@@ -93,7 +93,6 @@ export function FeedbackView() {
             placeholder="What can we improve? ☺️"
             grow={false}
             spellCheck={false}
-            variant="border"
             value={feedback || ""}
             onValueInput={(val: string) => {
               dispatch({ type: "SET_FEEDBACK", payload: val });
@@ -105,7 +104,7 @@ export function FeedbackView() {
             }}
           />
           {wasSuccessful && (
-            <Banner icon={<IconCheckCircle32 />} variant="success">
+            <Banner icon={<IconCheckLarge24 />} variant="success">
               Feedback sent. Thank you for taking the time! 🤍
             </Banner>
           )}

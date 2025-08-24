@@ -1,1 +1,1 @@
-export const tabTransition = { type: "spring", damping: 20, stiffness: 200 };
+export const tabTransition = { type: "spring" as const, damping: 20, stiffness: 200 };

@@ -1,8 +1,8 @@
 import { h } from "preact";
 import {
   Banner,
-  IconLockLocked32,
-  IconLockUnlocked32,
+  IconLockLocked24,
+  IconLockOpen24,
   Link,
   LoadingIndicator,
   MiddleAlign,
@@ -12,7 +12,7 @@ import {
   VerticalSpace,
 } from "@create-figma-plugin/ui";
 import { useState } from "preact/hooks";
-import { AnimationProps, motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 
 import styles from "./styles.css";
 import Logo from "./Logo";
@@ -53,7 +53,7 @@ const signInDelay = descriptionDelay + 0.4;
 const signInDamping = 20;
 const signInStiffness = 60;
 
-const arrowsAnimation: AnimationProps = {
+const arrowsAnimation = {
   initial: {
     opacity: 0,
     scale: 0.2,
@@ -61,102 +61,99 @@ const arrowsAnimation: AnimationProps = {
   animate: {
     opacity: 0.32,
     scale: 1,
-    transition: {
-      type: "spring",
-      damping: arrowsDamping,
-      stiffness: arrowsStiffness,
-      restDelta: restDelta,
-      delay: arrowsDelay,
-    },
+  },
+  transition: {
+    type: "spring" as const,
+    damping: arrowsDamping,
+    stiffness: arrowsStiffness,
+    restDelta: restDelta,
+    delay: arrowsDelay,
   },
 };
 
-const containerAnimation: AnimationProps = {
-  initial: "centered",
-  animate: "raised",
-  variants: {
-    centered: { y: 68 },
-    raised: {
-      y: -20,
-      transition: {
-        type: "spring",
-        damping: containerDamping,
-        stiffness: containerStiffness,
-        delay: containerDelay,
-      },
-    },
+const containerVariants: Variants = {
+  centered: { y: 68 },
+  raised: {
+    y: -20,
   },
 };
 
-const staggerAnimation: AnimationProps = {
-  initial: "hidden",
-  animate: "visible",
-  variants: {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        type: "spring",
-        damping: 50,
-        stiffness: 50,
-        delayChildren: lettersDelay,
-        staggerChildren: 0.05,
-      },
-    },
+const containerTransition = {
+  type: "spring" as const,
+  damping: containerDamping,
+  stiffness: containerStiffness,
+  delay: containerDelay,
+};
+
+const staggerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
   },
 };
 
-const logoVariants = {
+const staggerTransition = {
+  type: "spring" as const,
+  damping: 50,
+  stiffness: 50,
+  delayChildren: lettersDelay,
+  staggerChildren: 0.05,
+};
+
+const logoVariants: Variants = {
   hidden: { opacity: 0, scale: 1.6 },
   visible: {
     opacity: 1,
     scale: 1,
-    transition: {
-      type: "spring",
-      damping: logoDamping,
-      stiffness: logoStiffness,
-      delay: logoDelay,
-      restDelta: restDelta,
-    },
   },
 };
 
-const letterAnimation: AnimationProps = {
+const logoTransition = {
+  type: "spring" as const,
+  damping: logoDamping,
+  stiffness: logoStiffness,
+  delay: logoDelay,
+  restDelta: restDelta,
+};
+
+const letterAnimation = {
   initial: { opacity: 0 },
   animate: {
     opacity: 1,
-    transition: { type: "spring", damping: 30, stiffness: 170 },
   },
+  transition: { type: "spring" as const, damping: 30, stiffness: 170 },
 };
 
-const descriptionVariants = {
+const descriptionVariants: Variants = {
   hidden: { opacity: 0, y: -20 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: {
-      type: "spring",
-      damping: descriptionDamping,
-      stiffness: descriptionStiffness,
-      delay: descriptionDelay,
-      restDelta: restDelta,
-    },
   },
 };
 
-const signInVariants = {
+const descriptionTransition = {
+  type: "spring" as const,
+  damping: descriptionDamping,
+  stiffness: descriptionStiffness,
+  delay: descriptionDelay,
+  restDelta: restDelta,
+};
+
+const signInVariants: Variants = {
   hidden: { opacity: 0, y: -20 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: {
-      type: "spring",
-      damping: signInDamping,
-      stiffness: signInStiffness,
-      delay: signInDelay,
-      restDelta: restDelta,
-    },
   },
+};
+
+const signInTransition = {
+  type: "spring" as const,
+  damping: signInDamping,
+  stiffness: signInStiffness,
+  delay: signInDelay,
+  restDelta: restDelta,
 };
 
 const licenseKeyLength = 18;
@@ -226,8 +223,6 @@ function SignIn() {
 
         <Textbox
           spellCheck={false}
-          variant="border"
-          maxLength={licenseKeyLength}
           password={true}
           disabled={lengthHit || !isNewUser}
           value={licenseKeyInputValue}
@@ -242,9 +237,9 @@ function SignIn() {
             isLoading ? (
               <LoadingIndicator color="component" />
             ) : isNewUser ? (
-              <IconLockLocked32 />
+              <IconLockLocked24 />
             ) : (
-              <IconLockUnlocked32 color="success" />
+              <IconLockOpen24 color="success" />
             )
           }
           onFocusCapture={() => {
@@ -258,11 +253,17 @@ function SignIn() {
   return (
     <div className={styles.overlayContainer}>
       <MiddleAlign style={{ zIndex: 999 }}>
-        <motion.div {...containerAnimation}>
+        <motion.div
+          initial="centered"
+          animate="raised"
+          variants={containerVariants}
+          transition={containerTransition}
+        >
           <motion.div
             variants={logoVariants}
             initial="hidden"
             animate="visible"
+            transition={logoTransition}
             style={{ display: "flex", justifyContent: "center" }}
           >
             <Logo isDarkMode={false} />
@@ -270,12 +271,16 @@ function SignIn() {
           <VerticalSpace space="extraLarge" />
           <div className={styles.logoType}>
             {" "}
-            <motion.div {...staggerAnimation}>
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={staggerVariants}
+              transition={staggerTransition}
+            >
               {"DIAGRAMMATON".split("").map((char, index) => (
                 <motion.span
                   key={index}
                   {...letterAnimation}
-                  variants={staggerAnimation.variants}
                 >
                   {char}
                 </motion.span>
@@ -286,6 +291,7 @@ function SignIn() {
             variants={descriptionVariants}
             initial="hidden"
             animate="visible"
+            transition={descriptionTransition}
             className={styles.description}
           >
             AI powered diagrams for FigJam
@@ -295,6 +301,7 @@ function SignIn() {
           variants={signInVariants}
           initial="hidden"
           animate="visible"
+          transition={signInTransition}
           onAnimationStart={() => {
             setTimeout(() => {
               document.querySelector("input")?.focus();

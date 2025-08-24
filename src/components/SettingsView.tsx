@@ -6,10 +6,7 @@ import {
   Text,
   Textbox,
   VerticalSpace,
-  IconArrowUp16,
-  IconArrowDown16,
-  IconArrowLeft16,
-  IconArrowRight16,
+  IconArrow16,
   Muted,
   Link,
   Bold,
@@ -62,7 +59,6 @@ export function SettingsView() {
 
       <Textbox
         spellCheck={false}
-        variant="border"
         password={true}
         icon={<IconLockLocked16 />}
         value={licenseKey}
@@ -99,20 +95,20 @@ export function SettingsView() {
           }}
           options={[
             {
-              children: <IconArrowRight16 />,
+              children: <IconArrow16 />,
               value: "LR",
             },
             {
-              children: <IconArrowDown16 />,
+              children: <IconArrow16 />,
               value: "TB",
             },
             {
-              children: <IconArrowLeft16 />,
+              children: <IconArrow16 />,
               value: "RL",
             },
 
             {
-              children: <IconArrowUp16 />,
+              children: <IconArrow16 />,
               value: "BT",
             },
           ]}
@@ -134,8 +130,8 @@ export function SettingsView() {
       <div style={{ float: "right" }}>
         <SegmentedControl
           value={model}
-          onValueChange={(val: GPTModels) => {
-            dispatch({ type: "SET_MODEL", payload: val });
+          onValueChange={(val: string) => {
+            dispatch({ type: "SET_MODEL", payload: val as GPTModels });
           }}
           options={[
             {
@@ -169,7 +165,7 @@ export function SettingsView() {
             dispatch({ type: "SET_SHOW_SUGGESTIONS", payload: val });
           }}
         >
-          {}
+          Show suggestions
         </Toggle>
       </div>
     </Columns>

@@ -69,7 +69,6 @@ export function NaturalInputView() {
             }
             grow={false}
             spellCheck={false}
-            variant="border"
             value={naturalInput}
             onValueInput={(val: string) => {
               dispatch({ type: "SET_NATURAL_INPUT", payload: val });

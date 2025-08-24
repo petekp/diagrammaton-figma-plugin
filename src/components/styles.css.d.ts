@@ -1,20 +1,20 @@
 declare const styles: {
-  readonly "outerContainer": string;
+  readonly "closeIcon": string;
+  readonly "description": string;
+  readonly "fullScreen": string;
+  readonly "fullWidth": string;
   readonly "innerContainer": string;
+  readonly "logoType": string;
+  readonly "modify": string;
+  readonly "outerContainer": string;
+  readonly "overlayContainer": string;
+  readonly "suggestionBlock": string;
+  readonly "suggestionContainer": string;
+  readonly "suggestionInstructionsBlock": string;
+  readonly "suggestionScrollView": string;
   readonly "textAreaAndBannerContainer": string;
   readonly "warningBanner": string;
   readonly "warningText": string;
-  readonly "closeIcon": string;
-  readonly "overlayContainer": string;
-  readonly "fullScreen": string;
-  readonly "logoType": string;
-  readonly "description": string;
-  readonly "fullWidth": string;
-  readonly "suggestionContainer": string;
-  readonly "suggestionScrollView": string;
-  readonly "suggestionBlock": string;
-  readonly "suggestionInstructionsBlock": string;
-  readonly "modify": string;
 };
 export = styles;
 
