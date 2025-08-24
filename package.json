@@ -29,12 +29,14 @@
   },
   "figma-plugin": {
     "editorType": [
+      "figma",
       "figjam"
     ],
     "id": "1295127627739218424",
     "name": "Diagrammaton",
     "main": "src/main.ts",
     "ui": "src/ui.tsx",
+    "documentAccess": "dynamic-page",
     "networkAccess": {
       "allowedDomains": [
         "https://www.diagrammaton.com",
