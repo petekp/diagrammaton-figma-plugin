@@ -1,6 +1,6 @@
 {
   "api": "1.0.0",
-  "editorType": ["figjam"],
+  "editorType": ["figma", "figjam"],
   "id": "1295127627739218424",
   "name": "Diagrammaton",
   "main": "build/main.js",
