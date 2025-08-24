@@ -40,20 +40,15 @@ export const defaultSettings: PersistedState = {
 
 export default function () {
   figma.on("selectionchange", () => {
-    // emit<SetSelectedNodesCount>(
-    //   "SET_SELECTED_NODES_COUNT",
-    //   figma.currentPage.selection.length
-    // );
-
-    const firstSelectedNode = figma.currentPage.selection[0];
+    // Get the current selection - this works with dynamic page loading
+    const selection = figma.currentPage.selection;
+    const firstSelectedNode = selection[0];
 
     if (firstSelectedNode) {
       emit<SetSelectedNodeData>("SET_SELECTED_NODE_DATA", {
-        diagramNodeId:
-          figma.currentPage.selection[0].getPluginData("diagramNodeId"),
-        diagramData:
-          figma.currentPage.selection[0].getPluginData("diagramData"),
-        diagramId: figma.currentPage.selection[0].getPluginData("diagramId"),
+        diagramNodeId: firstSelectedNode.getPluginData("diagramNodeId"),
+        diagramData: firstSelectedNode.getPluginData("diagramData"),
+        diagramId: firstSelectedNode.getPluginData("diagramId"),
       });
     } else {
       emit<SetSelectedNodeData>("SET_SELECTED_NODE_DATA", {

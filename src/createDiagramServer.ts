@@ -89,7 +89,9 @@ const setNodeColors = ({
 };
 
 const deleteDiagramById = (diagramId: string) => {
-  const nodesToDelete = figma.currentPage
+  // With dynamic page loading, we need to get current page reference explicitly
+  const currentPage = figma.currentPage;
+  const nodesToDelete = currentPage
     .findAll()
     .filter((node) => node.getPluginData("diagramId") === diagramId);
 
@@ -286,7 +288,9 @@ const positionNodes = ({
       shapeNode.y = Math.round(originalPosition.y + newDiagramY);
     }
 
-    figma.currentPage.appendChild(shapeNode);
+    // With dynamic page loading, get explicit page reference
+    const currentPage = figma.currentPage;
+    currentPage.appendChild(shapeNode);
     shapeNode.visible = true;
   });
 };
@@ -313,9 +317,11 @@ const createAndPositionBufferNode = (positionsObject: {
 };
 
 const addLinksToDiagram = (links: SceneNode[]) => {
+  // With dynamic page loading, get explicit page reference
+  const currentPage = figma.currentPage;
   links.forEach((link) => {
     link.visible = false;
-    figma.currentPage.appendChild(link);
+    currentPage.appendChild(link);
     link.visible = true;
   });
 };
@@ -407,7 +413,9 @@ function getMaxXY(positionsObject: { [key: string]: Position }) {
 }
 
 function getEmptySpaceCoordinates() {
-  const existingNodes = figma.currentPage.findAll();
+  // With dynamic page loading, we need to get current page reference explicitly
+  const currentPage = figma.currentPage;
+  const existingNodes = currentPage.findAll();
   let maxY = 0;
 
   for (const node of existingNodes) {
