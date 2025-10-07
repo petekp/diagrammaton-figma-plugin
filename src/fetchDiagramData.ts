@@ -212,7 +212,7 @@ const debugValue: DiagramElement[] = [
   },
 ];
 
-export type GPTModels = "gpt3" | "gpt4";
+export type GPTModels = "gpt3" | "gpt4" | "gpt5";
 
 type MessageElement = {
   type: "message";
@@ -287,7 +287,8 @@ async function* processResponse(
       for await (const output of processStepsFromStream(response.body)) {
         if (signal.aborted) return;
 
-        if (typeof output === null) {
+        // End-of-stream marker from the parser
+        if (output === null) {
           yield { type: "end" };
           break;
         }
@@ -297,7 +298,7 @@ async function* processResponse(
           continue;
         }
 
-        if (typeof output === "object") {
+        if (typeof output === "object" && output !== null) {
           yield { type: "node", data: output };
           continue;
         }

@@ -33,6 +33,8 @@ export function usePluginExecution() {
   const handleStreamElement = (element: StreamElement) => {
     switch (element.type) {
       case "end":
+        // Inform main thread that streaming for this diagramId is finished
+        emit("END_DRAW", diagramId.current);
         break;
       case "message":
         errorMessage += element.data;
@@ -54,7 +56,20 @@ export function usePluginExecution() {
       case "node":
         if (debug.enabled) console.log(element.data);
         if (element.data) {
-          diagramNodes.current = diagramNodes.current.concat(element.data);
+          const toAdd = Array.isArray(element.data)
+            ? element.data
+            : [element.data];
+          const isDiagramElement = (d: any) =>
+            d &&
+            d.from &&
+            d.to &&
+            typeof d.from?.id === "string" &&
+            typeof d.to?.id === "string" &&
+            typeof d.from?.shape === "string" &&
+            typeof d.to?.shape === "string";
+          diagramNodes.current = diagramNodes.current.concat(
+            toAdd.filter(isDiagramElement)
+          );
         }
         if (diagramNodes.current) {
           handleDrawDiagram({

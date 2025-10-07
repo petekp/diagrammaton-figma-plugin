@@ -18,9 +18,7 @@ async function* processParametersFromStream(
   while (true) {
     const { done, value } = await reader.read();
     if (done) {
-      if (debug.enabled) {
-        console.log("Stream ended.");
-      }
+      if (debug.enabled) console.log("processJson: stream ended");
       yield null;
       break;
     }
@@ -32,6 +30,7 @@ async function* processParametersFromStream(
       const stepsStart = buffer.indexOf(stepsBegin);
       if (stepsStart !== -1) {
         inStepsArray = true;
+        if (debug.enabled) console.log("processJson: detected steps array start");
         buffer = buffer.slice(stepsStart + stepsBegin.length);
       }
     }
@@ -40,6 +39,7 @@ async function* processParametersFromStream(
       const messageStart = buffer.indexOf(messageStringBegin);
       if (messageStart !== -1) {
         inMessageString = true;
+        if (debug.enabled) console.log("processJson: detected message string start");
         buffer = buffer.slice(messageStart + messageStringBegin.length);
       }
     }
@@ -60,6 +60,7 @@ async function* processParametersFromStream(
       }
 
       if (messageBuffer !== "") {
+        if (debug.enabled) console.log("processJson: message chunk", messageBuffer.slice(0, 60));
         yield messageBuffer;
         messageBuffer = "";
       }
@@ -86,6 +87,7 @@ async function* processParametersFromStream(
             .replace(/^[\s,]+/, "");
           try {
             const jsonObj = JSON.parse(cleanedJsonBuffer.trim());
+            if (debug.enabled) console.log("processJson: parsed node", jsonObj?.from?.id, "->", jsonObj?.to?.id);
             yield jsonObj;
           } catch (err) {
             throw new Error("Failed to parse JSON: " + err);

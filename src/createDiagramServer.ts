@@ -91,13 +91,28 @@ const setNodeColors = ({
 const deleteDiagramById = (diagramId: string) => {
   // With dynamic page loading, we need to get current page reference explicitly
   const currentPage = figma.currentPage;
-  const nodesToDelete = currentPage
-    .findAll()
-    .filter((node) => node.getPluginData("diagramId") === diagramId);
+  const nodesToDelete = currentPage.findAll((node) =>
+    node.getPluginData("diagramId") === diagramId
+  );
 
-  for (const node of nodesToDelete) {
-    node.remove();
+  // Remove connectors first to avoid transient removal of endpoints
+  const connectors: SceneNode[] = [];
+  const others: SceneNode[] = [];
+  for (const n of nodesToDelete) {
+    if ((n as SceneNode).type === "CONNECTOR") connectors.push(n as SceneNode);
+    else others.push(n as SceneNode);
   }
+
+  const safeRemove = (node: SceneNode) => {
+    try {
+      if (figma.getNodeById(node.id)) node.remove();
+    } catch {
+      // Node may already be removed by Figma due to dependency cleanup; ignore
+    }
+  };
+
+  connectors.forEach(safeRemove);
+  others.forEach(safeRemove);
 };
 
 const createLink = ({
@@ -122,6 +137,12 @@ const createLink = ({
 
   connector.setPluginData("diagramId", diagramId);
   connector.setPluginData("diagramData", diagramData);
+  if ((from as SceneNode).getPluginData) {
+    connector.setPluginData("fromId", (from as SceneNode).getPluginData("diagramNodeId"));
+  }
+  if ((to as SceneNode).getPluginData) {
+    connector.setPluginData("toId", (to as SceneNode).getPluginData("diagramNodeId"));
+  }
 
   connector.connectorStart = { endpointNodeId: from.id, magnet: fromMagnet };
   connector.connectorEnd = { endpointNodeId: to.id, magnet: toMagnet };
@@ -166,12 +187,14 @@ const createDiagramNodes = ({
   nodeShapes,
   nodeIds,
   magnetMap,
+  existingNodes,
 }: {
   diagram: DiagramElement[];
   positions: Map<string, Position>;
   nodeShapes: { [id: string]: ShapeWithTextNode };
   nodeIds: Map<ShapeWithTextNode, string>;
   magnetMap: Map<string, { [key in MagnetDirection]: boolean }>;
+  existingNodes?: Map<string, ShapeWithTextNode>;
 }) => {
   for (const { from, to } of diagram) {
     for (const node of [from, to]) {
@@ -182,7 +205,19 @@ const createDiagramNodes = ({
           return;
         }
 
-        const figmaNode = createNode({ node, position });
+        const existing = existingNodes?.get(node.id);
+        const figmaNode = existing ?? createNode({ node, position });
+        // Always update visual props/position on existing nodes as well
+        figmaNode.shapeType = validShapes.includes(node.shape)
+          ? node.shape
+          : "ROUNDED_RECTANGLE";
+        setNodeColors({ node, figmaNode });
+        if (node.label && figmaNode.text) {
+          figmaNode.text.characters = node.label || "";
+        }
+        figmaNode.x = position.x;
+        figmaNode.y = position.y;
+
         nodeShapes[node.id] = figmaNode;
         nodeIds.set(figmaNode, node.id);
 
@@ -204,6 +239,7 @@ const createDiagramLinks = ({
   linkMap,
   magnetMap,
   diagramId,
+  existingConnectors,
 }: {
   diagram: DiagramElement[];
   nodeShapes: { [id: string]: ShapeWithTextNode };
@@ -211,6 +247,7 @@ const createDiagramLinks = ({
   linkMap: Map<string, boolean>;
   magnetMap: Map<string, { [key in MagnetDirection]: boolean }>;
   diagramId: string;
+  existingConnectors?: Map<string, ConnectorNode>;
 }) => {
   let backlinkCounter = 0;
 
@@ -238,9 +275,21 @@ const createDiagramLinks = ({
           if (fromMagnetMap) fromMagnetMap[fromMagnet] = true;
         }
       }
-
-      links.push(
-        createLink({
+      const edgeKey = `${from.id}->${to.id}`;
+      const existing = existingConnectors?.get(edgeKey);
+      if (existing) {
+        existing.connectorStart = {
+          endpointNodeId: nodeShapes[from.id].id,
+          magnet: fromMagnet,
+        };
+        existing.connectorEnd = {
+          endpointNodeId: nodeShapes[to.id].id,
+          magnet: toMagnet,
+        };
+        if (link?.label) existing.text.characters = link.label;
+        links.push(existing);
+      } else {
+        const conn = createLink({
           from: nodeShapes[from.id],
           to: nodeShapes[to.id],
           link,
@@ -248,8 +297,11 @@ const createDiagramLinks = ({
           fromMagnet,
           toMagnet,
           diagramData: JSON.stringify(diagram),
-        })
-      );
+        });
+        conn.setPluginData("fromId", from.id);
+        conn.setPluginData("toId", to.id);
+        links.push(conn);
+      }
     }
   }
 };
@@ -342,10 +394,33 @@ export const drawDiagram = async ({
   const { positions, nodeShapes, nodeIds, links, linkMap, magnetMap } =
     prepareData(positionsObject);
 
-  // Re-draw the diagram on each pass if we're streaming
+  // First chunk: start fresh
   if (stream) deleteExistingDiagram(diagramId);
 
-  createDiagramNodes({ diagram, positions, nodeShapes, nodeIds, magnetMap });
+  // Build maps of existing nodes/connectors for in-place updates
+  const currentPage = figma.currentPage;
+  const existingNodesMap = new Map<string, ShapeWithTextNode>();
+  const existingConnectorsMap = new Map<string, ConnectorNode>();
+  currentPage.findAll((n) => n.getPluginData("diagramId") === diagramId).forEach((n) => {
+    if (n.type === "SHAPE_WITH_TEXT") {
+      const key = (n as SceneNode).getPluginData("diagramNodeId");
+      if (key) existingNodesMap.set(key, n as ShapeWithTextNode);
+    } else if (n.type === "CONNECTOR") {
+      const fromId = (n as SceneNode).getPluginData("fromId");
+      const toId = (n as SceneNode).getPluginData("toId");
+      if (fromId && toId) existingConnectorsMap.set(`${fromId}->${toId}`, n as ConnectorNode);
+    }
+  });
+
+  createDiagramNodes({
+    diagram,
+    positions,
+    nodeShapes,
+    nodeIds,
+    magnetMap,
+    existingNodes: existingNodesMap,
+  });
+
   createDiagramLinks({
     diagram,
     nodeShapes,
@@ -353,11 +428,30 @@ export const drawDiagram = async ({
     linkMap,
     magnetMap,
     diagramId,
+    existingConnectors: existingConnectorsMap,
   });
+  // Remove connectors that are no longer part of the diagram
+  for (const [key, conn] of existingConnectorsMap.entries()) {
+    if (!linkMap.get(key)) {
+      try {
+        if (figma.getNodeById(conn.id)) conn.remove();
+      } catch {}
+    }
+  }
   positionNodes({ nodeShapes, positionsObject, diagram, diagramId, nodeIds });
   createAndPositionBufferNode(positionsObject);
   addLinksToDiagram(links);
   centerViewportOnDiagram(nodeShapes);
+
+  // Remove nodes that are no longer present
+  const desiredIds = new Set(Object.keys(nodeShapes));
+  for (const [id, node] of existingNodesMap.entries()) {
+    if (!desiredIds.has(id)) {
+      try {
+        if (figma.getNodeById(node.id)) node.remove();
+      } catch {}
+    }
+  }
 };
 
 const setNodeProperties = ({

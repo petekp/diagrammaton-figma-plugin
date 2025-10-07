@@ -17,9 +17,13 @@ import {
   PersistedState,
   SavePersistedState,
   SetSelectedNodeData,
+  EndDraw,
 } from "./types";
 
 import { drawDiagram } from "./createDiagramServer";
+
+// Track which diagrams have been cleared once per streaming session
+const clearedDiagramIds = new Set<string>();
 
 const SETTINGS_KEY = "figjam-diagrammaton-plugin";
 
@@ -30,7 +34,7 @@ export const defaultSettings: PersistedState = {
   isNewUser: true,
   isSignInVisible: false,
   licenseKey: "",
-  model: "gpt3",
+  model: "gpt5",
   naturalInput: "",
   orientation: "LR",
   showSuggestions: true,
@@ -95,7 +99,19 @@ export default function () {
   });
 
   on<DrawDiagram>("DRAW_DIAGRAM", async function (params) {
-    await drawDiagram(params);
+    const { diagramId, stream } = params;
+    // Only clear existing nodes once at the beginning of a streaming session
+    if (stream && !clearedDiagramIds.has(diagramId)) {
+      clearedDiagramIds.add(diagramId);
+      await drawDiagram({ ...params, stream: true });
+      return;
+    }
+    // Subsequent streaming chunks skip the deleteExistingDiagram pass
+    await drawDiagram({ ...params, stream: false });
+  });
+
+  on<EndDraw>("END_DRAW", (diagramId) => {
+    clearedDiagramIds.delete(diagramId);
   });
 
   showUI(

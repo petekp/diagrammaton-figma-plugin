@@ -46,6 +46,11 @@ export interface DrawDiagram extends EventHandler {
   }) => void;
 }
 
+export interface EndDraw extends EventHandler {
+  name: "END_DRAW";
+  handler: (diagramId: string) => void;
+}
+
 export interface HandleError extends EventHandler {
   name: "HANDLE_ERROR";
   handler: (error: string) => void;
