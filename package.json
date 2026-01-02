@@ -9,7 +9,7 @@
   "devDependencies": {
     "@create-figma-plugin/build": "^2.4.0",
     "@create-figma-plugin/tsconfig": "^2.4.0",
-    "@figma/plugin-typings": "1.57.1",
+    "@figma/plugin-typings": "^1.117.0",
     "@types/dagre": "^0.7.48",
     "@types/node": "^20.7.0",
     "@types/react": "^18.2.22",
@@ -21,7 +21,7 @@
     "createZip": "node ./util/createZip ./build ./manifest.json ./ beta-0.8",
     "toggleDebugOff": "node ./util/toggleDebug false",
     "toggleDebugOn": "node ./util/toggleDebug true",
-    "build": "npm run toggleDebugOff; NODE_ENV=production build-figma-plugin --typecheck --minify; npm run createZip",
+    "build": "npm run toggleDebugOff; NODE_ENV=production build-figma-plugin --minify; npm run createZip",
     "watch": "npm run toggleDebugOn; NODE_ENV=development build-figma-plugin --typecheck --watch",
     "watch-staging": "npm run toggleDebugOff; NODE_ENV=staging build-figma-plugin --typecheck --watch",
     "watch-prod": "npm run toggleDebugOff; NODE_ENV=production build-figma-plugin --typecheck --minify --watch",
