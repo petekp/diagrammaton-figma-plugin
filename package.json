@@ -31,6 +31,7 @@
     "editorType": [
       "figjam"
     ],
+    "documentAccess": "dynamic-page",
     "id": "1295127627739218424",
     "name": "Diagrammaton",
     "main": "src/main.ts",
