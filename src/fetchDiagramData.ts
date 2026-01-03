@@ -212,7 +212,10 @@ const debugValue: DiagramElement[] = [
   },
 ];
 
-export type GPTModels = "gpt-4.1-nano" | "gpt-4.1";
+export type LLMModel = "gpt-5-mini" | "gpt-5" | "claude-sonnet-4" | "claude-opus-4.5";
+
+/** @deprecated Use LLMModel instead */
+export type GPTModels = LLMModel;
 
 type MessageElement = {
   type: "message";

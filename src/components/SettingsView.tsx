@@ -128,7 +128,7 @@ export function SettingsView() {
           <Bold>Model</Bold>{" "}
         </Text>
         <Text>
-          <Muted>GPT-4.1 is smarter but slower and pricier</Muted>
+          <Muted>Opus is smartest, Sonnet balances speed and quality</Muted>
         </Text>
       </Stack>
       <div style={{ float: "right" }}>
@@ -139,12 +139,20 @@ export function SettingsView() {
           }}
           options={[
             {
-              children: "GPT-4.1 Nano",
-              value: "gpt-4.1-nano",
+              children: "GPT-5 Mini",
+              value: "gpt-5-mini",
             },
             {
-              children: "GPT-4.1",
-              value: "gpt-4.1",
+              children: "GPT-5",
+              value: "gpt-5",
+            },
+            {
+              children: "Sonnet 4",
+              value: "claude-sonnet-4",
+            },
+            {
+              children: "Opus 4.5",
+              value: "claude-opus-4.5",
             },
           ]}
         />
