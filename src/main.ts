@@ -30,7 +30,7 @@ export const defaultSettings: PersistedState = {
   isNewUser: true,
   isSignInVisible: false,
   licenseKey: "",
-  model: "gpt3",
+  model: "gpt-4.1-nano",
   naturalInput: "",
   orientation: "LR",
   showSuggestions: true,

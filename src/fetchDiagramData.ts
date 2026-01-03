@@ -212,7 +212,7 @@ const debugValue: DiagramElement[] = [
   },
 ];
 
-export type GPTModels = "gpt3" | "gpt4";
+export type GPTModels = "gpt-4.1-nano" | "gpt-4.1";
 
 type MessageElement = {
   type: "message";
