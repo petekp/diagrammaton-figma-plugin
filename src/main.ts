@@ -1,4 +1,4 @@
-import { UI_HEIGHT, UI_WIDTH } from "./constants";
+import { DEFAULT_MODEL_ID, UI_HEIGHT, UI_WIDTH } from "./constants";
 import {
   emit,
   once,
@@ -17,9 +17,13 @@ import {
   PersistedState,
   SavePersistedState,
   SetSelectedNodeData,
+  EndDraw,
 } from "./types";
 
 import { drawDiagram } from "./createDiagramServer";
+
+// Track which diagrams have been cleared once per streaming session
+const clearedDiagramIds = new Set<string>();
 
 const SETTINGS_KEY = "figjam-diagrammaton-plugin";
 
@@ -30,7 +34,7 @@ export const defaultSettings: PersistedState = {
   isNewUser: true,
   isSignInVisible: false,
   licenseKey: "",
-  model: "gpt3",
+  model: DEFAULT_MODEL_ID,
   naturalInput: "",
   orientation: "LR",
   showSuggestions: true,
@@ -40,20 +44,15 @@ export const defaultSettings: PersistedState = {
 
 export default function () {
   figma.on("selectionchange", () => {
-    // emit<SetSelectedNodesCount>(
-    //   "SET_SELECTED_NODES_COUNT",
-    //   figma.currentPage.selection.length
-    // );
-
-    const firstSelectedNode = figma.currentPage.selection[0];
+    // Get the current selection - this works with dynamic page loading
+    const selection = figma.currentPage.selection;
+    const firstSelectedNode = selection[0];
 
     if (firstSelectedNode) {
       emit<SetSelectedNodeData>("SET_SELECTED_NODE_DATA", {
-        diagramNodeId:
-          figma.currentPage.selection[0].getPluginData("diagramNodeId"),
-        diagramData:
-          figma.currentPage.selection[0].getPluginData("diagramData"),
-        diagramId: figma.currentPage.selection[0].getPluginData("diagramId"),
+        diagramNodeId: firstSelectedNode.getPluginData("diagramNodeId"),
+        diagramData: firstSelectedNode.getPluginData("diagramData"),
+        diagramId: firstSelectedNode.getPluginData("diagramId"),
       });
     } else {
       emit<SetSelectedNodeData>("SET_SELECTED_NODE_DATA", {
@@ -100,7 +99,24 @@ export default function () {
   });
 
   on<DrawDiagram>("DRAW_DIAGRAM", async function (params) {
-    await drawDiagram(params);
+    const { diagramId, stream } = params;
+    // Only clear existing nodes once at the beginning of a streaming session
+    if (stream && !clearedDiagramIds.has(diagramId)) {
+      clearedDiagramIds.add(diagramId);
+      await drawDiagram({ ...params, stream: true });
+      return;
+    }
+    // Subsequent streaming chunks skip the deleteExistingDiagram pass
+    await drawDiagram({ ...params, stream: false });
+  });
+
+  on<EndDraw>("END_DRAW", (diagramId) => {
+    clearedDiagramIds.delete(diagramId);
+  });
+
+  on("CLEAR_CLIENT_STORAGE", () => {
+    // Clear Figma clientStorage when requested from UI
+    figma.clientStorage.deleteAsync("globalFontSizes");
   });
 
   showUI(

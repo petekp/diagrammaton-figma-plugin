@@ -1,6 +1,6 @@
 import { h } from "preact";
 import { AnimatePresence, motion } from "framer-motion";
-import { IconCross32, IconWarning32 } from "@create-figma-plugin/ui";
+import { IconClose24, IconWarningSmall24 } from "@create-figma-plugin/ui";
 
 import styles from "./styles.css";
 import { pluginContext } from "./PluginContext";
@@ -38,9 +38,9 @@ function WarningBanner({ style = {} }: { style?: CSSProperties }) {
           className={styles.warningBanner}
           style={isNewUser ? { bottom: 16 } : {}}
         >
-          <IconWarning32 />
+          <IconWarningSmall24 />
           <motion.div className={styles.warningText}>{error}</motion.div>
-          <IconCross32 onClick={clearErrors} />
+          <IconClose24 onClick={clearErrors} />
         </motion.div>
       ) : null}
     </AnimatePresence>

@@ -247,44 +247,44 @@ const Suggestions = ({ onClick }: { onClick: (input: string) => void }) => {
         layoutScroll
       >
         <motion.div layout className={styles.suggestionInstructionsBlock}>
-          <Stack space="extraSmall">
-            <Text>
-              <Bold>Examples</Bold>
-            </Text>
-            <Text>
-              <Link
-                href="#"
-                onClick={() =>
-                  dispatch({
-                    type: "SET_SHOW_SUGGESTIONS",
-                    payload: !showSuggestions,
-                  })
-                }
-                tabIndex={0}
-              >
-                Hide
-              </Link>
-            </Text>
-          </Stack>
+          <Text>
+            <Bold>Examples</Bold>
+            {" ("}
+            <Link
+              href="#"
+              onClick={() =>
+                dispatch({
+                  type: "SET_SHOW_SUGGESTIONS",
+                  payload: !showSuggestions,
+                })
+              }
+              tabIndex={0}
+            >
+              Hide
+            </Link>
+            {")"}
+          </Text>
         </motion.div>
-        {SUGGESTION_ITEMS.map((suggestion) => (
-          <motion.div
-            layout
-            tabIndex={0}
-            className={styles.suggestionBlock}
-            onClick={
-              isLoading || error ? () => {} : () => handleClick(suggestion)
-            }
-            animate={isLoading || error ? "loading" : "default"}
-            initial="default"
-            variants={suggestionStateVariants}
-            whileHover={isLoading || error ? "loading" : "hover"}
-            whileFocus={isLoading || error ? "loading" : "focus"}
-            whileTap={isLoading || error ? "loading" : "tap"}
-          >
-            {suggestion}
-          </motion.div>
-        ))}
+        <div className={styles.suggestionBlocksContainer}>
+          {SUGGESTION_ITEMS.map((suggestion) => (
+            <motion.div
+              layout
+              tabIndex={0}
+              className={styles.suggestionBlock}
+              onClick={
+                isLoading || error ? () => {} : () => handleClick(suggestion)
+              }
+              animate={isLoading || error ? "loading" : "default"}
+              initial="default"
+              variants={suggestionStateVariants}
+              whileHover={isLoading || error ? "loading" : "hover"}
+              whileFocus={isLoading || error ? "loading" : "focus"}
+              whileTap={isLoading || error ? "loading" : "tap"}
+            >
+              {suggestion}
+            </motion.div>
+          ))}
+        </div>
       </motion.div>
     </motion.div>
   );

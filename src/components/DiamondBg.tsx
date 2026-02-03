@@ -61,13 +61,14 @@ function Diamond({
     opacity: 0.5,
     scale: scaleFactor * 1.4,
     rotate: index * (93.12 / total),
-    transition: {
-      type: "spring",
-      damping: diamondDamping + (index / total / 2) * (diamondDamping + 10),
-      stiffness: diamondStiffness + (index / total) * (diamondDamping + 10),
-      delay: diamondDelay + (index / total) * 1.4,
-      restDelta: 0.001,
-    },
+  };
+
+  const transition = {
+    type: "spring" as const,
+    damping: diamondDamping + (index / total / 2) * (diamondDamping + 10),
+    stiffness: diamondStiffness + (index / total) * (diamondDamping + 10),
+    delay: diamondDelay + (index / total) * 1.4,
+    restDelta: 0.001,
   };
 
   return (
@@ -79,6 +80,7 @@ function Diamond({
       fill="transparent"
       initial={initial}
       animate={animate}
+      transition={transition}
     />
   );
 }

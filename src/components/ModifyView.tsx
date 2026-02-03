@@ -59,7 +59,6 @@ export function ModifyView() {
             placeholder="Modify this diagram..."
             grow={false}
             spellCheck={false}
-            variant="border"
             value={`${modifyInput}`}
             onValueInput={(val: string) => {
               dispatch({ type: "SET_MODIFY_INPUT", payload: val });

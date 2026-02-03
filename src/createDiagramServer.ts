@@ -89,13 +89,30 @@ const setNodeColors = ({
 };
 
 const deleteDiagramById = (diagramId: string) => {
-  const nodesToDelete = figma.currentPage
-    .findAll()
-    .filter((node) => node.getPluginData("diagramId") === diagramId);
+  // With dynamic page loading, we need to get current page reference explicitly
+  const currentPage = figma.currentPage;
+  const nodesToDelete = currentPage.findAll((node) =>
+    node.getPluginData("diagramId") === diagramId
+  );
 
-  for (const node of nodesToDelete) {
-    node.remove();
+  // Remove connectors first to avoid transient removal of endpoints
+  const connectors: SceneNode[] = [];
+  const others: SceneNode[] = [];
+  for (const n of nodesToDelete) {
+    if ((n as SceneNode).type === "CONNECTOR") connectors.push(n as SceneNode);
+    else others.push(n as SceneNode);
   }
+
+  const safeRemove = (node: SceneNode) => {
+    try {
+      if (figma.getNodeById(node.id)) node.remove();
+    } catch {
+      // Node may already be removed by Figma due to dependency cleanup; ignore
+    }
+  };
+
+  connectors.forEach(safeRemove);
+  others.forEach(safeRemove);
 };
 
 const createLink = ({
@@ -120,6 +137,12 @@ const createLink = ({
 
   connector.setPluginData("diagramId", diagramId);
   connector.setPluginData("diagramData", diagramData);
+  if ((from as SceneNode).getPluginData) {
+    connector.setPluginData("fromId", (from as SceneNode).getPluginData("diagramNodeId"));
+  }
+  if ((to as SceneNode).getPluginData) {
+    connector.setPluginData("toId", (to as SceneNode).getPluginData("diagramNodeId"));
+  }
 
   connector.connectorStart = { endpointNodeId: from.id, magnet: fromMagnet };
   connector.connectorEnd = { endpointNodeId: to.id, magnet: toMagnet };
@@ -164,12 +187,14 @@ const createDiagramNodes = ({
   nodeShapes,
   nodeIds,
   magnetMap,
+  existingNodes,
 }: {
   diagram: DiagramElement[];
   positions: Map<string, Position>;
   nodeShapes: { [id: string]: ShapeWithTextNode };
   nodeIds: Map<ShapeWithTextNode, string>;
   magnetMap: Map<string, { [key in MagnetDirection]: boolean }>;
+  existingNodes?: Map<string, ShapeWithTextNode>;
 }) => {
   for (const { from, to } of diagram) {
     for (const node of [from, to]) {
@@ -180,7 +205,19 @@ const createDiagramNodes = ({
           return;
         }
 
-        const figmaNode = createNode({ node, position });
+        const existing = existingNodes?.get(node.id);
+        const figmaNode = existing ?? createNode({ node, position });
+        // Always update visual props/position on existing nodes as well
+        figmaNode.shapeType = validShapes.includes(node.shape)
+          ? node.shape
+          : "ROUNDED_RECTANGLE";
+        setNodeColors({ node, figmaNode });
+        if (node.label && figmaNode.text) {
+          figmaNode.text.characters = node.label || "";
+        }
+        figmaNode.x = position.x;
+        figmaNode.y = position.y;
+
         nodeShapes[node.id] = figmaNode;
         nodeIds.set(figmaNode, node.id);
 
@@ -202,6 +239,7 @@ const createDiagramLinks = ({
   linkMap,
   magnetMap,
   diagramId,
+  existingConnectors,
 }: {
   diagram: DiagramElement[];
   nodeShapes: { [id: string]: ShapeWithTextNode };
@@ -209,6 +247,7 @@ const createDiagramLinks = ({
   linkMap: Map<string, boolean>;
   magnetMap: Map<string, { [key in MagnetDirection]: boolean }>;
   diagramId: string;
+  existingConnectors?: Map<string, ConnectorNode>;
 }) => {
   let backlinkCounter = 0;
 
@@ -236,9 +275,21 @@ const createDiagramLinks = ({
           if (fromMagnetMap) fromMagnetMap[fromMagnet] = true;
         }
       }
-
-      links.push(
-        createLink({
+      const edgeKey = `${from.id}->${to.id}`;
+      const existing = existingConnectors?.get(edgeKey);
+      if (existing) {
+        existing.connectorStart = {
+          endpointNodeId: nodeShapes[from.id].id,
+          magnet: fromMagnet,
+        };
+        existing.connectorEnd = {
+          endpointNodeId: nodeShapes[to.id].id,
+          magnet: toMagnet,
+        };
+        if (link?.label) existing.text.characters = link.label;
+        links.push(existing);
+      } else {
+        const conn = createLink({
           from: nodeShapes[from.id],
           to: nodeShapes[to.id],
           link,
@@ -246,8 +297,11 @@ const createDiagramLinks = ({
           fromMagnet,
           toMagnet,
           diagramData: JSON.stringify(diagram),
-        })
-      );
+        });
+        conn.setPluginData("fromId", from.id);
+        conn.setPluginData("toId", to.id);
+        links.push(conn);
+      }
     }
   }
 };
@@ -286,7 +340,9 @@ const positionNodes = ({
       shapeNode.y = Math.round(originalPosition.y + newDiagramY);
     }
 
-    figma.currentPage.appendChild(shapeNode);
+    // With dynamic page loading, get explicit page reference
+    const currentPage = figma.currentPage;
+    currentPage.appendChild(shapeNode);
     shapeNode.visible = true;
   });
 };
@@ -294,28 +350,18 @@ const positionNodes = ({
 const createAndPositionBufferNode = (positionsObject: {
   [key: string]: Position;
 }) => {
-  const bufferNode = figma.createRectangle();
-  bufferNode.opacity = 0;
-
-  const { maxX, maxY } = getMaxXY(positionsObject);
-  const diagramWidth = Math.round(maxX);
-  const diagramHeight = Math.round(maxY);
+  // Calculate diagram bounds but don't zoom - just return positioning info
   const { x: newDiagramX, y: newDiagramY } = getEmptySpaceCoordinates();
 
-  bufferNode.resize(diagramWidth * 1.5, diagramHeight);
-  bufferNode.x = newDiagramX;
-  bufferNode.y = newDiagramY;
-
-  figma.viewport.scrollAndZoomIntoView([bufferNode]);
-  bufferNode.remove();
-
-  return { bufferNode, newDiagramX, newDiagramY };
+  return { newDiagramX, newDiagramY };
 };
 
 const addLinksToDiagram = (links: SceneNode[]) => {
+  // With dynamic page loading, get explicit page reference
+  const currentPage = figma.currentPage;
   links.forEach((link) => {
     link.visible = false;
-    figma.currentPage.appendChild(link);
+    currentPage.appendChild(link);
     link.visible = true;
   });
 };
@@ -336,10 +382,33 @@ export const drawDiagram = async ({
   const { positions, nodeShapes, nodeIds, links, linkMap, magnetMap } =
     prepareData(positionsObject);
 
-  // Re-draw the diagram on each pass if we're streaming
+  // First chunk: start fresh
   if (stream) deleteExistingDiagram(diagramId);
 
-  createDiagramNodes({ diagram, positions, nodeShapes, nodeIds, magnetMap });
+  // Build maps of existing nodes/connectors for in-place updates
+  const currentPage = figma.currentPage;
+  const existingNodesMap = new Map<string, ShapeWithTextNode>();
+  const existingConnectorsMap = new Map<string, ConnectorNode>();
+  currentPage.findAll((n) => n.getPluginData("diagramId") === diagramId).forEach((n) => {
+    if (n.type === "SHAPE_WITH_TEXT") {
+      const key = (n as SceneNode).getPluginData("diagramNodeId");
+      if (key) existingNodesMap.set(key, n as ShapeWithTextNode);
+    } else if (n.type === "CONNECTOR") {
+      const fromId = (n as SceneNode).getPluginData("fromId");
+      const toId = (n as SceneNode).getPluginData("toId");
+      if (fromId && toId) existingConnectorsMap.set(`${fromId}->${toId}`, n as ConnectorNode);
+    }
+  });
+
+  createDiagramNodes({
+    diagram,
+    positions,
+    nodeShapes,
+    nodeIds,
+    magnetMap,
+    existingNodes: existingNodesMap,
+  });
+
   createDiagramLinks({
     diagram,
     nodeShapes,
@@ -347,11 +416,39 @@ export const drawDiagram = async ({
     linkMap,
     magnetMap,
     diagramId,
+    existingConnectors: existingConnectorsMap,
   });
+  // Remove connectors that are no longer part of the diagram
+  for (const [key, conn] of existingConnectorsMap.entries()) {
+    if (!linkMap.get(key)) {
+      try {
+        if (figma.getNodeById(conn.id)) conn.remove();
+      } catch {}
+    }
+  }
   positionNodes({ nodeShapes, positionsObject, diagram, diagramId, nodeIds });
   createAndPositionBufferNode(positionsObject);
   addLinksToDiagram(links);
-  centerViewportOnDiagram(nodeShapes);
+
+  // Center on the most recently created node
+  const nodeIdsArray = Object.keys(nodeShapes);
+  if (nodeIdsArray.length > 0) {
+    const lastNodeId = nodeIdsArray[nodeIdsArray.length - 1];
+    const lastNode = nodeShapes[lastNodeId];
+    if (lastNode) {
+      centerViewportOnNode(lastNode);
+    }
+  }
+
+  // Remove nodes that are no longer present
+  const desiredIds = new Set(Object.keys(nodeShapes));
+  for (const [id, node] of existingNodesMap.entries()) {
+    if (!desiredIds.has(id)) {
+      try {
+        if (figma.getNodeById(node.id)) node.remove();
+      } catch {}
+    }
+  }
 };
 
 const setNodeProperties = ({
@@ -407,7 +504,9 @@ function getMaxXY(positionsObject: { [key: string]: Position }) {
 }
 
 function getEmptySpaceCoordinates() {
-  const existingNodes = figma.currentPage.findAll();
+  // With dynamic page loading, we need to get current page reference explicitly
+  const currentPage = figma.currentPage;
+  const existingNodes = currentPage.findAll();
   let maxY = 0;
 
   for (const node of existingNodes) {
@@ -423,39 +522,22 @@ function getEmptySpaceCoordinates() {
   return { x: 0, y: newDiagramY };
 }
 
-const centerViewportOnDiagram = (nodeShapes: {
-  [id: string]: ShapeWithTextNode;
-}) => {
-  let minX = Infinity;
-  let minY = Infinity;
-  let maxX = -Infinity;
-  let maxY = -Infinity;
+const centerViewportOnNode = (node: ShapeWithTextNode) => {
+  const box = node.absoluteBoundingBox;
+  if (!box) return;
 
-  Object.values(nodeShapes).forEach((node) => {
-    const box = node.absoluteBoundingBox;
-    if (!box) return;
-    minX = Math.min(minX, box.x);
-    minY = Math.min(minY, box.y);
-    maxX = Math.max(maxX, box.x + box.width);
-    maxY = Math.max(maxY, box.y + box.height);
-  });
+  // Set a consistent zoom level that's good for reading nodes
+  const readableZoom = 0.8; // 80% zoom - readable but not too zoomed in
+  figma.viewport.zoom = readableZoom;
 
-  const viewportWidth = figma.viewport.bounds.width;
-  const padding = Math.round(viewportWidth / 4);
+  // Calculate the center point of the node
+  const nodeCenterX = box.x + box.width / 2;
+  const nodeCenterY = box.y + box.height / 2;
 
-  const tempNode = figma.createRectangle();
-  tempNode.x = minX;
-  tempNode.y = minY;
-  tempNode.resize(maxX - minX + padding, maxY - minY);
+  // Account for plugin UI offset (right side panel)
+  const pluginUIOffset = 0; // Approximate width of plugin panel
+  const adjustedCenterX = nodeCenterX - pluginUIOffset / 2;
 
-  const bufferNode = figma.createRectangle();
-  bufferNode.x = maxX + padding;
-  bufferNode.y = minY;
-  bufferNode.resize(padding, maxY - minY);
-  bufferNode.opacity = 0;
-
-  figma.viewport.scrollAndZoomIntoView([tempNode, bufferNode]);
-
-  tempNode.remove();
-  bufferNode.remove();
+  // Set viewport center directly (this respects our zoom setting)
+  figma.viewport.center = { x: adjustedCenterX, y: nodeCenterY };
 };

@@ -1,8 +1,5 @@
 import { h } from "preact";
 import {
-  Banner,
-  IconLockLocked32,
-  IconLockUnlocked32,
   Link,
   LoadingIndicator,
   MiddleAlign,
@@ -10,9 +7,11 @@ import {
   Text,
   Textbox,
   VerticalSpace,
+  IconLockLocked16,
+  IconLockUnlocked16,
 } from "@create-figma-plugin/ui";
 import { useState } from "preact/hooks";
-import { AnimationProps, motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 
 import styles from "./styles.css";
 import Logo from "./Logo";
@@ -24,9 +23,8 @@ import { getBaseUrl } from "../util";
 import { useEffect } from "react";
 import debug from "../debug";
 import DiamondAnimation from "./DiamondBg";
-import WarningBanner from "./WarningBanner";
 
-const restDelta = 0.005;
+const restDelta = 0.0001;
 const DIAMONDS_NUM = 60;
 
 const arrowsDelay = 0.5;
@@ -35,25 +33,25 @@ const arrowsStiffness = 90;
 
 const diamondDelay = 0.5;
 
-const logoDelay = diamondDelay + 0.13;
-const logoDamping = 13;
-const logoStiffness = 110;
+const logoDelay = diamondDelay;
+const logoDamping = 8;
+const logoStiffness = 100;
 
-const containerDelay = logoDelay + 2.4;
+const containerDelay = logoDelay + 1.7;
 const containerDamping = 40;
 const containerStiffness = 160;
 
-const lettersDelay = containerDelay + 0.3;
+const lettersDelay = containerDelay;
 
-const descriptionDelay = lettersDelay + 1;
+const descriptionDelay = lettersDelay + 0.6;
 const descriptionDamping = 20;
-const descriptionStiffness = 60;
+const descriptionStiffness = 120;
 
-const signInDelay = descriptionDelay + 0.4;
+const signInDelay = descriptionDelay + 0.1;
 const signInDamping = 20;
-const signInStiffness = 60;
+const signInStiffness = 120;
 
-const arrowsAnimation: AnimationProps = {
+const arrowsAnimation = {
   initial: {
     opacity: 0,
     scale: 0.2,
@@ -61,102 +59,112 @@ const arrowsAnimation: AnimationProps = {
   animate: {
     opacity: 0.32,
     scale: 1,
+  },
+  transition: {
+    type: "spring" as const,
+    damping: arrowsDamping,
+    stiffness: arrowsStiffness,
+    restDelta: restDelta,
+    delay: arrowsDelay,
+  },
+};
+
+const containerVariants: Variants = {
+  centered: { y: 68 },
+  raised: {
+    y: -20,
+  },
+};
+
+const containerTransition = {
+  type: "spring" as const,
+  damping: containerDamping,
+  stiffness: containerStiffness,
+  delay: containerDelay,
+};
+
+const staggerVariants: Variants = {
+  hidden: {
+    opacity: 0,
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
+  visible: {
+    opacity: 1,
+    transition: {
+      delayChildren: lettersDelay,
+      staggerChildren: 0.05,
+    },
+  },
+};
+
+const letterVariants: Variants = {
+  hidden: {
+    opacity: 0,
+  },
+  visible: {
+    opacity: 1,
     transition: {
       type: "spring",
-      damping: arrowsDamping,
-      stiffness: arrowsStiffness,
-      restDelta: restDelta,
-      delay: arrowsDelay,
+      damping: 30,
+      stiffness: 170,
     },
   },
 };
 
-const containerAnimation: AnimationProps = {
-  initial: "centered",
-  animate: "raised",
-  variants: {
-    centered: { y: 68 },
-    raised: {
-      y: -20,
-      transition: {
-        type: "spring",
-        damping: containerDamping,
-        stiffness: containerStiffness,
-        delay: containerDelay,
-      },
-    },
-  },
+const staggerTransition = {
+  type: "spring" as const,
+  damping: 50,
+  stiffness: 50,
 };
 
-const staggerAnimation: AnimationProps = {
-  initial: "hidden",
-  animate: "visible",
-  variants: {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        type: "spring",
-        damping: 50,
-        stiffness: 50,
-        delayChildren: lettersDelay,
-        staggerChildren: 0.05,
-      },
-    },
-  },
-};
-
-const logoVariants = {
+const logoVariants: Variants = {
   hidden: { opacity: 0, scale: 1.6 },
   visible: {
     opacity: 1,
     scale: 1,
-    transition: {
-      type: "spring",
-      damping: logoDamping,
-      stiffness: logoStiffness,
-      delay: logoDelay,
-      restDelta: restDelta,
-    },
   },
 };
 
-const letterAnimation: AnimationProps = {
-  initial: { opacity: 0 },
-  animate: {
-    opacity: 1,
-    transition: { type: "spring", damping: 30, stiffness: 170 },
-  },
+const logoTransition = {
+  type: "spring" as const,
+  damping: logoDamping,
+  stiffness: logoStiffness,
+  delay: logoDelay,
+  restDelta: restDelta,
 };
 
-const descriptionVariants = {
+const descriptionVariants: Variants = {
   hidden: { opacity: 0, y: -20 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: {
-      type: "spring",
-      damping: descriptionDamping,
-      stiffness: descriptionStiffness,
-      delay: descriptionDelay,
-      restDelta: restDelta,
-    },
   },
 };
 
-const signInVariants = {
+const descriptionTransition = {
+  type: "spring" as const,
+  damping: descriptionDamping,
+  stiffness: descriptionStiffness,
+  delay: descriptionDelay,
+  restDelta: restDelta,
+};
+
+const signInVariants: Variants = {
   hidden: { opacity: 0, y: -20 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: {
-      type: "spring",
-      damping: signInDamping,
-      stiffness: signInStiffness,
-      delay: signInDelay,
-      restDelta: restDelta,
-    },
   },
+};
+
+const signInTransition = {
+  type: "spring" as const,
+  damping: signInDamping,
+  stiffness: signInStiffness,
+  delay: signInDelay,
+  restDelta: restDelta,
 };
 
 const licenseKeyLength = 18;
@@ -226,14 +234,13 @@ function SignIn() {
 
         <Textbox
           spellCheck={false}
-          variant="border"
-          maxLength={licenseKeyLength}
           password={true}
           disabled={lengthHit || !isNewUser}
           value={licenseKeyInputValue}
           style={{
-            backdropFilter: "blur(10px)",
-            background: "rgba(255,255,255,0.6",
+            backdropFilter: "blur(15px)",
+            background: "rgba(255,255,255,0.35",
+            boxShadow: "0 0px 0px 1px rgba(0,0,0,0.3)",
           }}
           onValueInput={(val: string) => {
             setLicenseKeyInputValue(val);
@@ -242,9 +249,9 @@ function SignIn() {
             isLoading ? (
               <LoadingIndicator color="component" />
             ) : isNewUser ? (
-              <IconLockLocked32 />
+              <IconLockLocked16 />
             ) : (
-              <IconLockUnlocked32 color="success" />
+              <IconLockUnlocked16 color="success" />
             )
           }
           onFocusCapture={() => {
@@ -258,11 +265,17 @@ function SignIn() {
   return (
     <div className={styles.overlayContainer}>
       <MiddleAlign style={{ zIndex: 999 }}>
-        <motion.div {...containerAnimation}>
+        <motion.div
+          initial="centered"
+          animate="raised"
+          variants={containerVariants}
+          transition={containerTransition}
+        >
           <motion.div
             variants={logoVariants}
             initial="hidden"
             animate="visible"
+            transition={logoTransition}
             style={{ display: "flex", justifyContent: "center" }}
           >
             <Logo isDarkMode={false} />
@@ -270,12 +283,16 @@ function SignIn() {
           <VerticalSpace space="extraLarge" />
           <div className={styles.logoType}>
             {" "}
-            <motion.div {...staggerAnimation}>
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={staggerVariants}
+            >
               {"DIAGRAMMATON".split("").map((char, index) => (
                 <motion.span
                   key={index}
-                  {...letterAnimation}
-                  variants={staggerAnimation.variants}
+                  variants={letterVariants}
+                  style={{ display: "inline-block" }}
                 >
                   {char}
                 </motion.span>
@@ -286,6 +303,7 @@ function SignIn() {
             variants={descriptionVariants}
             initial="hidden"
             animate="visible"
+            transition={descriptionTransition}
             className={styles.description}
           >
             AI powered diagrams for FigJam
@@ -295,6 +313,7 @@ function SignIn() {
           variants={signInVariants}
           initial="hidden"
           animate="visible"
+          transition={signInTransition}
           onAnimationStart={() => {
             setTimeout(() => {
               document.querySelector("input")?.focus();
