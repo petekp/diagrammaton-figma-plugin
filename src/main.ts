@@ -114,6 +114,11 @@ export default function () {
     clearedDiagramIds.delete(diagramId);
   });
 
+  on("CLEAR_CLIENT_STORAGE", () => {
+    // Clear Figma clientStorage when requested from UI
+    figma.clientStorage.deleteAsync("globalFontSizes");
+  });
+
   showUI(
     {
       height: UI_HEIGHT,

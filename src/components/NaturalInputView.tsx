@@ -85,7 +85,6 @@ export function NaturalInputView() {
                 animate="visible"
                 exit="exit"
               >
-                <VerticalSpace space="small" />
                 <Suggestions onClick={handleStreamDiagram} />
               </motion.div>
             )}

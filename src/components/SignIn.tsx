@@ -1,8 +1,5 @@
 import { h } from "preact";
 import {
-  Banner,
-  IconLockLocked24,
-  IconLockOpen24,
   Link,
   LoadingIndicator,
   MiddleAlign,
@@ -10,6 +7,8 @@ import {
   Text,
   Textbox,
   VerticalSpace,
+  IconLockLocked16,
+  IconLockUnlocked16,
 } from "@create-figma-plugin/ui";
 import { useState } from "preact/hooks";
 import { motion, Variants } from "framer-motion";
@@ -24,9 +23,8 @@ import { getBaseUrl } from "../util";
 import { useEffect } from "react";
 import debug from "../debug";
 import DiamondAnimation from "./DiamondBg";
-import WarningBanner from "./WarningBanner";
 
-const restDelta = 0.005;
+const restDelta = 0.0001;
 const DIAMONDS_NUM = 60;
 
 const arrowsDelay = 0.5;
@@ -35,23 +33,23 @@ const arrowsStiffness = 90;
 
 const diamondDelay = 0.5;
 
-const logoDelay = diamondDelay + 0.13;
-const logoDamping = 13;
-const logoStiffness = 110;
+const logoDelay = diamondDelay;
+const logoDamping = 8;
+const logoStiffness = 100;
 
-const containerDelay = logoDelay + 2.4;
+const containerDelay = logoDelay + 1.7;
 const containerDamping = 40;
 const containerStiffness = 160;
 
-const lettersDelay = containerDelay + 0.3;
+const lettersDelay = containerDelay;
 
-const descriptionDelay = lettersDelay + 1;
+const descriptionDelay = lettersDelay + 0.6;
 const descriptionDamping = 20;
-const descriptionStiffness = 60;
+const descriptionStiffness = 120;
 
-const signInDelay = descriptionDelay + 0.4;
+const signInDelay = descriptionDelay + 0.1;
 const signInDamping = 20;
-const signInStiffness = 60;
+const signInStiffness = 120;
 
 const arrowsAnimation = {
   initial: {
@@ -86,9 +84,32 @@ const containerTransition = {
 };
 
 const staggerVariants: Variants = {
-  hidden: { opacity: 0 },
+  hidden: {
+    opacity: 0,
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
   visible: {
     opacity: 1,
+    transition: {
+      delayChildren: lettersDelay,
+      staggerChildren: 0.05,
+    },
+  },
+};
+
+const letterVariants: Variants = {
+  hidden: {
+    opacity: 0,
+  },
+  visible: {
+    opacity: 1,
+    transition: {
+      type: "spring",
+      damping: 30,
+      stiffness: 170,
+    },
   },
 };
 
@@ -96,8 +117,6 @@ const staggerTransition = {
   type: "spring" as const,
   damping: 50,
   stiffness: 50,
-  delayChildren: lettersDelay,
-  staggerChildren: 0.05,
 };
 
 const logoVariants: Variants = {
@@ -114,14 +133,6 @@ const logoTransition = {
   stiffness: logoStiffness,
   delay: logoDelay,
   restDelta: restDelta,
-};
-
-const letterAnimation = {
-  initial: { opacity: 0 },
-  animate: {
-    opacity: 1,
-  },
-  transition: { type: "spring" as const, damping: 30, stiffness: 170 },
 };
 
 const descriptionVariants: Variants = {
@@ -227,8 +238,9 @@ function SignIn() {
           disabled={lengthHit || !isNewUser}
           value={licenseKeyInputValue}
           style={{
-            backdropFilter: "blur(10px)",
-            background: "rgba(255,255,255,0.6",
+            backdropFilter: "blur(15px)",
+            background: "rgba(255,255,255,0.35",
+            boxShadow: "0 0px 0px 1px rgba(0,0,0,0.3)",
           }}
           onValueInput={(val: string) => {
             setLicenseKeyInputValue(val);
@@ -237,9 +249,9 @@ function SignIn() {
             isLoading ? (
               <LoadingIndicator color="component" />
             ) : isNewUser ? (
-              <IconLockLocked24 />
+              <IconLockLocked16 />
             ) : (
-              <IconLockOpen24 color="success" />
+              <IconLockUnlocked16 color="success" />
             )
           }
           onFocusCapture={() => {
@@ -275,12 +287,12 @@ function SignIn() {
               initial="hidden"
               animate="visible"
               variants={staggerVariants}
-              transition={staggerTransition}
             >
               {"DIAGRAMMATON".split("").map((char, index) => (
                 <motion.span
                   key={index}
-                  {...letterAnimation}
+                  variants={letterVariants}
+                  style={{ display: "inline-block" }}
                 >
                   {char}
                 </motion.span>

@@ -1,5 +1,5 @@
 // App
-export const RELEASE_VERSION = "Beta 0.19.0";
+export const RELEASE_VERSION = "0.19.0-beta.0";
 export const BASE_URL_DEV = "http://localhost:3000";
 export const BASE_URL_STAGING =
   "https://figma-plugins-git-staging-team-pete.vercel.app";

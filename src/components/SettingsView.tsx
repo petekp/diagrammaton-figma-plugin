@@ -1,5 +1,6 @@
 import { h } from "preact";
 import {
+  Button,
   Container,
   SegmentedControl,
   Stack,
@@ -16,11 +17,38 @@ import {
   Toggle,
 } from "@create-figma-plugin/ui";
 import { motion } from "framer-motion";
+import { emit, saveSettingsAsync } from "@create-figma-plugin/utilities";
+import { EventHandler } from "@create-figma-plugin/utilities";
+
+// Create a custom event type for clearing client storage
+export interface ClearClientStorage extends EventHandler {
+  name: "CLEAR_CLIENT_STORAGE";
+  handler: () => void;
+}
 
 import { pluginContext } from "./PluginContext";
 import { GPTModels } from "../fetchDiagramData";
 import { RELEASE_VERSION } from "../constants";
 import { getBaseUrl } from "../util";
+import type { PersistedState } from "../types";
+
+const SETTINGS_KEY = "figjam-diagrammaton-plugin";
+
+// Get isFigJam from current plugin state
+const getDefaultSettings = (isFigJam: boolean): PersistedState => ({
+  customPrompt: "",
+  feedback: "",
+  isFigJam,
+  isNewUser: true, // Force true to ensure login screen shows
+  isSignInVisible: false,
+  licenseKey: "",
+  model: "gpt5",
+  naturalInput: "",
+  orientation: "LR",
+  showSuggestions: true,
+  modifyInput: "",
+  textareaFontSizeById: {},
+});
 import Logo from "./Logo";
 import { tabTransition } from "../animations";
 
@@ -28,6 +56,7 @@ export function SettingsView() {
   const {
     state: {
       model,
+      isFigJam,
       licenseKey,
       showRequired,
       orientation,
@@ -165,8 +194,62 @@ export function SettingsView() {
             dispatch({ type: "SET_SHOW_SUGGESTIONS", payload: val });
           }}
         >
-          Show suggestions
+          &nbsp;
         </Toggle>
+      </div>
+    </Columns>
+  );
+
+  const clearStorageRow = (
+    <Columns space="small">
+      <Stack space="small">
+        <Text>
+          <Bold>Clear Storage</Bold>{" "}
+        </Text>
+        <Text>
+          <Muted>Clear all plugin data and settings for testing</Muted>
+        </Text>
+      </Stack>
+      <div style={{ float: "right" }}>
+        <Button
+          onClick={async () => {
+            if (
+              confirm(
+                "Are you sure you want to clear all plugin storage? This will reset all settings and authentication."
+              )
+            ) {
+              // Tell main thread to clear Figma clientStorage
+              emit("CLEAR_CLIENT_STORAGE");
+
+              // Save default settings to force login screen on reload
+              await saveSettingsAsync(
+                getDefaultSettings(isFigJam),
+                SETTINGS_KEY
+              );
+
+              // Force reset all state to ensure clean slate
+              dispatch({ type: "SET_LICENSE_KEY", payload: "" });
+              dispatch({ type: "SET_IS_NEW_USER", payload: true });
+              dispatch({ type: "SET_IS_FIGJAM", payload: isFigJam });
+              dispatch({ type: "SET_MODEL", payload: "gpt5" });
+              dispatch({ type: "SET_CUSTOM_PROMPT", payload: "" });
+              dispatch({ type: "SET_FEEDBACK", payload: "" });
+              dispatch({ type: "SET_NATURAL_INPUT", payload: "" });
+              dispatch({ type: "SET_ORIENTATION", payload: "LR" });
+              dispatch({ type: "SET_SHOW_SUGGESTIONS", payload: true });
+              dispatch({ type: "SET_MODIFY_INPUT", payload: "" });
+              dispatch({
+                type: "SET_TEXTAREA_FONT_SIZE_BY_ID",
+                payload: { generate: 20, modify: 20 },
+              });
+
+              // Reload the plugin to reflect cleared state
+              window.location.reload();
+            }
+          }}
+        >
+          Clear
+        </Button>
       </div>
     </Columns>
   );
@@ -195,6 +278,8 @@ export function SettingsView() {
           {modelSelection}
           <Divider />
           {showSuggestionsRow}
+          <Divider />
+          {clearStorageRow}
           <Divider />
         </Stack>
         <div

@@ -350,22 +350,10 @@ const positionNodes = ({
 const createAndPositionBufferNode = (positionsObject: {
   [key: string]: Position;
 }) => {
-  const bufferNode = figma.createRectangle();
-  bufferNode.opacity = 0;
-
-  const { maxX, maxY } = getMaxXY(positionsObject);
-  const diagramWidth = Math.round(maxX);
-  const diagramHeight = Math.round(maxY);
+  // Calculate diagram bounds but don't zoom - just return positioning info
   const { x: newDiagramX, y: newDiagramY } = getEmptySpaceCoordinates();
 
-  bufferNode.resize(diagramWidth * 1.5, diagramHeight);
-  bufferNode.x = newDiagramX;
-  bufferNode.y = newDiagramY;
-
-  figma.viewport.scrollAndZoomIntoView([bufferNode]);
-  bufferNode.remove();
-
-  return { bufferNode, newDiagramX, newDiagramY };
+  return { newDiagramX, newDiagramY };
 };
 
 const addLinksToDiagram = (links: SceneNode[]) => {
@@ -441,7 +429,16 @@ export const drawDiagram = async ({
   positionNodes({ nodeShapes, positionsObject, diagram, diagramId, nodeIds });
   createAndPositionBufferNode(positionsObject);
   addLinksToDiagram(links);
-  centerViewportOnDiagram(nodeShapes);
+
+  // Center on the most recently created node
+  const nodeIdsArray = Object.keys(nodeShapes);
+  if (nodeIdsArray.length > 0) {
+    const lastNodeId = nodeIdsArray[nodeIdsArray.length - 1];
+    const lastNode = nodeShapes[lastNodeId];
+    if (lastNode) {
+      centerViewportOnNode(lastNode);
+    }
+  }
 
   // Remove nodes that are no longer present
   const desiredIds = new Set(Object.keys(nodeShapes));
@@ -525,39 +522,22 @@ function getEmptySpaceCoordinates() {
   return { x: 0, y: newDiagramY };
 }
 
-const centerViewportOnDiagram = (nodeShapes: {
-  [id: string]: ShapeWithTextNode;
-}) => {
-  let minX = Infinity;
-  let minY = Infinity;
-  let maxX = -Infinity;
-  let maxY = -Infinity;
+const centerViewportOnNode = (node: ShapeWithTextNode) => {
+  const box = node.absoluteBoundingBox;
+  if (!box) return;
 
-  Object.values(nodeShapes).forEach((node) => {
-    const box = node.absoluteBoundingBox;
-    if (!box) return;
-    minX = Math.min(minX, box.x);
-    minY = Math.min(minY, box.y);
-    maxX = Math.max(maxX, box.x + box.width);
-    maxY = Math.max(maxY, box.y + box.height);
-  });
+  // Set a consistent zoom level that's good for reading nodes
+  const readableZoom = 0.8; // 80% zoom - readable but not too zoomed in
+  figma.viewport.zoom = readableZoom;
 
-  const viewportWidth = figma.viewport.bounds.width;
-  const padding = Math.round(viewportWidth / 4);
+  // Calculate the center point of the node
+  const nodeCenterX = box.x + box.width / 2;
+  const nodeCenterY = box.y + box.height / 2;
 
-  const tempNode = figma.createRectangle();
-  tempNode.x = minX;
-  tempNode.y = minY;
-  tempNode.resize(maxX - minX + padding, maxY - minY);
+  // Account for plugin UI offset (right side panel)
+  const pluginUIOffset = 0; // Approximate width of plugin panel
+  const adjustedCenterX = nodeCenterX - pluginUIOffset / 2;
 
-  const bufferNode = figma.createRectangle();
-  bufferNode.x = maxX + padding;
-  bufferNode.y = minY;
-  bufferNode.resize(padding, maxY - minY);
-  bufferNode.opacity = 0;
-
-  figma.viewport.scrollAndZoomIntoView([tempNode, bufferNode]);
-
-  tempNode.remove();
-  bufferNode.remove();
+  // Set viewport center directly (this respects our zoom setting)
+  figma.viewport.center = { x: adjustedCenterX, y: nodeCenterY };
 };

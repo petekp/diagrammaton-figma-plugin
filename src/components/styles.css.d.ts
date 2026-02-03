@@ -9,6 +9,7 @@ declare const styles: {
   readonly "outerContainer": string;
   readonly "overlayContainer": string;
   readonly "suggestionBlock": string;
+  readonly "suggestionBlocksContainer": string;
   readonly "suggestionContainer": string;
   readonly "suggestionInstructionsBlock": string;
   readonly "suggestionScrollView": string;
