@@ -2,6 +2,8 @@ import { h } from "preact";
 import {
   Button,
   Container,
+  Dropdown,
+  type DropdownOption,
   SegmentedControl,
   Stack,
   Text,
@@ -19,6 +21,7 @@ import {
 import { motion } from "framer-motion";
 import { emit, saveSettingsAsync } from "@create-figma-plugin/utilities";
 import { EventHandler } from "@create-figma-plugin/utilities";
+import { useEffect, useMemo, useState } from "preact/hooks";
 
 // Create a custom event type for clearing client storage
 export interface ClearClientStorage extends EventHandler {
@@ -27,10 +30,11 @@ export interface ClearClientStorage extends EventHandler {
 }
 
 import { pluginContext } from "./PluginContext";
-import { GPTModels } from "../fetchDiagramData";
-import { RELEASE_VERSION } from "../constants";
+import { ModelId } from "../fetchDiagramData";
+import { DEFAULT_MODEL_ID, RELEASE_VERSION } from "../constants";
 import { getBaseUrl } from "../util";
 import type { PersistedState } from "../types";
+import { fetchModelOptions, type ModelOption } from "../fetchModelOptions";
 
 const SETTINGS_KEY = "figjam-diagrammaton-plugin";
 
@@ -42,7 +46,7 @@ const getDefaultSettings = (isFigJam: boolean): PersistedState => ({
   isNewUser: true, // Force true to ensure login screen shows
   isSignInVisible: false,
   licenseKey: "",
-  model: "gpt5",
+  model: DEFAULT_MODEL_ID,
   naturalInput: "",
   orientation: "LR",
   showSuggestions: true,
@@ -65,6 +69,87 @@ export function SettingsView() {
     },
     dispatch,
   } = pluginContext();
+
+  const [modelOptions, setModelOptions] = useState<ModelOption[]>([]);
+  const [modelOptionsStatus, setModelOptionsStatus] = useState<
+    "idle" | "loading" | "error"
+  >("idle");
+
+  useEffect(() => {
+    let isActive = true;
+
+    if (!licenseKey) {
+      setModelOptions([]);
+      setModelOptionsStatus("idle");
+      return () => {
+        isActive = false;
+      };
+    }
+
+    setModelOptionsStatus("loading");
+    fetchModelOptions(licenseKey)
+      .then((response) => {
+        if (!isActive) return;
+        const nextOptions = response.models ?? [];
+        setModelOptions(nextOptions);
+        setModelOptionsStatus("idle");
+
+        if (nextOptions.length === 0) {
+          return;
+        }
+
+        const optionIds = new Set(nextOptions.map((option) => option.id));
+        if (!optionIds.has(model)) {
+          const fallback =
+            response.defaultModelId ?? nextOptions[0]?.id ?? DEFAULT_MODEL_ID;
+          dispatch({ type: "SET_MODEL", payload: fallback });
+        }
+      })
+      .catch(() => {
+        if (!isActive) return;
+        setModelOptionsStatus("error");
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [licenseKey, dispatch]);
+
+  const modelDropdownOptions = useMemo(() => {
+    const options: DropdownOption[] = [];
+    const openaiOptions = modelOptions.filter(
+      (option) => option.provider === "openai"
+    );
+    const anthropicOptions = modelOptions.filter(
+      (option) => option.provider === "anthropic"
+    );
+
+    if (openaiOptions.length > 0) {
+      options.push({ header: "OpenAI" });
+      options.push(
+        ...openaiOptions.map((option) => ({
+          value: option.id,
+          text: option.label,
+        }))
+      );
+    }
+
+    if (openaiOptions.length > 0 && anthropicOptions.length > 0) {
+      options.push("-");
+    }
+
+    if (anthropicOptions.length > 0) {
+      options.push({ header: "Anthropic" });
+      options.push(
+        ...anthropicOptions.map((option) => ({
+          value: option.id,
+          text: option.label,
+        }))
+      );
+    }
+
+    return options;
+  }, [modelOptions]);
 
   const licenseKeyInput = (
     <Columns space="extraLarge">
@@ -153,21 +238,30 @@ export function SettingsView() {
           <Bold>Model</Bold>{" "}
         </Text>
         <Text>
-          <Muted>GPT-5 is the default model</Muted>
+          <Muted>Loaded from your account keys</Muted>
         </Text>
       </Stack>
       <div style={{ float: "right" }}>
-        <SegmentedControl
-          value={model}
+        <Dropdown
+          disabled={
+            !licenseKey ||
+            modelOptionsStatus === "loading" ||
+            modelDropdownOptions.length === 0
+          }
+          value={modelOptions.length > 0 ? model : null}
+          placeholder={
+            !licenseKey
+              ? "Add license key to load models"
+              : modelOptionsStatus === "loading"
+                ? "Loading models..."
+                : modelOptionsStatus === "error"
+                  ? "Unable to load models"
+                  : "No models available"
+          }
+          options={modelDropdownOptions}
           onValueChange={(val: string) => {
-            dispatch({ type: "SET_MODEL", payload: val as GPTModels });
+            dispatch({ type: "SET_MODEL", payload: val as ModelId });
           }}
-          options={[
-            {
-              children: "GPT-5",
-              value: "gpt5",
-            },
-          ]}
         />
       </div>
     </Columns>
@@ -227,7 +321,7 @@ export function SettingsView() {
               dispatch({ type: "SET_LICENSE_KEY", payload: "" });
               dispatch({ type: "SET_IS_NEW_USER", payload: true });
               dispatch({ type: "SET_IS_FIGJAM", payload: isFigJam });
-              dispatch({ type: "SET_MODEL", payload: "gpt5" });
+              dispatch({ type: "SET_MODEL", payload: DEFAULT_MODEL_ID });
               dispatch({ type: "SET_CUSTOM_PROMPT", payload: "" });
               dispatch({ type: "SET_FEEDBACK", payload: "" });
               dispatch({ type: "SET_NATURAL_INPUT", payload: "" });

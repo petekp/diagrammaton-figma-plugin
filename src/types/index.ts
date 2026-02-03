@@ -1,14 +1,14 @@
 import { EventHandler } from "@create-figma-plugin/utilities";
 
 import { DiagramElement, Position } from "./diagramming-types";
-import { GPTModels } from "../fetchDiagramData";
+import { ModelId } from "../fetchDiagramData";
 export * from "./diagramming-types";
 
 export type PersistedState = {
   isFigJam: boolean;
   licenseKey: string;
   customPrompt: string;
-  model: GPTModels;
+  model: ModelId;
   naturalInput: string;
   modifyInput: string;
   isNewUser: boolean;
@@ -148,7 +148,7 @@ export type Action =
     }
   | {
       type: "SET_MODEL";
-      payload: GPTModels;
+      payload: ModelId;
     }
   | {
       type: "SET_ORIENTATION";

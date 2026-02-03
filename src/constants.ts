@@ -1,5 +1,6 @@
 // App
 export const RELEASE_VERSION = "0.19.0-beta.0";
+export const DEFAULT_MODEL_ID = "openai:gpt-5:fast";
 export const BASE_URL_DEV = "http://localhost:3000";
 export const BASE_URL_STAGING =
   "https://figma-plugins-git-staging-team-pete.vercel.app";

@@ -1,4 +1,4 @@
-import { UI_HEIGHT, UI_WIDTH } from "./constants";
+import { DEFAULT_MODEL_ID, UI_HEIGHT, UI_WIDTH } from "./constants";
 import {
   emit,
   once,
@@ -34,7 +34,7 @@ export const defaultSettings: PersistedState = {
   isNewUser: true,
   isSignInVisible: false,
   licenseKey: "",
-  model: "gpt5",
+  model: DEFAULT_MODEL_ID,
   naturalInput: "",
   orientation: "LR",
   showSuggestions: true,

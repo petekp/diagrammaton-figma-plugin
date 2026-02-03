@@ -212,7 +212,7 @@ const debugValue: DiagramElement[] = [
   },
 ];
 
-export type GPTModels = "gpt3" | "gpt4" | "gpt5";
+export type ModelId = string;
 
 type MessageElement = {
   type: "message";
@@ -328,7 +328,7 @@ export async function* fetchStream({
     diagramDescription?: string;
     instructions?: string;
     licenseKey: string;
-    model: GPTModels;
+    model: ModelId;
   };
 }): AsyncGenerator<StreamElement> {
   if (debug.enabled && debug.stubDiagram) {
